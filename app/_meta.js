@@ -6,4 +6,5 @@ export default {
     type: "separator",
   },
   docker: "Docker 🐳",
+  map: "Map 🗺️",
 };
