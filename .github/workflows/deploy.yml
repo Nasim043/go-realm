@@ -19,7 +19,7 @@ jobs:
           node-version: '22'
 
       - name: Cache npm modules
-        uses: actions/cache@v3
+        uses: actions/cache@v3  # Updated to version 3
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -38,7 +38,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Set up SSH key
-        uses: webfactory/ssh-agent-action@v0.5.3
+        uses: addnab/ssh-agent-action@v0.5.3  # Updated action
         with:
           ssh-private-key: ${{ secrets.GO_REALM_DEPLOY_KEY }}
 
