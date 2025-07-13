@@ -148,7 +148,7 @@ The `next.config.mjs` file has been configured to use Nextra and includes a redi
 ```js
 // next.config.mjs
 
-import withNextra from 'nextra'
+import withNextra from "nextra";
 
 // Export the final Next.js config with Nextra included
 export default withNextra({
@@ -163,4 +163,4 @@ export default withNextra({
     ];
   },
 });
-
+```
