@@ -1,0 +1,52 @@
+name: Deploy Next.js App
+
+on:
+  push:
+    branches:
+      - main # Change to your deploy branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "16"
+
+      - name: Cache npm modules
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm install
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up SSH key
+        uses: webfactory/ssh-agent-action@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.GO_REALM_DEPLOY_KEY }}
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          port: 22
+          script: |
+            cd /var/www/html/go-realm && git pull && npm install && npm run build && pm2 reload go-realm || pm2 start npm --name "go-realm" -- start -- -p 4300 -H 0.0.0.0
