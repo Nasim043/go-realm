@@ -41,7 +41,7 @@ jobs:
           key: ${{ secrets.GO_REALM_DEPLOY_KEY }} # Directly pass the key
           port: 22
           script: |
-            cd /var/www/go-realm
+            cd /var/www/html/go-realm
             git pull
             npm install
             npm run build
