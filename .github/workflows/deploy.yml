@@ -3,43 +3,42 @@ name: Deploy Next.js App
 on:
   push:
     branches:
-      - main  # Change to your deploy branch
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4  # Updated from v2
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4  # Updated from v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'npm'  # New caching feature in setup-node v2+
-
-      - name: Install dependencies
-        run: npm install
+          node-version: "22"
+          cache: "npm"
+      - run: npm install
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4  # Updated from v2
+      - uses: actions/checkout@v4
 
-      - name: Set up SSH key
-        uses: webfactory/ssh-agent@v0.9.0  # Updated from v0.7.0
+      # Proper SSH key setup
+      - name: Add SSH Key
+        uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.GO_REALM_DEPLOY_KEY }}
 
+      # Verify the key was added (debugging step)
+      - name: List SSH keys
+        run: ssh-add -l
+
+      # Improved SSH deployment
       - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1  # Updated from v0.1.7
+        uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.GO_REALM_DEPLOY_KEY }} # Directly pass the key
           port: 22
           script: |
             cd /var/www/go-realm
