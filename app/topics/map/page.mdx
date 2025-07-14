@@ -1,0 +1,250 @@
+# Maps in Go
+
+Maps are Go's built-in **key-value** data structure, similar to dictionaries in Python or objects in JavaScript. A map is an unordered and changeable collection that does not allow duplicates. The default value of a map is `nil`.
+
+## Declaration & Initialization
+
+### Empty Map
+
+```go
+// Using make function
+m := make(map[string]int)
+
+// Zero value (nil map - must initialize before use)
+var nilMap map[string]int
+```
+
+### Map with Initial Values
+
+```go
+// Using literal syntax
+colors := map[string]string{
+    "red":   "#FF0000",
+    "green": "#00FF00",
+    "blue":  "#0000FF",
+}
+```
+
+## Basic Operations
+
+### Insert/Update
+
+```go
+m["key"] = 42      // Insert
+m["key"] = 100     // Update
+```
+
+### Read
+
+```go
+value := m["key"]   // Returns zero-value if key doesn't exist
+```
+
+### Check Existence⭐
+
+```go
+value, exists := m["key"]
+if exists {
+    fmt.Println("Key exists:", value)
+}
+```
+
+### Delete⭐
+
+```go
+delete(m, "key")   // Removes key-value pair
+```
+
+## Iterating Over Maps
+
+### Basic Iteration
+
+```go
+for key, value := range m {
+    fmt.Printf("Key: %s, Value: %v\n", key, value)
+}
+```
+
+### Keys Only
+
+```go
+for key := range m {
+    fmt.Println("Key:", key)
+}
+```
+
+### Values Only
+
+```go
+for _, value := range m {
+    fmt.Println("Value:", value)
+}
+```
+
+## Map Characteristics
+
+- **Unordered**: Iteration order is random
+- **Dynamic**: Grows automatically as needed
+- **Reference Type**: Passed by reference (modifications affect original)
+- **Zero Value**: `nil` (must initialize with `make` before use)
+- **Key Types**: Must be comparable (strings, numbers, etc.)
+
+
+### Nested Maps
+
+```go
+users := map[string]map[string]bool{
+    "john": {
+        "admin": true,
+        "active": false,
+    },
+    "jane": {
+        "admin": false,
+        "active": true,
+    },
+}
+
+if users["john"]["admin"] {
+    fmt.Println("John is an admin")
+}
+```
+
+## Common Pitfalls
+
+### Nil Map Panic
+
+```go
+var m map[string]int
+m["key"] = 1 // PANIC: assignment to nil map
+```
+
+**Fix:** Always initialize with `make`
+
+### Floating-Point Keys
+
+Avoid `float64` keys due to precision issues:
+
+```go
+// Not recommended
+m := make(map[float64]string)
+m[1.0000000000000001] = "value1"
+m[1.0000000000000002] = "value2" // Might collide!
+```
+
+## FAQ
+
+### 1. How to create a map in Go?⭐
+
+By using the `make function` or by using a `map literal`.
+
+```go
+// Using make function
+userInfo := make(map[string]int)
+userInfo["alice"] = 17
+userInfo["bob"] = 18
+fmt.Println(userInfo)
+
+// Using map literal
+userInfo := map[string]int{
+    "alice": 17,
+    "bob": 18,
+}
+fmt.Println(userInfo)
+```
+
+### 2. How to check if a key exists?
+
+```go
+value, exists := m["key"]
+if exists {
+    // Key exists
+}
+```
+
+### 3. How to copy a map?
+
+```go
+original := map[string]int{"a": 1, "b": 2}
+copy := make(map[string]int)
+
+for k, v := range original {
+    copy[k] = v
+}
+```
+
+### 4. How to compare two maps?
+
+```go showLineNumbers {10,13,19}
+package main
+
+import "fmt"
+
+func main() {
+    // Maps with keys "alice" and "bob"
+    map1 := map[string]int{"alice": 25, "bob": 30}
+    map2 := map[string]int{"alice": 25, "bob": 28}
+
+    // Direct comparison is not allowed
+    // fmt.Println(map1 == map2) // This will throw an error
+
+    // Length comparison
+    if len(map1) != len(map2) {
+        fmt.Println("Maps are not equal: Different lengths")
+        return
+    }
+
+    // Manual comparison of key-value pairs
+    areEqual := true
+    for key, value := range map1 {
+        if map2[key] != value {
+            areEqual = false
+            break
+        }
+    }
+    
+    fmt.Println("Maps are equal:", areEqual) // Will print false since 'bob' value differs
+}
+```
+
+### 5. How to get map length?
+
+```go
+length := len(m)
+```
+
+### 6. Can a map key be of any type?
+
+ No, map keys must be of a type that is comparable (e.g., strings, integers, etc.).
+
+Code Example:
+```go
+// Valid keys
+userInfo := map[string]int{
+    "huxn": 17,
+    "alex": 18,
+}
+
+// Invalid keys (e.g., slices)
+// userInfo := map[[]int]int{} // This will throw an error
+```
+
+### 7. What is the zero value of a map?
+
+The zero value of a map is `nil`
+
+```go
+var userInfo map[string]int
+fmt.Println(userInfo == nil) // true
+```
+
+## Summary Table
+
+| Operation       | Syntax                      |
+| --------------- | --------------------------- |
+| Create          | `m := make(map[K]V)`        |
+| Insert/Update   | `m[key] = value`            |
+| Read            | `val := m[key]`             |
+| Check Existence | `val, ok := m[key]`         |
+| Delete          | `delete(m, key)`            |
+| Iterate         | `for k, v := range m {...}` |
+| Length          | `len(m)`                    |

@@ -12,7 +12,7 @@ export default withNextra({
     return [
       {
         source: "/",
-        destination: "/resources",
+        destination: "/topics/map",
         permanent: true,
       },
     ];
