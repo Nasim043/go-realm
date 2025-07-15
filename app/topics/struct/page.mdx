@@ -1,0 +1,281 @@
+
+# Go Structs (Structures)
+
+A struct is used to create `a collection of members of different data types`, into a single variable.
+
+```go showLineNumbers {4,12}
+package main
+import "fmt"
+
+type Person struct {
+  name   string
+  age    int
+  job    string
+  salary int
+}
+
+func main() {
+  var userOne Person
+
+  userOne.name = "HuXn"
+  userOne.age = 18
+  userOne.job = "Programmer"
+  userOne.salary = 40000
+
+  fmt.Println(userOne)
+  fmt.Println("My name is", userOne.name, "I'm", userOne.age, "years old", "My profession is", userOne.job, "and my salary is", userOne.salary)
+}
+````
+
+
+### FAQ
+
+### 1. What is a struct in Go?
+
+A **struct** in Go is a composite data type that groups variables of different types under a single name. These variables are referred to as **fields** of the struct. These variables can be of different types.
+
+**Example:**
+
+```go
+type Person struct {
+  name string
+  age  int
+}
+
+func main() {
+  p := Person{name: "Alice", age: 30}
+  fmt.Println(p)
+}
+```
+
+### 2. How do you define and initialize a struct in Go?
+
+You can define a struct with the `type` keyword and can initialize it using **struct literals**.
+
+**Example:**
+
+```go
+type Car struct {
+  brand string
+  year  int
+}
+
+func main() {
+  c := Car{brand: "Toyota", year: 2020}
+  fmt.Println(c)
+}
+```
+
+### 3. Can you create an anonymous struct in Go?
+
+Yes, you can create an anonymous struct without explicitly defining its type.
+
+**Example:**
+
+```go
+func main() {
+  person := struct {
+    name string
+    age  int
+  }{
+    name: "John",
+    age: 25,
+  }
+  fmt.Println(person)
+}
+```
+
+### 4. How do you access and modify struct fields in Go?
+
+You can access and modify struct fields using the **dot (`.`) operator**.
+
+**Example:**
+
+```go
+type Book struct {
+  title  string
+  author string
+}
+
+func main() {
+  b := Book{title: "Go Programming", author: "John Doe"}
+  b.title = "Advanced Go Programming"
+  fmt.Println(b)
+}
+```
+
+### 5. Can structs have methods in Go?
+
+Yes, structs can have methods, which are functions associated with a particular struct type.
+
+**Example:**
+
+```go
+type Rectangle struct {
+  width, height float64
+}
+
+func (r Rectangle) Area() float64 {
+  return r.width * r.height
+}
+
+func main() {
+  rect := Rectangle{width: 10, height: 5}
+  fmt.Println("Area:", rect.Area())
+}
+```
+
+### 6. What is the difference between value and pointer receivers in struct methods?
+
+* **Value receivers** work with a copy of the struct.
+* **Pointer receivers** work with the original struct, allowing changes to the struct's fields.
+
+**Example with value receiver:**
+
+```go
+func (r Rectangle) Area() float64 {
+  return r.width * r.height
+}
+```
+
+**Example with pointer receiver:**
+
+```go
+type Counter struct {
+  count int
+}
+
+func (c *Counter) Increment() {
+  c.count++
+}
+
+func main() {
+  c := Counter{}
+  c.Increment()
+  fmt.Println(c.count)
+}
+```
+
+### 7. Can structs embed other structs in Go?
+
+Yes, Go supports **struct embedding** for composition, where one struct can embed another struct.
+
+**Example:**
+
+```go
+type Address struct {
+  city, state string
+}
+
+type Person struct {
+  name    string
+  address Address
+}
+
+func main() {
+  p := Person{name: "Alice", address: Address{city: "New York", state: "NY"}}
+  fmt.Println(p)
+}
+```
+
+### 8. How do you compare two structs in Go?
+
+You can compare structs using the `==` operator, but the fields of the struct must all be comparable.
+
+**Example:**
+
+```go
+type Point struct {
+  x, y int
+}
+
+func main() {
+  p1 := Point{x: 1, y: 2}
+  p2 := Point{x: 1, y: 2}
+  fmt.Println(p1 == p2) // true
+}
+```
+
+### 9. Can you use structs as map keys in Go?
+
+Yes, structs can be used as map keys if all their fields are comparable.
+
+**Example:**
+
+```go
+type Point struct {
+  x, y int
+}
+
+func main() {
+  m := make(map[Point]string)
+  m[Point{x: 1, y: 2}] = "A Point"
+  fmt.Println(m)
+}
+```
+
+### 10. How do you iterate over struct fields in Go?
+
+You can use the **`reflect` package** to iterate over the fields of a struct.
+
+**Example:**
+
+```go
+import (
+  "fmt"
+  "reflect"
+)
+
+type Person struct {
+  Name string
+  Age  int
+}
+
+func main() {
+  p := Person{Name: "Alice", Age: 30}
+  v := reflect.ValueOf(p)
+  for i := 0; i < v.NumField(); i++ {
+    fmt.Println(v.Type().Field(i).Name, v.Field(i))
+  }
+}
+```
+
+---
+
+## Additional Must-Know Things About Structs in Go
+
+### 11. **Anonymous Structs and Their Use Cases**
+
+Anonymous structs are useful when you need a quick, temporary struct for a small task, avoiding the need to define a full type.
+
+**Example:**
+
+```go
+func main() {
+  obj := struct {
+    x int
+    y int
+  }{x: 5, y: 10}
+  fmt.Println(obj)
+}
+```
+
+### 12. **Pointer to Structs and Nil Pointers**
+
+When working with **pointer to structs**, it's important to understand that **nil pointers** need careful handling. A nil pointer doesn’t have any data and accessing its fields will cause a runtime error.
+
+**Example:**
+
+```go
+type Book struct {
+  title string
+}
+
+func main() {
+  var b *Book
+  // Accessing fields of nil pointer will result in panic
+  // fmt.Println(b.title) // Panic: runtime error: invalid memory address or nil pointer dereference
+}
+```
+
+To avoid the error, ensure that the pointer is not `nil` before dereferencing it.
