@@ -4,4 +4,6 @@ export default {
   "###": {
     type: "separator",
   },
+  oop: "OOP 👨‍💻",
+  database: "Database 📦",
 };
