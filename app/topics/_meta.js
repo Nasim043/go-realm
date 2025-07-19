@@ -6,7 +6,7 @@ export default {
   // slice: "Slice 📦",
   // array: "Array 📦",
   // channel: "Channel 📦",
-  variadic_function: "Variadic Function 📦",
+  "variadic-function": "Variadic Function 📦",
   "###": {
     type: "separator",
   },
