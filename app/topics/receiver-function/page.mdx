@@ -16,7 +16,7 @@ func (u User) Greet() string {
 }
 ```
 
-## Basic Syntax
+#### Basic Syntax
 
 ```go
 func (receiverName ReceiverType) MethodName(parameters) returnTypes {
@@ -24,13 +24,14 @@ func (receiverName ReceiverType) MethodName(parameters) returnTypes {
 }
 ```
 
-## Value vs Pointer Receivers
+### Value vs Pointer Receivers
 
-| Feature          | Value Receiver (`u User`) | Pointer Receiver (`u *User`) |
-|------------------|--------------------------|-----------------------------|
-| Modifies original | ❌ No                   | ✅ Yes                      |
-| Memory efficiency | Copies value            | Uses reference             |
-| Usage             | Immutable operations   | Mutating operations        |
+| Feature           | Value Receiver (`u User`) | Pointer Receiver (`u *User`) |
+| ----------------- | ------------------------- | ---------------------------- |
+| Modifies original | ❌ No                     | ✅ Yes                       |
+| Memory Usage      | Copies entire value       | Uses reference (4/8 bytes)   |
+| Best For          | Read-only operations      | Mutating operations          |
+| Nil Safety        | Always safe               | May cause panics             |
 
 ```go
 // Value receiver (read-only)
@@ -47,13 +48,17 @@ func (u *User) Birthday() {
 ## FAQ: Common Interview Questions
 
 ### 1. When to use pointer receivers?
+
 **A:** Use when:
+
 - You need to modify the receiver
 - Working with large structs (avoid copying)
 - Implementing interface methods that require mutation
 
 ### 2. Can any type have methods?
+
 **A:** Yes, but with restrictions:
+
 ```go
 type MyInt int
 
@@ -61,23 +66,61 @@ func (m MyInt) Double() int {
     return int(m * 2)
 }
 ```
+
 **Exception:** Cannot define methods on:
+
 - Built-in types directly (must alias)
 - Pointers directly
 - Interfaces
 
 ### 3. What's the convention for receiver names?
+
 **A:** Typically 1-2 letters matching type:
+
 - `u` for `User`
 - `p` for `Product`
 - `c` for `Client`
 
 ### 4. Can interfaces have receiver methods?
+
 **A:** No, interfaces define method signatures but can't implement them.
 
-## Practical Patterns
+### 5. Can built-in types have methods?
 
-### Method Chaining
+**A:** Only via type aliasing:
+
+```go
+type Celsius float64
+
+func (c Celsius) ToFahrenheit() float64 {
+    return float64(c)*9/5 + 32
+}
+```
+
+### 6. What's the zero-value receiver behavior?
+
+**A:** Methods can be called on nil receivers if properly handled:
+
+```go
+func (a *Account) Balance() float64 {
+    if a == nil {
+        return 0.0
+    }
+    return a.balance
+}
+```
+
+### 7. How does Go handle method calls on values vs pointers?
+
+**A:** Go automatically converts:
+
+- `value.Method()` works for both value and pointer receivers
+- `pointer.Method()` works for both receiver types
+
+### Practical Patterns
+
+#### Method Chaining
+
 ```go
 type Calculator struct { Value float64 }
 
@@ -95,7 +138,8 @@ func (c *Calculator) Multiply(x float64) *Calculator {
 result := new(Calculator).Add(5).Multiply(2).Value // 10
 ```
 
-### Interface Implementation
+#### Interface Implementation
+
 ```go
 type Speaker interface { Speak() string }
 
@@ -106,47 +150,73 @@ func (d Dog) Speak() string { return "Woof!" }
 // Dog implicitly implements Speaker
 ```
 
-## Common Pitfalls
+#### Nil Receiver Handling
 
-1. **Mixing receiver types**:
+```go
+func (u *User) SafeGreet() string {
+    if u == nil {
+        return "Hello, guest!"
+    }
+    return fmt.Sprintf("Hello, %s", u.Name)
+}
+
+// Usage:
+var emptyUser *User
+fmt.Println(emptyUser.SafeGreet()) // "Hello, guest!"
+```
+
+### Common Pitfalls & Solutions
+
+1. **Inconsistent Receiver Types**
+
    ```go
-   type User struct {}
-   
-   func (u User) A()  {}
-   func (u *User) B() {} // Inconsistent - avoid!
+   // Avoid mixing receiver types for the same struct
+   type Product struct{}
+
+   func (p Product) GetPrice() float64 {...}  // Value
+   func (p *Product) SetPrice() {...}        // Pointer
    ```
 
-2. **Nil receivers**:
+2. **Accidental Value Copies**
+
    ```go
-   var u *User
-   u.Birthday() // Runtime panic!
-   ```
-
-3. **Overusing methods**:
-   - When a standalone function would suffice
-   - When the method doesn't logically belong to the type
-
-## Best Practices
-
-1. **Be consistent**:
-   - Use either value or pointer receivers for all methods of a type
-
-2. **Small focused methods**:
-   - Keep methods under 10 lines where possible
-
-3. **Document receiver nil-safety**:
-   ```go
-   // Greet returns a greeting string
-   // Safe to call on nil receiver
-   func (u *User) Greet() string {
-       if u == nil {
-           return "Hello, guest!"
-       }
-       return fmt.Sprintf("Hello, %s", u.Name)
+   func (u User) UpdateName() {
+       u.Name = "Changed" // Doesn't modify original!
    }
    ```
 
+3. **Nil Pointer Panics**
+
+   ```go
+   var u *User
+   u.Birthday() // Panic!
+   ```
+
+4. **Consistency Matters**
+
+   - Choose one receiver type (value or pointer) per struct
+   - Exception: When specific methods need mutation capability
+
+5. **Receiver Naming**
+
+   - Keep short (1-2 chars) and type-related:
+     - `u` for `User`
+     - `c` for `Client`
+     - `db` for `Database`
+
+6. **Size Considerations**
+
+   ```go
+   // Use pointer receivers for large structs
+   type BigData struct {
+       data [1_000_000]int
+   }
+
+   func (b *BigData) Process() {...} // Better for memory
+   ```
+
 ## Memory Aid
+
 - **V**alue receiver = **V**iew-only
 - **P**ointer receiver = **P**ermission to modify
 - `(t T)` = "Take a copy"
