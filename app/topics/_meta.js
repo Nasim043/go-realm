@@ -2,7 +2,8 @@
 export default {
   map: "Map",
   pointer: "Pointer",
-  'receiver-function': "Receiver Function",
+  "receiver-function": "Receiver Function",
+  slice: "Slice",
   string: "String",
   struct: "Struct",
   "variadic-function": "Variadic Function",
