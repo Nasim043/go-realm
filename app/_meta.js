@@ -2,4 +2,5 @@
 export default {
   oop: "OOP",
   database: "Database",
+  architecture: "Architecture",
 };
