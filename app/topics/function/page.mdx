@@ -1,0 +1,236 @@
+### 🔹 1. What is a First-Class Function in Go?
+
+**Answer:**
+In Go, functions are **first-class citizens**, meaning they:
+
+- Can be assigned to variables
+- Can be passed as arguments
+- Can be returned from other functions
+
+✅ **Example:**
+
+```go
+func greet(name string) string {
+	return "Hello, " + name
+}
+
+var f = greet
+
+fmt.Println(f("Go")) // Output: Hello, Go
+```
+
+---
+
+### 🔹 2. What is a Higher-Order Function?
+
+**Answer:**
+A **Higher-Order Function** is a function that:
+
+- **Takes one or more functions as parameters**
+- OR **returns a function**
+
+✅ **Example (passing function):**
+
+```go
+func operate(x int, y int, op func(int, int) int) int {
+	return op(x, y)
+}
+
+func add(a, b int) int {
+	return a + b
+}
+
+result := operate(5, 3, add) // 8
+```
+
+✅ **Example (returning function):**
+
+```go
+func multiplier(factor int) func(int) int {
+	return func(x int) int {
+		return x * factor
+	}
+}
+
+double := multiplier(2)
+fmt.Println(double(5)) // Output: 10
+```
+
+---
+
+### 🔹 3. What is an Anonymous Function in Go?
+
+**Answer:**
+An **anonymous function** has no name. It's often used for short, one-time behavior.
+
+✅ **Example:**
+
+```go
+func() {
+	fmt.Println("Hello from anonymous function!")
+}()
+```
+
+Or assigned to a variable:
+
+```go
+square := func(x int) int {
+	return x * x
+}
+fmt.Println(square(4)) // 16
+```
+
+---
+
+### 🔹 4. What is an IIFE (Immediately Invoked Function Expression) in Go?
+
+**Answer:**
+An **IIFE** is a function that is **declared and immediately executed**.
+
+✅ **Example:**
+
+```go
+result := func(a, b int) int {
+	return a + b
+}(10, 5)
+
+fmt.Println(result) // Output: 15
+```
+
+This is useful for **scoping** or initializing inline values.
+
+---
+
+### 🔹 5. What is the Return Type in a Go Function?
+
+**Answer:**
+In Go, functions must explicitly declare their return types. They can return:
+
+- A **single value**
+- **Multiple values**
+- Named or unnamed return variables
+
+✅ **Example (single return):**
+
+```go
+func square(x int) int {
+	return x * x
+}
+```
+
+✅ **Example (multiple return):**
+
+```go
+func divide(a, b int) (int, error) {
+	if b == 0 {
+		return 0, fmt.Errorf("divide by zero")
+	}
+	return a / b, nil
+}
+```
+
+✅ **Example (named returns):**
+
+```go
+func sumAndProduct(x, y int) (sum int, product int) {
+	sum = x + y
+	product = x * y
+	return
+}
+```
+
+---
+
+### 🔹 6. Can a Function Return Another Function in Go?
+
+**Answer:**
+Yes. This is part of **functional programming** capability.
+
+✅ **Example:**
+
+```go
+func greeter(greeting string) func(string) string {
+	return func(name string) string {
+		return greeting + ", " + name
+	}
+}
+
+sayHello := greeter("Hello")
+fmt.Println(sayHello("John")) // Output: Hello, John
+```
+
+---
+
+### 🔹 7. How to Pass a Function as an Argument?
+
+**Answer:**
+Use the function type in the parameter list.
+
+✅ **Example:**
+
+```go
+func apply(x int, fn func(int) int) int {
+	return fn(x)
+}
+
+fmt.Println(apply(5, func(n int) int { return n * 2 })) // Output: 10
+```
+
+---
+
+### 🔹 8. Can Go Functions Be Recursive?
+
+**Answer:**
+Yes, Go supports recursion.
+
+✅ **Example:**
+
+```go
+func factorial(n int) int {
+	if n == 0 {
+		return 1
+	}
+	return n * factorial(n-1)
+}
+```
+
+---
+
+### 🔹 9. What Are Variadic Functions?
+
+**Answer:**
+A **variadic function** can accept a variable number of arguments.
+
+✅ **Example:**
+
+```go
+func sum(nums ...int) int {
+	total := 0
+	for _, n := range nums {
+		total += n
+	}
+	return total
+}
+
+sum(1, 2, 3, 4) // Output: 10
+```
+
+---
+
+### 🔹 10. Are Functions in Go Pure?
+
+**Answer:**
+Functions in Go **can be pure** (no side effects), but Go does not enforce functional purity.
+It supports both functional and imperative styles.
+
+### 🔹11. What is `init` function in go?
+
+- Special function that runs **automatically before `main()`**
+- Used for **initial setup** (e.g., config, variable initialization)
+- Runs **once per file**
+- A package can have **multiple `init()` functions**
+- Executed in **file order within a package**
+- Executed in **import dependency order across packages**
+- **No parameters** and **no return values**
+- ⚠️ Should be used only for **minimal setup**, not business logic
+- 🧪 Also runs before test functions in `_test.go` files
