@@ -2,5 +2,5 @@
 export default {
   oop: "OOP",
   database: "Database",
-  architecture: "Architecture",
+  project: "Build Project",
 };

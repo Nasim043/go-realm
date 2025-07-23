@@ -1,0 +1,116 @@
+# 📘 Routing in Go Using Chi
+
+Chi is a lightweight, idiomatic, and composable router for building HTTP services in Go. This guide outlines best practices for structuring and implementing both **public** and **protected** routes in a Go application using Chi.
+
+---
+
+## 📁 Project Structure
+
+Organize your project to keep route management clean and maintainable. A recommended structure is:
+
+```
+/cmd
+  └── main.go
+/internal
+  ├── routes/
+  │     ├── public.go
+  │     ├── private.go
+  │     └── register.go
+  ├── handler/
+  │     ├── auth/
+  │     │     ├── register.go
+  │     │     └── login.go
+  │     └── post/
+  └── utils/
+        └── auth.go
+```
+
+---
+
+## 🔓 Public Routes
+
+Define routes that do not require authentication (e.g., login, registration) in `public.go`:
+
+```go
+func PublicRoutes(r chi.Router) {
+    r.Post("/register", auth.RegisterHandler)
+    r.Post("/login", auth.LoginHandler)
+    r.Post("/refresh", auth.RefreshHandler)
+
+    r.Post("/forgot-password", auth.ForgotPasswordHandler)
+    r.Post("/reset-password", auth.ResetPasswordHandler)
+}
+```
+
+These endpoints are accessible without a token and are typically used for onboarding and recovery workflows.
+
+---
+
+## 🔒 Protected Routes
+
+Use route grouping to apply middleware (such as authentication) only where needed. Define protected routes in `private.go`:
+
+```go
+func PrivateRoutes(r chi.Router) {
+    r.Group(func(r chi.Router) {
+        r.Use(utils.AuthMiddleware)
+
+        r.Post("/change-password", auth.ChangePasswordHandler)
+        r.Get("/users", auth.GetAllUsersHandler)
+        r.Get("/user/{email}", auth.GetUserByEmailHandler)
+    })
+}
+```
+
+The middleware `utils.AuthMiddleware` ensures that all routes in this group are only accessible to authenticated users.
+
+---
+
+## 🔀 Combining Routes in `register.go`
+
+In `register.go`, combine both public and protected routes for a unified setup:
+
+```go
+func RegisterRoutes(r chi.Router) {
+    // Register public routes
+    PublicRoutes(r)
+
+    // Register protected routes
+    PrivateRoutes(r)
+}
+```
+
+---
+
+## 🏁 Entry Point – `main.go`
+
+Finally, wire everything together in your main application:
+
+```go
+func main() {
+    r := chi.NewRouter()
+
+    r.Use(middleware.Logger)
+    r.Use(middleware.Recoverer)
+
+    routes.RegisterRoutes(r)
+
+    fmt.Println("Server running on http://localhost:8080")
+    http.ListenAndServe(":8080", r)
+}
+```
+
+This setup enables clean separation of concerns, security via middleware, and scalable route management as your application grows.
+
+---
+
+## ✅ Final Thoughts
+
+* Use `chi.Group` to isolate middleware (auth, logging, role-based access).
+* Separate route layers (`public`, `private`, `admin`) as your app scales.
+* Keep handlers modular and organized under `/internal/handler`.
+
+
+For more advanced features like rate limiting or versioning (`/api/v1`), Chi supports nesting groups and composing middleware effectively.
+
+---
