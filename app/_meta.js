@@ -2,5 +2,6 @@
 export default {
   oop: "OOP",
   database: "Database",
+  topics: "Topics",
   project: "Build Project",
 };
