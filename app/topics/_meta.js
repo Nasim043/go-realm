@@ -1,5 +1,6 @@
 /* eslint-disable import/no-anonymous-default-export */
 export default {
+  enum: "Enum",
   function: "Function",
   interface: "Interface",
   "interface-composition": "Interface Composition",
