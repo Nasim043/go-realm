@@ -1,0 +1,39 @@
+<details>
+<summary>Named Return Values</summary>
+
+- Go's return values may be named
+- These variables are automatically initialized to their zero values and can be used throughout the function.
+- `A return statement without arguments` returns the named return values
+- Named returns are **not the same** as function parameters
+- Can still explicitly return values: `return x, y`
+- All named values must be returned
+
+### Basic Syntax
+
+```go
+func calculate(x, y int) (sum int, product int) {
+    sum = x + y
+    product = x * y
+    // implicitly returns sum and product
+    return // naked return
+}
+```
+
+### Key Features
+
+1. **Auto-initialization** - Variables are initialized to their zero values
+2. **Naked returns** - Can use simple `return` statement without specifying values
+3. **Documentation** - Makes return values self-documenting
+
+### When to Use
+
+✔ **Multiple return values** - Improves readability  
+✔ **Deferred operations** - Useful with defer statements  
+✔ **Long functions** - Makes return values clearer
+
+### When to Avoid
+
+✖ **Short, simple functions** - May be overkill  
+✖ **When return values change often** - Can cause confusion
+
+</details>
