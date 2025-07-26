@@ -1,18 +1,12 @@
 package main
-
+ 
 import "fmt"
-
-func a() {
-
-	i := 0
-	fmt.Println("first ", i)        // 0
-	defer fmt.Println("second ", i) // 0
-	i++
-	fmt.Println("third", i) // 1
-	i++
-	defer fmt.Println("fourth", i)
+ 
+func count() (result int) {
+    defer func() { result++ }()
+    return 5 // Returns 6
 }
 
 func main() {
-	a()
+	fmt.Println(count())
 }
