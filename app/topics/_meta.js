@@ -6,6 +6,7 @@ export default {
   interface: "Interface",
   "interface-composition": "Interface Composition",
   "interface-polymorphism": "Interface Polymorphism",
+  loop: "Loop",
   map: "Map",
   pointer: "Pointer",
   "receiver-function": "Receiver Function",
