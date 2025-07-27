@@ -17,7 +17,7 @@ Go has **one loop keyword** — `for` — which serves as the foundation for all
 
 ## 2. Standard Loop Examples
 
-### Traditional Loop
+#### Traditional Loop
 
 ```go
 for i := 0; i < 5; i++ {
@@ -25,9 +25,7 @@ for i := 0; i < 5; i++ {
 }
 ```
 
----
-
-### While-style Loop
+#### While-style Loop
 
 ```go
 i := 0
@@ -37,9 +35,7 @@ for i < 5 {
 }
 ```
 
----
-
-### Infinite Loop
+#### Infinite Loop
 
 ```go
 for {
@@ -52,7 +48,7 @@ for {
 
 ## 3. Range-based Loop Examples
 
-### Slice Iteration
+#### Slice Iteration
 
 ```go
 items := []string{"apple", "banana", "cherry"}
@@ -61,9 +57,7 @@ for i, item := range items {
 }
 ```
 
----
-
-### Map Iteration
+#### Map Iteration
 
 ```go
 grades := map[string]int{"Alice": 90, "Bob": 85, "Eve": 92}
@@ -72,11 +66,10 @@ for name, score := range grades {
 }
 ```
 
-*Note: Map iteration order is **not guaranteed**.*
+_Note: Map iteration order is **not guaranteed**._
 
----
 
-### String Iteration (by rune)
+#### String Iteration (by rune)
 
 ```go
 text := "Go语!"
@@ -85,7 +78,7 @@ for i, r := range text {
 }
 ```
 
-*Iterates over Unicode code points (runes), not bytes.*
+_Iterates over Unicode code points (runes), not bytes._
 
 ---
 
@@ -106,7 +99,7 @@ for val := range ch {
 }
 ```
 
-*Useful for reading from channels until they're closed.*
+_Useful for reading from channels until they're closed._
 
 ---
 
@@ -266,8 +259,8 @@ for i, row := range matrix {
 
 🧩 8. Summary
 
-| Feature                                    | Support in Go           |
-| ------------------------------------------ | ----------------------- |
+| Feature                                    | Support in Go            |
+| ------------------------------------------ | ------------------------ |
 | Traditional, while, infinite               | ✅ Supported via `for`   |
 | Range over collections                     | ✅ idiomatic             |
 | Loop control (`break`, `continue`, `goto`) | ✅ available             |
@@ -288,11 +281,11 @@ for i := 0; i < 3; i++ {
 }
 ```
 
->- (Answer: 2, 1, 0 due to LIFO order of defer)
+> - (Answer: 2, 1, 0 due to LIFO order of defer)
 
 ## ✅ Final Thoughts
 
-* Go’s `for` is simple but remarkably flexible.
-* Use `range` wherever possible for idiomatic and concise code.
-* Be aware of scoping rules, especially in concurrent loops.
-* The Go 1.22 update simplifies concurrent goroutine patterns dramatically.
+- Go’s `for` is simple but remarkably flexible.
+- Use `range` wherever possible for idiomatic and concise code.
+- Be aware of scoping rules, especially in concurrent loops.
+- The Go 1.22 update simplifies concurrent goroutine patterns dramatically.
