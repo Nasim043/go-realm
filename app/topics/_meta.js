@@ -1,7 +1,12 @@
 /* eslint-disable import/no-anonymous-default-export */
 export default {
-  loop: "Loop",
+  defer : "Defer",
+  enum: "Enum",
   function: "Function",
+  interface: "Interface",
+  "interface-composition": "Interface Composition",
+  "interface-polymorphism": "Interface Polymorphism",
+  loop: "Loop",
   map: "Map",
   pointer: "Pointer",
   "receiver-function": "Receiver Function",

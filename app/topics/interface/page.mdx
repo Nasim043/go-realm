@@ -1,0 +1,171 @@
+### Interfaces in Go
+
+- In Go, an `interface` is a contract
+- a collection of method signatures without implementation
+- Go interfaces are satisfied `implicitly`; there is no explicit `implements` keyword
+- If a type implements **those methods** it is considered to implement that interface
+- Name interfaces with `-er` (e.g., Reader, Writer)
+
+**Example:**
+
+```go
+type Shape interface {
+  area() float32
+  perimeter() float32
+}
+```
+
+### 🔑 Go Interfaces — Key Characteristics
+
+#### 🧩 1. Method Signatures Only
+
+Interfaces define only **method signatures** (name, params, return types) — no implementations.
+
+```go
+type Shape interface {
+    Area() float64
+}
+```
+
+---
+
+#### ✅ 2. Implicit Implementation
+
+A type **implicitly implements** an interface if it defines all the required methods — no `implements` keyword.
+
+```go
+type Shape interface {
+    Area() float64
+}
+
+type Circle struct {
+    Radius float64
+}
+
+func (c Circle) Area() float64 {
+    return 3.14 * c.Radius * c.Radius
+}
+```
+
+---
+
+#### 🔁 3. Polymorphism
+
+Interfaces enable **polymorphism**: a variable of interface type can hold any concrete type that implements it.
+
+```go
+var s Shape
+s = Circle{Radius: 5} // Circle implements Shape
+```
+
+---
+
+### 📦 4. Empty Interface (`interface{}`)
+
+- Declares **no methods**
+- Every type satisfies it
+- Useful for accepting **any type**
+
+```go
+func printAny(val interface{}) {
+    fmt.Println(val)
+}
+```
+
+#### Interface Example
+
+```go showLineNumbers {5-7,32-33}
+package main
+import "fmt"
+
+// Shape interface defines a area method
+type Shape interface {
+	area() float32
+}
+
+// Circle implements the Shape interface
+type Circle struct {
+	radius float32
+}
+
+func (c Circle) area() float32 {
+	return 3.14 * c.radius * c.radius
+}
+
+// Rectangle implements the Shape interface
+type Rectangle struct {
+	width, height  float32
+}
+
+func (r Rectangle) area() float32 {
+	return r.width * r.height
+}
+
+func main() {
+
+	c := Circle{radius: 10}
+	r := Rectangle{width: 10, height: 20}
+
+	fmt.Println(c.area()) // 314
+	fmt.Println(r.area()) // 200
+}
+```
+
+### 🚀 What happens if the struct doesn't implement all methods of interface?
+
+If a struct misses even one method,
+it does not implement the interface, leading to a `compile-time error`.
+
+```go showLineNumbers {2-5,11}
+// Example: Struct missing an interface method
+type Speaker interface {
+	Speak();
+	Walk() // Dog doesn't implement this
+ }
+
+type Dog struct{}
+func (d Dog) Speak() string { return "Woof!" }  // Missing Walk()
+
+func main() {
+    // var s Speaker = Dog{}  // ❌ COMPILE ERROR (missing Walk)
+    // fmt.Println(s.Speak())
+
+    d := Dog{}               // ✅ WORKS (no interface check)
+    fmt.Println(d.Speak())   // "Woof!"
+}
+```
+
+**Error:**
+
+```
+cannot use Dog{} (type Dog) as type Speaker in assignment:
+Dog does not implement Speaker (missing Walk method)
+```
+
+### Fix Options:
+
+1. **Implement all methods:**
+
+```go
+func (d Dog) Walk() {} // Now implements Speaker
+```
+
+2. **Use a smaller interface:**
+
+```go
+type Talker interface { Speak() string }
+var t Talker = Dog{} // OK
+```
+
+3. **Embed a type that implements missing method:**
+
+```go
+type Animal struct{}
+func (a Animal) Walk() {}
+
+type Dog struct {
+    Animal // Embeds Walk()
+}
+```
+
+> 🧠 **Interfaces in Go focus on what types _do_, not what they _are_.**

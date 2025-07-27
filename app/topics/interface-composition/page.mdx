@@ -1,0 +1,140 @@
+### 🏗️ **Interface Composition in Go**
+
+- Interfaces in Go support **composition**
+- allowing you to combine multiple interfaces into a single interface
+- This promotes **modularity** and **code reusability**
+
+---
+
+#### **1. Basic Interface Composition**
+
+You can embed one or more interfaces into a new interface.
+
+### **Example: Combining `Reader` and `Writer`**
+
+```go
+type Reader interface {
+    Read() string
+}
+
+type Writer interface {
+    Write(string)
+}
+
+// Combined interface
+type ReadWriter interface {
+    Reader  // Embeds Reader
+    Writer  // Embeds Writer
+}
+```
+
+- Any type that implements **both `Read()` and `Write()`** automatically satisfies `ReadWriter`.
+
+---
+
+#### **2. Practical Example: File Operations**
+
+```go showLineNumbers {13, 20}
+type Closer interface {
+    Close() error
+}
+
+// FileIO combines Reader, Writer, and Closer
+type FileIO interface {
+    Reader
+    Writer
+    Closer
+}
+
+// A type implementing all methods satisfies FileIO
+type File struct{}
+
+func (f File) Read() string { return "data" }
+func (f File) Write(s string) { fmt.Println("Writing:", s) }
+func (f File) Close() error { return nil }
+
+func main() {
+    var file FileIO = File{}
+    fmt.Println(file.Read()) // "data"
+    file.Write("Hello")     // "Writing: Hello"
+    file.Close()            // nil
+}
+```
+
+---
+
+#### **3. Interface Composition Rules**
+
+✅ **Embed multiple interfaces**  
+✅ **No method conflicts allowed** (same method name with different signatures)  
+✅ **Types must implement all embedded methods**
+
+#### **❌ Invalid Composition (Conflict)**
+
+```go
+type A interface { Foo(int) }
+type B interface { Foo(string) }
+
+// INVALID: Foo has conflicting signatures
+type C interface {
+    A
+    B
+}
+```
+
+**Error:**  
+`Duplicate method Foo`
+
+---
+
+### **4. Real-World Use Case: `io.ReadWriteCloser`**
+
+Go’s standard library uses composition extensively:
+
+```go
+type Reader interface { Read(p []byte) (n int, err error) }
+type Writer interface { Write(p []byte) (n int, err error) }
+type Closer interface { Close() error }
+
+// Combines Reader + Writer + Closer
+type ReadWriteCloser interface {
+    Reader
+    Writer
+    Closer
+}
+```
+
+- Used in file handling (`os.File` implements it).
+
+---
+
+### **5. FAQ: Interface Composition**
+
+#### **Q1: Can an interface embed another composed interface?**
+
+**A:** Yes!
+
+```go
+type Basic interface { Do() }
+type Advanced interface { Basic; Extra() }
+```
+
+#### **Q2: What if a type partially implements a composed interface?**
+
+**A:** It **does not** satisfy the interface.
+
+```go
+type MyType struct{}
+func (m MyType) Read() {}
+
+var _ ReadWriter = MyType{} // ERROR: Missing Write()
+```
+
+#### **Q3: Why prefer composition over large interfaces?**
+
+**A:**  
+✔ **Better separation of concerns**  
+✔ **Easier to maintain**  
+✔ **More reusable components**
+
+---

@@ -1,0 +1,151 @@
+# **Polymorphism in Go Using Interfaces**
+
+Go achieves polymorphism through interfaces, allowing different types to be treated uniformly when they implement the same interface.
+
+## **1. Basic Polymorphism Example**
+
+```go
+type Animal interface {
+    Speak() string
+}
+
+type Dog struct{}
+func (d Dog) Speak() string { return "Woof!" }
+
+type Cat struct{}
+func (c Cat) Speak() string { return "Meow!" }
+
+func MakeSound(a Animal) {
+    fmt.Println(a.Speak())
+}
+
+func main() {
+    MakeSound(Dog{}) // "Woof!"
+    MakeSound(Cat{}) // "Meow!"
+}
+```
+
+### **Key Points:**
+
+- Both `Dog` and `Cat` implicitly implement `Animal`
+- `MakeSound()` works with any type that satisfies `Animal`
+
+## **2. Polymorphism in Real-World Use Cases**
+
+### **HTTP Handlers**
+
+```go
+type Handler interface {
+    ServeHTTP(w http.ResponseWriter, r *http.Request)
+}
+
+type HomeHandler struct{}
+func (h HomeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+    fmt.Fprint(w, "Welcome Home!")
+}
+
+type AboutHandler struct{}
+func (h AboutHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+    fmt.Fprint(w, "About Us")
+}
+
+func main() {
+    http.Handle("/", HomeHandler{})
+    http.Handle("/about", AboutHandler{})
+    http.ListenAndServe(":8080", nil)
+}
+```
+
+### **Database Drivers**
+
+```go
+type Database interface {
+    Connect() error
+    Query(q string) ([]byte, error)
+}
+
+type MySQL struct{}
+func (m MySQL) Connect() error { return nil }
+func (m MySQL) Query(q string) ([]byte, error) { return []byte("MySQL data"), nil }
+
+type PostgreSQL struct{}
+func (p PostgreSQL) Connect() error { return nil }
+func (p PostgreSQL) Query(q string) ([]byte, error) { return []byte("PostgreSQL data"), nil }
+
+func GetData(db Database, query string) {
+    db.Connect()
+    data, _ := db.Query(query)
+    fmt.Println(string(data))
+}
+
+func main() {
+    GetData(MySQL{}, "SELECT * FROM users")
+    GetData(PostgreSQL{}, "SELECT * FROM products")
+}
+```
+
+## **3. Advantages of Polymorphism in Go**
+
+✅ **Flexibility** - Write functions that work with multiple types  
+✅ **Decoupling** - Depend on abstractions (interfaces), not concrete types  
+✅ **Extensibility** - New types can be added without changing existing code
+
+## **4. FAQ: Polymorphism in Go**
+
+### **Q1: How is polymorphism different in Go vs OOP languages?**
+
+- **Go**: Uses **implicit interfaces** (no `implements` keyword)
+- **Traditional OOP**: Uses **inheritance** and **explicit interfaces**
+
+### **Q2: Can a type implement multiple interfaces?**
+
+**Yes!**
+
+```go
+type Reader interface { Read() }
+type Writer interface { Write() }
+
+type File struct{}
+func (f File) Read() { fmt.Println("Reading...") }
+func (f File) Write() { fmt.Println("Writing...") }
+
+func main() {
+    var r Reader = File{}
+    var w Writer = File{}
+    r.Read()  // "Reading..."
+    w.Write() // "Writing..."
+}
+```
+
+### **Q3: What happens if a type doesn't implement all interface methods?**
+
+**Compile-time error!**
+
+```go
+type Speaker interface { Speak() }
+
+type MuteDog struct{} // Missing Speak() method
+
+func main() {
+    var s Speaker = MuteDog{} // ERROR: MuteDog doesn't implement Speaker
+}
+```
+
+## **5. Best Practices**
+
+✔ **Define small, focused interfaces** (Single Responsibility Principle)  
+✔ **Accept interfaces, return structs** in function signatures  
+✔ **Use interface composition** for complex behaviors
+
+```go
+type Reader interface { Read() }
+type Closer interface { Close() }
+
+// Composed interface
+type ReadCloser interface {
+    Reader
+    Closer
+}
+```
+
+Polymorphism in Go makes code **modular, testable, and scalable** while keeping it simple and efficient. 🚀

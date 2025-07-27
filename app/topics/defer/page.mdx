@@ -1,0 +1,237 @@
+<details>
+<summary>Named Return Values</summary>
+
+- Go's return values may be named
+- These variables are automatically initialized to their zero values and can be used throughout the function.
+- `A return statement without arguments` returns the named return values
+- Named returns are **not the same** as function parameters
+- Can still explicitly return values: `return x, y`
+- All named values must be returned
+
+### Basic Syntax
+
+```go
+func calculate(x, y int) (sum int, product int) {
+    sum = x + y
+    product = x * y
+    // implicitly returns sum and product
+    return // naked return
+}
+```
+
+### Key Features
+
+1. **Auto-initialization** - Variables are initialized to their zero values
+2. **Naked returns** - Can use simple `return` statement without specifying values
+3. **Documentation** - Makes return values self-documenting
+
+### When to Use
+
+✔ **Multiple return values** - Improves readability  
+✔ **Deferred operations** - Useful with defer statements  
+✔ **Long functions** - Makes return values clearer
+
+### When to Avoid
+
+✖ **Short, simple functions** - May be overkill  
+✖ **When return values change often** - Can cause confusion
+
+</details>
+
+In Go (Golang), The defer keyword delays the execution of a function until the surrounding function completes.
+
+### `defer`:
+- The `defer` keyword delays the execution of a function **until the surrounding function completes**.
+- Used for cleanup tasks (closing files, unlocking mutexes, etc.).
+- **Execution Order**: Last-in, first-out (**LIFO**).
+- They execute **after** the `return` statement is processed, but **before** the function actually exits.
+- Arguments are evaluated immediately, not when the deferred function is executed.
+---
+
+### 📌 Basic Example:
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+    fmt.Println("Start")
+
+    defer fmt.Println("Deferred 1")
+    defer fmt.Println("Deferred 2")
+
+    fmt.Println("End")
+}
+```
+
+### 🧠 Output:
+
+```
+Start
+End
+Deferred 2
+Deferred 1
+```
+
+#### ⚠️ Important Note: Arguments are evaluated immediately
+
+```go
+func main() {
+    x := 10
+    defer fmt.Println("Deferred with x =", x)
+    x = 20
+}
+```
+
+**Output**:
+
+```
+Deferred with x = 10
+```
+
+Even though `x` becomes `20` later, `defer` uses its value at the time of deferral.
+
+---
+
+#### 🧪 Example 1: Multiple Defers (LIFO Order)
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+    defer fmt.Println("First defer")
+    defer fmt.Println("Second defer")
+    defer fmt.Println("Third defer")
+    fmt.Println("Main function")
+}
+```
+
+**Output:**
+
+```
+Main function
+Third defer
+Second defer
+First defer
+```
+
+🧠 **Why?** Because `defer` statements are executed in **reverse order** of how they were deferred.
+
+---
+
+### 🧪 Example 2: Defer in a Loop
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+    for i := 1; i <= 3; i++ {
+        defer fmt.Println("Deferred", i)
+    }
+}
+```
+
+**Output:**
+
+```
+Deferred 3
+Deferred 2
+Deferred 1
+```
+
+🧠 **Why?** Even though `i` changes, the `defer fmt.Println("Deferred", i)` **captures the current value at runtime**, not at execution — because it's not wrapped in a function. But watch this next case…
+
+---
+
+### 🧪 Example 3: Named Return vs Unnamed Return  
+#### **✅ Named Return (Modifiable by `defer`)**  
+```go
+func namedReturn() (result int) {
+    defer func() { result = 99 }()
+    return 10  // Returns 99
+}
+```
+**Output:** `99`  
+
+#### **❌ Unnamed Return (Unaffected by `defer`)**  
+```go
+func unnamedReturn() int {
+    result := 10
+    defer func() { result = 99 }()
+    return result  // Returns 10
+}
+```
+**Output:** `10`
+
+### 🧪 Example 4: Defer and Closures
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+    for i := 1; i <= 3; i++ {
+        defer func() {
+            fmt.Println("Deferred inside closure:", i)
+        }()
+    }
+}
+```
+
+**Output:**
+
+```
+Deferred inside closure: 4
+Deferred inside closure: 4
+Deferred inside closure: 4
+```
+
+🧠 **Why?**
+
+- The deferred function is a **closure** that captures `i` by reference.
+- After the loop ends, `i` becomes `4`, and then the closures run — all printing 4.
+- To fix this, **pass `i` as a parameter** to the function:
+
+```go
+for i := 1; i <= 3; i++ {
+    defer func(n int) {
+        fmt.Println("Deferred with value:", n)
+    }(i)
+}
+```
+
+✅ Output:
+
+```
+Deferred with value: 3
+Deferred with value: 2
+Deferred with value: 1
+```
+
+### Key Behaviors
+#### **(A) Arguments Evaluated Immediately**
+```go
+func main() {
+    x := "Hello"
+    defer fmt.Println(x) // "Hello" (evaluated now)
+    x = "World"
+}
+```
+**Output:**  
+`Hello` (not `World`)
+
+#### **(B) Works with Named Return Values**
+```go
+func count() (result int) {
+    defer func() { result++ }()
+    return 5 // Returns 6
+}
+```
+**Output:**  
+`6` (deferred function modifies `result`)

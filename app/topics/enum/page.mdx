@@ -1,0 +1,170 @@
+# Enums in Go
+
+Go doesn't have built-in enums, but they can be implemented using `iota` and custom types.
+
+### Integer-Based Enums in Go
+
+- Integer enums in Go are often created using `iota` to generate sequential values.
+- `iota` is a special Go keyword that auto-increments values starting from 0.
+#### 1. Day of the Week Enum
+
+This enum represents days of the week in Go using `iota` for sequential integer values.
+
+```go
+type Day int
+
+const (
+    Monday    Day = iota // 0
+    Tuesday              // 1
+    Wednesday            // 2
+    Thursday             // 3
+    Friday               // 4
+    Saturday             // 5
+    Sunday               // 6
+)
+```
+
+To use in Go code:
+
+```go
+func main() {
+    var today Day = Tuesday
+    fmt.Println(today) // Outputs: 1
+}
+```
+
+Use this enum when you need to represent days of the week with integer values, such as in scheduling applications.
+
+#### 2. **Status Enum**
+
+This enum defines different statuses for a resource or user.
+
+```go
+type Status int
+
+const (
+    Pending Status = iota // 0
+    Active                // 1
+    Inactive              // 2
+)
+```
+
+Example usage in Go:
+
+```go
+func main() {
+    status := Active
+    if status == Active {
+        fmt.Println("System is active") // Outputs: System is active
+    }
+}
+```
+
+Useful for tracking the state of entities like users or tasks.
+
+#### 3. **Priority Enum**
+
+This enum represents task priorities.
+
+```go
+type Priority int
+
+const (
+    Low    Priority = iota // 0
+    Medium                 // 1
+    High                   // 2
+)
+```
+
+Example in Go:
+
+```go
+func main() {
+    taskPriority := High
+    fmt.Printf("Task priority: %d\n", taskPriority) // Outputs: Task priority: 2
+}
+```
+
+Use this for prioritizing tasks or jobs in a queue.
+
+
+### String-Based Enums in Go
+String enums are implemented using `string constants`, as Go doesn’t have a native enum type for strings.
+
+#### 4. **Color Enum**
+
+This enum defines a set of colors as strings.
+
+```go
+type Color string
+
+const (
+    Red   Color = "Red"
+    Green Color = "Green"
+    Blue  Color = "Blue"
+)
+```
+
+Example usage in Go:
+
+```go
+func main() {
+    favoriteColor := Green
+    fmt.Println(favoriteColor) // Outputs: Green
+}
+```
+
+Ideal for scenarios where string representations are needed, like UI themes.
+
+#### 5. **Role Enum**
+
+This enum defines user roles in a system.
+
+```go
+type Role string
+
+const (
+    Admin Role = "Admin"
+    User  Role = "User"
+    Guest Role = "Guest"
+)
+```
+
+Example in Go:
+
+```go
+func main() {
+    userRole := Admin
+    if userRole == Admin {
+        fmt.Println("Access granted") // Outputs: Access granted
+    }
+}
+```
+
+Use this for role-based access control in applications.
+
+#### 6. **Environment Enum**
+
+
+This enum represents different deployment environments.
+
+```go
+type Environment string
+
+const (
+    Production  Environment = "Production"
+    Staging     Environment = "Staging"
+    Development Environment = "Development"
+)
+```
+
+Example in Go:
+
+```go
+func main() {
+    env := Development
+    fmt.Println("Running in", env) // Outputs: Running in Development
+}
+```
+
+Use this to configure application behavior based on the environment.
