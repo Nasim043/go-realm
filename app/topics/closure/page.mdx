@@ -1,0 +1,95 @@
+# Closures in Go (Need Update)
+
+## 🔹 What is a Closure?
+
+A closure is an anonymous function that captures variables from its surrounding scope, allowing the function to access and modify them even after the scope exits.
+
+---
+
+## 🔹 Syntax & Examples
+### Basic Closure Example
+
+```go
+func adder() func(int) int {
+    sum := 0
+    return func(x int) int {
+        sum += x
+        return sum
+    }
+}
+
+func main() {
+    pos, neg := adder(), adder()
+    fmt.Println(pos(1))  // 1
+    fmt.Println(pos(2))  // 3
+    fmt.Println(neg(-1)) // -1
+    fmt.Println(neg(-2)) // -3
+}
+```
+
+## Key Characteristics of Closures
+
+1. **Capture variables by reference**: Closures capture variables, not values
+2. **Maintain state**: Between function calls
+3. **Lexical scoping**: Access variables from surrounding function
+4. **First-class citizens**: Can be assigned to variables, passed as arguments
+---
+
+## 🔹 FAQ
+
+### Q1: What is a closure in Go?
+
+**A:** A closure is an anonymous function that captures variables from its surrounding scope, allowing the function to access and modify them even after the scope exits.
+
+---
+
+### Q2: How are closures stored in Go?
+
+**A:** Go implements closures by allocating captured variables on the **heap** (if needed) so they remain accessible after the enclosing function returns.
+
+---
+
+### Q3: Difference between an anonymous function and a closure?
+
+**A:**
+
+- Anonymous function: A function without a name.
+- Closure: An anonymous function **that captures outer scope variables**.
+  All closures are anonymous functions, but not all anonymous functions are closures.
+
+---
+
+### Q4: Why can closures cause memory leaks if not handled properly?
+
+**A:** Because closures may keep references to variables on the heap, preventing garbage collection. If a closure outlives its usefulness but still holds large data, memory usage grows unnecessarily.
+
+---
+
+### Q5: Give a real-world use case of closures in Go.
+
+**A:**
+
+- A counter function that keeps state between calls.
+- Custom sort comparator with dynamic logic.
+- Rate limiter: closure captures the last request time.
+
+---
+
+### Q6: Common pitfall when using closures in loops?
+
+**A:** Capturing the loop variable (`i`) directly. All closures share the same reference.
+**Fix:** Create a local copy inside the loop.
+
+---
+
+### Q7: Are closures thread-safe in Go?
+
+**A:** Not by default. If multiple goroutines access and mutate captured variables, you need synchronization (`sync.Mutex`, `atomic` package).
+
+---
+
+### Q8: Can closures escape their scope in Go?
+
+**A:** Yes. If returned from a function or passed to another goroutine, the closure’s captured variables are kept alive on the heap.
+
+---

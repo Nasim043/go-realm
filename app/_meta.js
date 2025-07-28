@@ -6,4 +6,5 @@ export default {
   database: "Database",
   topics: "Topics",
   project: "Build Project",
+  "algo-technique": "Algo & Technique",
 };
