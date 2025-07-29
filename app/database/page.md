@@ -49,23 +49,19 @@ The values in these columns together must be unique, even if the individual valu
 
 - _What is an **INNER JOIN**?_
 ```text
-An INNER JOIN returns only the rows that have matching values in both tables.
-If there is no match, the row is excluded from the result.
+An INNER JOIN returns only the rows that have matching values in both tables. If there is no match, the row is excluded from the result.
 ```
 - _What is a **LEFT JOIN**?_
 ```text
-A LEFT JOIN returns all rows from the left table, and the matched rows from the right table.
-If there is no match, NULLs are returned for columns from the right table.
+A LEFT JOIN returns all rows from the left table, and the matched rows from the right table. If there is no match, NULLs are returned for columns from the right table.
 ```
 - _What is a **RIGHT JOIN**?_
 ```text
-A RIGHT JOIN returns all rows from the right table, and the matched rows from the left table.
-If there is no match, NULLs are returned for columns from the left table.
+A RIGHT JOIN returns all rows from the right table, and the matched rows from the left table. If there is no match, NULLs are returned for columns from the left table.
 ```
 - _What is a **FULL OUTER JOIN**?_
 ```text
-A FULL OUTER JOIN returns all rows when there is a match in either the left or right table.
-Rows with no match in one of the tables will have NULLs for the missing side.
+A FULL OUTER JOIN returns all rows when there is a match in either the left or right table. Rows with no match in one of the tables will have NULLs for the missing side.
 ```
 - _When should each type of join be used?_
 
@@ -171,19 +167,15 @@ FULL OUTER JOIN Departments ON Employees.dept_id = Departments.id;
 
 - _What is a **one-to-one** relationship?_
 ```text
-A one-to-one relationship means each row in Table A is linked to one and only one row in Table B, and vice versa.
-This type is used when two tables share the same primary key but store different types of data.
+A one-to-one relationship means each row in Table A is linked to one and only one row in Table B, and vice versa. This type is used when two tables share the same primary key but store different types of data.
 ```
 - _What is a **one-to-many** relationship?_
 ```text
-A one-to-many relationship means one row in Table A can be associated with many rows in Table B, 
-but each row in Table B relates to only one row in Table A.
-This is the most common relationship in relational databases.
+A one-to-many relationship means one row in Table A can be associated with many rows in Table B, but each row in Table B relates to only one row in Table A. This is the most common relationship in relational databases.
 ```
 - _What is a **many-to-many** relationship?_  
 ```text
-A many-to-many relationship occurs when multiple records in Table A relate to multiple records in Table B.
-To implement it, an intermediate (junction) table is used containing foreign keys referencing both tables.
+A many-to-many relationship occurs when multiple records in Table A relate to multiple records in Table B. To implement it, an intermediate (junction) table is used containing foreign keys referencing both tables.
 ```
 - _Give real-world examples of each relationship type._
 
