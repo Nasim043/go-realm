@@ -48,29 +48,242 @@ The values in these columns together must be unique, even if the individual valu
 ## 2. 🔗 Join Types (With Examples)
 
 - _What is an **INNER JOIN**?_
+```text
+An INNER JOIN returns only the rows that have matching values in both tables. If there is no match, the row is excluded from the result.
+```
 - _What is a **LEFT JOIN**?_
+```text
+A LEFT JOIN returns all rows from the left table, and the matched rows from the right table. If there is no match, NULLs are returned for columns from the right table.
+```
 - _What is a **RIGHT JOIN**?_
+```text
+A RIGHT JOIN returns all rows from the right table, and the matched rows from the left table. If there is no match, NULLs are returned for columns from the left table.
+```
 - _What is a **FULL OUTER JOIN**?_
-- _When should each type of join be used?_  
-- _Provide examples for each join type._
+```text
+A FULL OUTER JOIN returns all rows when there is a match in either the left or right table. Rows with no match in one of the tables will have NULLs for the missing side.
+```
+- _When should each type of join be used?_
+
+```text
+- Use **INNER JOIN** when you only want records with matches in both tables.
+- Use **LEFT JOIN** when you need all records from the left table, even if there's no match.
+- Use **RIGHT JOIN** when you need all records from the right table, even if there's no match.
+- Use **FULL OUTER JOIN** when you want all records from both tables, matched where possible.
+```
+
+- _Provide examples for each join type:_
+
+Assume two tables:
+**Employees**
+
+| id | name    | dept\_id |
+| -- | ------- | -------- |
+| 1  | Alice   | 10       |
+| 2  | Bob     | 20       |
+| 3  | Charlie | NULL     |
+
+**Departments**
+
+| id | dept\_name  |
+| -- | ----------- |
+| 10 | HR          |
+| 20 | Engineering |
+| 30 | Marketing   |
+
+**✅ INNER JOIN Example:**
+
+```sql
+SELECT Employees.name, Departments.dept_name
+FROM Employees
+INNER JOIN Departments ON Employees.dept_id = Departments.id;
+```
+
+*Result:*
+
+| name  | dept\_name  |
+| ----- | ----------- |
+| Alice | HR          |
+| Bob   | Engineering |
+
+---
+
+**✅ LEFT JOIN Example:**
+
+```sql
+SELECT Employees.name, Departments.dept_name
+FROM Employees
+LEFT JOIN Departments ON Employees.dept_id = Departments.id;
+```
+
+*Result:*
+
+| name    | dept\_name  |
+| ------- | ----------- |
+| Alice   | HR          |
+| Bob     | Engineering |
+| Charlie | NULL        |
+
+---
+
+**✅ RIGHT JOIN Example:**
+
+```sql
+SELECT Employees.name, Departments.dept_name
+FROM Employees
+RIGHT JOIN Departments ON Employees.dept_id = Departments.id;
+```
+
+*Result:*
+
+| name  | dept\_name  |
+| ----- | ----------- |
+| Alice | HR          |
+| Bob   | Engineering |
+| NULL  | Marketing   |
+
+---
+
+**✅ FULL OUTER JOIN Example:**
+
+```sql
+SELECT Employees.name, Departments.dept_name
+FROM Employees
+FULL OUTER JOIN Departments ON Employees.dept_id = Departments.id;
+```
+
+*Result:*
+
+| name    | dept\_name  |
+| ------- | ----------- |
+| Alice   | HR          |
+| Bob     | Engineering |
+| Charlie | NULL        |
+| NULL    | Marketing   |
 
 ---
 
 ## 3. 🔁 Relation Types (With Examples)
 
 - _What is a **one-to-one** relationship?_
+```text
+A one-to-one relationship means each row in Table A is linked to one and only one row in Table B, and vice versa. This type is used when two tables share the same primary key but store different types of data.
+```
 - _What is a **one-to-many** relationship?_
+```text
+A one-to-many relationship means one row in Table A can be associated with many rows in Table B, but each row in Table B relates to only one row in Table A. This is the most common relationship in relational databases.
+```
 - _What is a **many-to-many** relationship?_  
+```text
+A many-to-many relationship occurs when multiple records in Table A relate to multiple records in Table B. To implement it, an intermediate (junction) table is used containing foreign keys referencing both tables.
+```
 - _Give real-world examples of each relationship type._
 
+| Relationship Type | Real-World Example                    | Tables Involved                                                    |
+| ----------------- | ------------------------------------- | ------------------------------------------------------------------ |
+| **One-to-One**    | A person and their passport           | `Person(id)` ↔ `Passport(person_id)`                               |
+| **One-to-Many**   | A customer placing multiple orders    | `Customer(id)` → `Order(customer_id)`                              |
+| **Many-to-Many**  | Students enrolled in multiple courses | `Student(id)` ↔ `Enrollment(student_id, course_id)` ↔ `Course(id)` |
+
+
+---
+
+**📌 Example SQL Schema**
+
+✅ One-to-One Example:
+
+```sql
+CREATE TABLE Person (
+  id INT PRIMARY KEY,
+  name VARCHAR(100)
+);
+
+CREATE TABLE Passport (
+  id INT PRIMARY KEY,
+  person_id INT UNIQUE,
+  passport_number VARCHAR(50),
+  FOREIGN KEY (person_id) REFERENCES Person(id)
+);
+```
+
+✅ One-to-Many Example:
+
+```sql
+CREATE TABLE Customer (
+  id INT PRIMARY KEY,
+  name VARCHAR(100)
+);
+
+CREATE TABLE Orders (
+  id INT PRIMARY KEY,
+  order_date DATE,
+  customer_id INT,
+  FOREIGN KEY (customer_id) REFERENCES Customer(id)
+);
+```
+
+✅ Many-to-Many Example:
+
+```sql
+CREATE TABLE Student (
+  id INT PRIMARY KEY,
+  name VARCHAR(100)
+);
+
+CREATE TABLE Course (
+  id INT PRIMARY KEY,
+  course_name VARCHAR(100)
+);
+
+CREATE TABLE Enrollment (
+  student_id INT,
+  course_id INT,
+  PRIMARY KEY (student_id, course_id),
+  FOREIGN KEY (student_id) REFERENCES Student(id),
+  FOREIGN KEY (course_id) REFERENCES Course(id)
+);
+```
 ---
 
 ## 4. ✏️ CRUD Queries
 
-- _How to write a **CREATE** query?_  
-- _How to write a **READ** (SELECT) query?_  
-- _How to write an **UPDATE** query?_  
+- _How to write a **CREATE** query?_ 
+
+**Example: Creating a `Users` table**
+```sql
+CREATE TABLE Users (
+  id INT PRIMARY KEY,
+  name VARCHAR(100),
+  email VARCHAR(100) UNIQUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+- _How to write a **READ** (SELECT) query?_ 
+
+**Example: Fetching all users**
+```sql
+SELECT * FROM Users;
+```
+
+**Example: Fetching specific columns with conditions**
+```sql
+SELECT name, email FROM Users WHERE id = 1;
+```
+- _How to write an **UPDATE** query?_ 
+
+**Example: Updating a user’s name**
+```sql
+UPDATE Users
+SET name = 'John Doe'
+WHERE id = 1;
+``` 
 - _How to write a **DELETE** query?_  
+
+**Example: Deleting a user**
+```sql
+DELETE FROM Users
+WHERE id = 1;
+```
 
 ---
 
