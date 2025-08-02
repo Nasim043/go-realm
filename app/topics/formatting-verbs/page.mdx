@@ -1,0 +1,78 @@
+# Golang Formatting Verbs
+
+| Verb  | Description                         | Example Types | Example Input       | Example Output             |
+| ----- | ----------------------------------- | ------------- | ------------------- | -------------------------- |
+| `%v`  | Default format                      | any           | `Person{"John",25}` | `{John 25}`                |
+| `%+v` | Struct fields with names            | structs       | `Person{"John",25}` | `{Name:John Age:25}`       |
+| `%#v` | Go syntax representation            | any           | `Person{"John",25}` | `main.Person{Name:"John"}` |
+| `%T`  | Type of the value                   | any           | `"hello"`           | `string`                   |
+| `%%`  | Literal percent sign                | -             | `"%%"`              | `%`                        |
+| `%t`  | Boolean                             | bool          | `true`              | `true`                     |
+| `%d`  | Base-10 integer                     | integers      | `42`                | `42`                       |
+| `%b`  | Base-2 (binary)                     | integers      | `42`                | `101010`                   |
+| `%o`  | Base-8 (octal)                      | integers      | `42`                | `52`                       |
+| `%x`  | Base-16 (hex), lowercase            | integers      | `42`                | `2a`                       |
+| `%X`  | Base-16 (hex), uppercase            | integers      | `42`                | `2A`                       |
+| `%f`  | Decimal point, no exponent          | floats        | `3.14159265`        | `3.141593`                 |
+| `%e`  | Scientific notation (e)             | floats        | `3.14159265`        | `3.141593e+00`             |
+| `%E`  | Scientific notation (E)             | floats        | `3.14159265`        | `3.141593E+00`             |
+| `%g`  | %e or %f, whichever is more compact | floats        | `3.14159265`        | `3.141592653589793`        |
+| `%G`  | %E or %f, whichever is more compact | floats        | `3.14159265`        | `3.141592653589793`        |
+| `%s`  | Plain string                        | strings       | `"hello"`           | `hello`                    |
+| `%q`  | Quoted string                       | strings       | `"hello"`           | `"hello"`                  |
+| `%p`  | Pointer address                     | pointers      | `&x`                | `0xc000010050`             |
+| `%c`  | Unicode character                   | runes         | `65`                | `A`                        |
+| `%U`  | Unicode format (U+1234)             | runes         | `65`                | `U+0041`                   |
+
+## Formatting with Width/Precision
+
+| Verb    | Example Input              | Example Output |
+| ------- | -------------------------- | -------------- |
+| `%6d`   | `fmt.Printf("%6d", 12)`    | `    12`       |
+| `%-6d`  | `fmt.Printf("%-6d", 12)`   | `12    `       |
+| `%6.2f` | `fmt.Printf("%6.2f", 1.2)` | `  1.20`       |
+| `%6s`   | `fmt.Printf("%6s", "go")`  | `    go`       |
+| `%-6s`  | `fmt.Printf("%-6s", "go")` | `go    `       |
+
+### General Verbs
+
+```go {6,9,12,15}
+  type Person struct {
+  	name string
+  	age  int
+  }
+
+  // %v: The "default" format. For structs, this shows field values without names.
+  fmt.Printf("%v", person) // {John 25}
+
+  // %+v: For structs, includes field names.
+  fmt.Printf("%+v", person) // {Name:John Age:25}
+
+  // %#v: Go-syntax representation of the value.
+  fmt.Printf("%#v", person) // main.Person{Name:"John", Age:25}
+
+  //%T: Prints the type of a value.
+  fmt.Printf("%T", "hello") // string
+```
+
+```go
+// Integer Formatting
+n := 42
+fmt.Printf("%d %b %o %x %X", n, n, n, n, n)
+// Output: 42 101010 52 2a 2A
+
+// Float Formatting
+pi := math.Pi
+fmt.Printf("%f %.2f %e %E %g %G", pi, pi, pi, pi, pi, pi)
+// Output: 3.141593 3.14 3.141593e+00 3.141593E+00 3.141592653589793 3.141592653589793
+
+// String and Rune Formatting
+s := "hello"
+r := 'A'
+fmt.Printf("%s %q %c %U", s, s, r, r)
+// Output: hello "hello" A U+0041
+
+// Special Cases
+fmt.Printf("%%")  // Prints literal %
+fmt.Printf("%t", true)  // Prints boolean
+```
