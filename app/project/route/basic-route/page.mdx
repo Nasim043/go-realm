@@ -1,1 +1,85 @@
-#how to create use a basic router
+## Basic HTTP Server and Routing in Go (Without External Packages)
+
+### 1. Basic HTTP Server
+
+```go
+package main
+
+import (
+    "fmt"
+    "net/http"
+)
+
+func main() {
+    // Define routes
+    http.HandleFunc("/", homeHandler)
+    http.HandleFunc("/about", aboutHandler)
+    http.HandleFunc("/contact", contactHandler)
+
+    // Start server
+    fmt.Println("Server running on :8080")
+    http.ListenAndServe(":8080", nil)
+}
+
+func homeHandler(w http.ResponseWriter, r *http.Request) {
+    fmt.Fprintf(w, "Welcome to the Home Page!")
+}
+
+func aboutHandler(w http.ResponseWriter, r *http.Request) {
+    fmt.Fprintf(w, "About Us Page")
+}
+
+func contactHandler(w http.ResponseWriter, r *http.Request) {
+    fmt.Fprintf(w, "Contact Us Page")
+}
+```
+
+### 2. Handling Different HTTP Methods
+
+```go
+http.HandleFunc("/user", func(w http.ResponseWriter, r *http.Request) {
+    switch r.Method {
+    case http.MethodGet:
+        fmt.Fprintf(w, "GET: Get user data")
+    case http.MethodPost:
+        fmt.Fprintf(w, "POST: Create new user")
+    case http.MethodPut:
+        fmt.Fprintf(w, "PUT: Update user")
+    case http.MethodDelete:
+        fmt.Fprintf(w, "DELETE: Remove user")
+    default:
+        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+    }
+})
+```
+
+#### 4. Custom Router Implementation
+
+#### 5. Middleware Without External Packages
+
+#### 6. Serving Static Files
+
+#### 7. JSON Responses
+
+### Key Features of Native Go HTTP Package
+
+1. **Simple Routing**:
+   - Basic path matching
+   - No regex or complex patterns by default
+
+2. **Concurrency**:
+   - Handles each request in a separate goroutine
+   - No need to worry about thread safety
+
+3. **Flexibility**:
+   - Can implement custom routers
+   - Easy to add middleware
+
+4. **Performance**:
+   - Standard library is highly optimized
+   - No external dependencies
+
+5. **Limitations**:
+   - No built-in path parameters
+   - No route grouping
+   - Middleware chaining requires manual implementation
