@@ -1,0 +1,154 @@
+# 📌 Error Handling in Go
+
+- Go doesn’t use exceptions like many other languages (e.g., Python, Java).
+- Instead, errors are treated as **values** — usually the __last return value of a function.__
+
+---
+
+### 1. Creating Errors
+```go
+// Simple error
+err := errors.New("something went wrong")
+```
+
+### 2. Checking Errors
+```go
+result, err := someFunction()
+if err != nil {
+    // Handle error
+    log.Printf("Error occurred: %v", err)
+    return err
+}
+```
+
+### 3. Basic Error Handling
+
+```go
+package main
+
+import (
+	"errors"
+	"fmt"
+)
+
+func divide(a, b int) (int, error) {
+	if b == 0 {
+		return 0, errors.New("cannot divide by zero")
+	}
+	return a / b, nil
+}
+
+func main() {
+	result, err := divide(10, 0)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+	fmt.Println("Result:", result)
+}
+```
+
+✅ **Key idea**: Always check `err != nil` before using the result.
+
+---
+
+## 2. Creating Custom Errors
+
+```go
+import "fmt"
+
+type NotFoundError struct {
+	Resource string
+}
+
+func (e *NotFoundError) Error() string {
+	return fmt.Sprintf("%s not found", e.Resource)
+}
+
+func findUser(id int) (string, error) {
+	if id != 1 {
+		return "", &NotFoundError{Resource: "User"}
+	}
+	return "Alice", nil
+}
+```
+
+This allows distinguishing error types using type assertions.
+
+---
+
+### 4. Using `fmt.Errorf` with Wrapping
+
+```go
+import "fmt"
+
+func openFile() error {
+	return fmt.Errorf("failed to open file: %w", divide(10, 0))
+}
+```
+
+* `%w` wraps the underlying error for later inspection with `errors.Is` or `errors.As`.
+
+---
+
+### 5. Panic vs Error
+
+* **Error**: Used for expected problems you can handle (e.g., file not found).
+* **Panic**: Used for __unrecoverable problems__ (e.g., index out of range).
+
+```go
+func main() {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Recovered from panic:", r)
+		}
+	}()
+
+	panic("Something went very wrong!")
+}
+```
+
+### Panic vs Error in Go
+
+| Characteristic       | Error                          | Panic                          |
+|----------------------|--------------------------------|--------------------------------|
+| **Purpose**          | Expected error conditions      | Unrecoverable situations       |
+| **Flow Control**     | Normal return path             | Unwinds stack immediately      |
+| **Handling**         | Explicit `if err != nil`       | `defer` + `recover()`          |
+| **Common Usage**     | I/O failures, bad inputs       | Programmer mistakes, invariants |
+| **Performance**      | No stack trace (lighter)       | Captures stack trace (heavier) |
+
+### When to Use Errors
+
+**For recoverable, expected conditions:**
+```go
+func Divide(a, b float64) (float64, error) {
+    if b == 0 {
+        return 0, fmt.Errorf("cannot divide by zero")
+    }
+    return a / b, nil
+}
+
+// Usage
+result, err := Divide(10, 0)
+if err != nil {
+    log.Printf("Division failed: %v", err)
+    // Handle gracefully
+}
+```
+
+**Appropriate panic scenarios:**
+1. Failing to load critical config at startup
+2. Violation of program invariants
+3. Detecting programmer errors (bugs)
+4. Failing fast during initialization
+
+---
+
+### 6. Best Practices
+
+* **Return errors, don’t panic**, unless absolutely necessary.
+* **Handle errors immediately** after function calls.
+* Use **sentinel errors** (`var ErrXYZ = errors.New("...")`) for comparisons.
+* Use **wrapping (`%w`)** so context isn’t lost.
+* For complex projects, consider libraries like [`pkg/errors`](https://github.com/pkg/errors) for stack traces.

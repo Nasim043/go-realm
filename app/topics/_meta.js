@@ -3,6 +3,7 @@ export default {
   closure: "Closure",
   defer : "Defer",
   enum: "Enum",
+  "error-handling": "Error Handling",
   "formatting-verbs": "Formatting Verbs",
   function: "Function",
   interface: "Interface",
