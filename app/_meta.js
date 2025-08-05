@@ -7,4 +7,5 @@ export default {
   topics: "Topics",
   project: "Build Project",
   "algo-technique": "Algo & Technique",
+  os: "OS",
 };

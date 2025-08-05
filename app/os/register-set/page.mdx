@@ -1,0 +1,63 @@
+### 📌 CPU Register Set Summary
+
+A **register set** refers to the collection of registers available in a CPU or microcontroller. Registers are small, fast storage locations used to hold data, addresses, or control information during instruction execution.
+
+**Typical CPU register set (like x86 / ARM)**
+
+| **Register**                             | **Type**   | **Size**         | **Purpose / Usage**                                        |
+| ---------------------------------------- | ---------- | ---------------- | ---------------------------------------------------------- |
+| **General Purpose Registers ⬇️**       |            |                  |                                                            |
+| AX / EAX / RAX                           | GPR        | 16 / 32 / 64-bit | Accumulator for arithmetic & I/O operations                |
+| BX / EBX / RBX                           | GPR        | 16 / 32 / 64-bit | Base register (memory addressing)                          |
+| CX / ECX / RCX                           | GPR        | 16 / 32 / 64-bit | Counter register (loops, shifts)                           |
+| DX / EDX / RDX                           | GPR        | 16 / 32 / 64-bit | Data register (I/O, multiplication, division)              |
+| SI / ESI / RSI                           | GPR        | 16 / 32 / 64-bit | Source index (string & memory operations)                  |
+| DI / EDI / RDI                           | GPR        | 16 / 32 / 64-bit | Destination index (string & memory ops)                    |
+| SP / ESP / RSP                           | GPR        | 16 / 32 / 64-bit | Points to the top of the stack                             |
+| BP / EBP / RBP                           | GPR        | 16 / 32 / 64-bit | Base Pointer (stack frame reference)                       |
+| **Segment Registers ⬇️**               |            |                  |                                                            |
+| CS                                       | Segment    | 16-bit           | Code Segment (instruction fetching)                        |
+| DS                                       | Segment    | 16-bit           | Data Segment (default data)                                |
+| SS                                       | Segment    | 16-bit           | Stack Segment                                              |
+| ES, FS, GS                               | Segment    | 16-bit           | Extra segments for special purposes                        |
+| **Instruction & Control Registers ⬇️** |            |                  |                                                            |
+| IP / EIP / RIP                           | Control    | 16 / 32 / 64-bit | Instruction Pointer (next instruction address)             |
+| FLAGS / EFLAGS / RFLAGS                  | Control    | 16 / 32 / 64-bit | Status & control flags (carry, zero, sign, overflow, etc.) |
+| **Floating Point & SIMD Registers ⬇️** |            |                  |                                                            |
+| ST0–ST7                                  | FPU        | 80-bit           | Floating Point Unit stack registers                        |
+| XMM0–XMM15                               | SIMD       | 128-bit          | SSE instructions (single-instruction multiple-data)        |
+| YMM0–YMM15                               | SIMD       | 256-bit          | AVX instructions                                           |
+| ZMM0–ZMM31                               | SIMD       | 512-bit          | AVX-512 instructions                                       |
+| **Special Registers ⬇️**               |            |                  |                                                            |
+| CR0–CR4, CR8                             | Control    | 32/64-bit        | Control registers (paging, protection, system control)     |
+| DR0–DR7                                  | Debug      | 32/64-bit        | Hardware debugging registers                               |
+| GDTR / IDTR                              | Descriptor | 48-bit           | Global/Interrupt Descriptor Table base & limit             |
+| LDTR                                     | Descriptor | 16-bit           | Local Descriptor Table register                            |
+| TR                                       | Task       | 16-bit           | Task Register (task state segment)                         |
+
+---
+
+✅ **Notes**
+
+* **GPR** = General Purpose Register.
+* The naming (AX/EAX/RAX, etc.) depends on **mode**:
+
+  * 16-bit: AX
+  * 32-bit: EAX
+  * 64-bit: RAX
+* **Control registers** are privileged (OS-level use).
+* **SIMD registers** are used in modern CPUs for vectorized computation.
+
+---
+
+
+## **Register Set Explanation - Summary Table**
+
+| **Register Type**       | **Purpose**                                                                 | **Examples (x86)**            |
+|-------------------------|-----------------------------------------------------------------------------|-------------------------------|
+| **General-Purpose**      | Stores data, addresses, and intermediate results.                           | `EAX, EBX, ECX, EDX`          |
+| **Accumulator**         | Used for arithmetic/logical operations (often holds results).               | `AX (16-bit), EAX (32-bit)`   |
+| **Stack Pointer (SP)**  | Points to the top of the stack (used for function calls/local variables).    | `ESP (32-bit), RSP (64-bit)`  |
+| **Program Counter (PC)**| Holds the address of the next instruction to execute.                       | `EIP (32-bit), RIP (64-bit)`  |
+| **Status/Flags**        | Stores condition flags (Zero, Carry, Overflow, etc.).                       | `EFLAGS (x86)`                | 
+| **Vector/SIMD**         | Used for parallel processing (Single Instruction, Multiple Data).           | `YMM0-YMM15 (AVX)`            |
