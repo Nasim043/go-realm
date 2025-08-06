@@ -1,11 +1,35 @@
-# Golang Formatting Verbs
+## Go (Golang) Data Types
+Go is a statically typed language, meaning variables must have a defined type at compile time.
+
+
+| Type       | Description                     | Size (bits) | Range/Example                     |
+|------------|---------------------------------|-------------|-----------------------------------|
+| `int` ⬇️   | Signed integer (platform-dependent) | 32 or 64    | `-2³¹` to `2³¹-1` (32-bit)       |
+| `int8`     | 8-bit signed integer           | 8           | `-128` to `127`                  |
+| `int16`    | 16-bit signed integer          | 16          | `-32768` to `32767`              |
+| `int32`    | 32-bit signed integer          | 32          | `-2³¹` to `2³¹-1`                |
+| `int64`    | 64-bit signed integer          | 64          | `-2⁶³` to `2⁶³-1`                |
+| `uint` ⬇️  | Unsigned integer (platform-dependent) | 32 or 64    | `0` to `2³²-1` (32-bit)          |
+| `uint8` (byte)⭐ | 8-bit unsigned integer     | 8           | `0` to `255`                     |
+| `uint16`   | 16-bit unsigned integer        | 16          | `0` to `65535`                   |
+| `uint32`   | 32-bit unsigned integer        | 32          | `0` to `2³²-1`                   |
+| `uint64`   | 64-bit unsigned integer        | 64          | `0` to `2⁶⁴-1`                   |
+| `float32`⬇️  | 32-bit floating-point         | 32          | `±1.18e⁻³⁸` to `±3.4e³⁸`         |
+| `float64`⬇️  | 64-bit floating-point         | 64          | `±2.23e⁻³⁰⁸` to `±1.8e³⁰⁸`       |
+| `bool`    | Boolean (`true/false`) |8| `var flag bool = true` |
+| `string`  | Immutable UTF-8 text  |-| `s := "Hello, Go!"`  |
+| `Rune⭐`   | Alias for `int32` (Unicode code point) |32| `var r rune = 'A'`               |
+
+---
+
+### Golang Formatting Verbs
 
 | Verb  | Description                         | Example Types | Example Input       | Example Output             |
 | ----- | ----------------------------------- | ------------- | ------------------- | -------------------------- |
 | `%v`  | Default format                      | any           | `Person{"John",25}` | `{John 25}`                |
 | `%+v` | Struct fields with names            | structs       | `Person{"John",25}` | `{Name:John Age:25}`       |
 | `%#v` | Go syntax representation            | any           | `Person{"John",25}` | `main.Person{Name:"John"}` |
-| `%T`  | Type of the value                   | any           | `"hello"`           | `string`                   |
+| `%T⭐`  | Type of the value                   | any           | `"hello"`           | `string`                   |
 | `%%`  | Literal percent sign                | -             | `"%%"`              | `%`                        |
 | `%t`  | Boolean                             | bool          | `true`              | `true`                     |
 | `%d`  | Base-10 integer                     | integers      | `42`                | `42`                       |
@@ -21,18 +45,8 @@
 | `%s`  | Plain string                        | strings       | `"hello"`           | `hello`                    |
 | `%q`  | Quoted string                       | strings       | `"hello"`           | `"hello"`                  |
 | `%p`  | Pointer address                     | pointers      | `&x`                | `0xc000010050`             |
-| `%c`  | Unicode character                   | runes         | `65`                | `A`                        |
+| `%c⭐`  | Unicode character                   | runes         | `65`                | `A`                        |
 | `%U`  | Unicode format (U+1234)             | runes         | `65`                | `U+0041`                   |
-
-## Formatting with Width/Precision
-
-| Verb    | Example Input              | Example Output |
-| ------- | -------------------------- | -------------- |
-| `%6d`   | `fmt.Printf("%6d", 12)`    | `    12`       |
-| `%-6d`  | `fmt.Printf("%-6d", 12)`   | `12    `       |
-| `%6.2f` | `fmt.Printf("%6.2f", 1.2)` | `  1.20`       |
-| `%6s`   | `fmt.Printf("%6s", "go")`  | `    go`       |
-| `%-6s`  | `fmt.Printf("%-6s", "go")` | `go    `       |
 
 ### General Verbs
 
@@ -55,7 +69,7 @@
   fmt.Printf("%T", "hello") // string
 ```
 
-```go
+```go {3,8,14,18,19}
 // Integer Formatting
 n := 42
 fmt.Printf("%d %b %o %x %X", n, n, n, n, n)

@@ -1,10 +1,10 @@
 /* eslint-disable import/no-anonymous-default-export */
 export default {
   closure: "Closure",
+  "data-types": "Data Types",
   defer : "Defer",
   enum: "Enum",
   "error-handling": "Error Handling",
-  "formatting-verbs": "Formatting Verbs",
   function: "Function",
   interface: "Interface",
   "interface-composition": "Interface Composition",
