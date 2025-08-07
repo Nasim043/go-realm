@@ -38,7 +38,7 @@ func calculate(x, y int) (sum int, product int) {
 
 </details>
 
-In Go (Golang), The defer keyword delays the execution of a function until the surrounding function completes.
+In Go (Golang), The defer keyword delays the execution of a function until the surrounding function completes **and** after the return statement is processed.
 
 ### `defer`:
 - The `defer` keyword delays the execution of a function **until the surrounding function completes**.
@@ -94,7 +94,7 @@ Even though `x` becomes `20` later, `defer` uses its value at the time of deferr
 
 ---
 
-#### 🧪 Example 1: Multiple Defers (LIFO Order)
+#### Example 1: Multiple Defers (LIFO Order)
 
 ```go
 package main
@@ -122,7 +122,7 @@ First defer
 
 ---
 
-### 🧪 Example 2: Defer in a Loop
+### Example 2: Defer in a Loop
 
 ```go
 package main
@@ -148,17 +148,33 @@ Deferred 1
 
 ---
 
-### 🧪 Example 3: Named Return vs Unnamed Return  
-#### **✅ Named Return (Modifiable by `defer`)**  
+<details>
+<summary>🔁 Example 3: Named Return vs Unnamed Return</summary>
+The difference in output between `namedReturn()` and `unnamedReturn()` is due to **how Go handles named return values versus unnamed return values with `defer`**. Let's break it down:
+
+---
+
+### **1. Named Return (`namedReturn()`)**
 ```go
 func namedReturn() (result int) {
     defer func() { result = 99 }()
     return 10  // Returns 99
 }
 ```
-**Output:** `99`  
+* `result` is a **named return variable**.
+* When you do `return 10`, it **assigns 10 to `result`**, and then:
 
-#### **❌ Unnamed Return (Unaffected by `defer`)**  
+  1. All `defer` functions run **after** the `return` value is set, but **before the function actually returns**.
+  2. So the deferred function overwrites `result` to `99`.
+* Final return value: **`99`** 
+
+#### **Key Insight**  
+- Named return values are like "mutable buckets" that can be modified by `defer`.  
+- The `return` statement stores the value in `result`, but `defer` can overwrite it.  
+
+---
+
+### **2. Unnamed Return (`unnamedReturn()`)**
 ```go
 func unnamedReturn() int {
     result := 10
@@ -166,9 +182,79 @@ func unnamedReturn() int {
     return result  // Returns 10
 }
 ```
-**Output:** `10`
+* **No named return value**; `result` is a local variable.  
+* `return result` **copies the current value of `result` (`10`)** to the function's return slot.  
+* The `defer` runs and modifies `result` to `99`, but **the return slot already holds `10`**.  
+* The function returns `10`.  
 
-### 🧪 Example 4: Defer and Closures
+#### **Key Insight**  
+- Unnamed returns **copy the value at the `return` statement**.  
+- `defer` can’t modify the return value after the copy.  
+
+---
+
+### **Why the Difference?**
+| **Behavior**               | Named Return (`result int`) | Unnamed Return (`int`) |
+|----------------------------|----------------------------|------------------------|
+| Return value storage       | Shared variable (`result`)  | Anonymous slot         |
+| `return X` semantics       | `result = X`               | Copy `X` to return slot|
+| `defer` can modify         | ✅ Yes                     | ❌ No                  |
+
+---
+
+### **Visualization**
+#### Named Return (`namedReturn()`)
+```go
+func namedReturn() (result int) {
+    result = 10   // Step 1: Assign 10 to result
+    defer runs: result = 99  // Step 2: Overwrite result
+    return        // Step 3: Return result (now 99)
+}
+```
+
+#### Unnamed Return (`unnamedReturn()`)
+```go
+func unnamedReturn() int {
+    result := 10           // Local variable = 10
+    defer: result = 99     // Scheduled to run LATER
+    return result          // 1. Evaluate result (10) → store in return slot
+                           // 2. Run defer (result = 99) → too late!
+                           // 3. Return 10
+}
+```
+
+---
+
+### **Practical Implications**
+- **Named returns** are useful when you need `defer` to adjust the return value (e.g., error handling).  
+- **Unnamed returns** are safer if you want `defer` to run but not affect the return value.  
+
+```go
+// Named return with defer (common in error handling)
+func readFile() (content string, err error) {
+    file, err := os.Open("foo.txt")
+    if err != nil {
+        return "", err  // Early return
+    }
+    defer file.Close()  // Ensures cleanup
+    // ... read file into content
+    return content, nil // defer can't modify content
+}
+```
+
+---
+
+### 🧠 **Key Takeaway**
+✅ **Named returns** allow `defer` to modify the return value.  
+❌ **Unnamed returns** lock in the value at the `return` statement.
+
+This behavior is **specific to Go** and is crucial for understanding control flow with `defer`.
+
+</details>
+
+---
+
+### Example 4: Defer and Closures
 
 ```go
 package main
