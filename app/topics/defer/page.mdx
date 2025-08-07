@@ -321,3 +321,83 @@ func count() (result int) {
 ```
 **Output:**  
 `6` (deferred function modifies `result`)
+
+<details>
+<summary>🧠 **Guess the Output**</summary>
+
+```go
+// Named Return
+func calculate() (result int){
+    fmt.Println("first", result)
+    defer func() {
+        result = result + 10
+        fmt.Println("defer", result)
+    }()
+
+    result = 5
+    fmt.Println("second", result)
+
+    return
+}
+func main() {
+   namedReturn := calculate()
+   fmt.Println("Named Return", namedReturn)
+}
+```
+Hint: If parent function exists, both parent & closure function shares same *variable (pointer reference).
+**Output:**
+
+```
+first 0
+second 5
+defer 15
+Named Return 15
+```
+
+```go
+// Unnamed Return
+func calculate() int{
+    result := 0
+    fmt.Println("first", result)
+    
+    defer func() {
+        result = result + 10
+        fmt.Println("defer", result)
+    }()
+
+    result = 5
+    fmt.Println("second", result)
+
+    return result
+}
+func main() {
+   unnamedReturn := calculate()
+   fmt.Println("Unnamed Return", unnamedReturn)
+}
+```
+**Output:**
+
+```
+first 0
+second 5
+defer 15
+Unnamed Return 5 (why?)
+```
+
+### Named Return Values
+1. **Code Execution**: All normal code in the function executes.
+2. **Defer Registration**: Defer functions are stored in a LIFO stack (the "magic box").
+3. **Return Handling**: The `return` statement triggers execution of all deferred functions (in reverse order of registration).
+4. **Final Return**: The function returns the current values of the named return variables.
+
+### Anonymous Return Values
+1. **Code Execution**: All normal code in the function executes.
+2. **Defer Registration**: Defer functions are stored in a LIFO stack.
+3. **Return Evaluation**: ⭐Return values are evaluated and stored in a temporary variable⭐ at the `return` statement.
+4. **Defer Execution**: All deferred functions execute (but cannot modify the already-stored return values).
+5. **Final Return**: The function returns the pre-evaluated values from step 3.
+
+### Key Difference
+✅ **Named return** Deferred functions can modify the return values.  
+❌ **Unnamed return** Return values are "locked in" when the `return` statement is evaluated, before defer execution.
+</details>

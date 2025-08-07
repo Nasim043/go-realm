@@ -4,12 +4,21 @@ import (
 	"fmt"
 )
 
-func main() {
+func calculate() int {
+	result := 0
+	fmt.Println("first", result)
+
 	defer func() {
-		if r := recover(); r != nil {
-			fmt.Println("Recovered from panic:", r)
-		}
+		result = result + 10
+		fmt.Println("defer", result)
 	}()
 
-	panic("Something went very wrong!")
+	result = 5
+	fmt.Println("second", result)
+
+	return result
+}
+func main() {
+	unnamedReturn := calculate()
+	fmt.Println("Unnamed Return", unnamedReturn)
 }
