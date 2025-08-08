@@ -77,19 +77,19 @@ A FULL OUTER JOIN returns all rows when there is a match in either the left or r
 Assume two tables:
 **Employees**
 
-| id | name    | dept\_id |
-| -- | ------- | -------- |
-| 1  | Alice   | 10       |
-| 2  | Bob     | 20       |
-| 3  | Charlie | NULL     |
+| id  | name    | dept\_id |
+| --- | ------- | -------- |
+| 1   | Alice   | 10       |
+| 2   | Bob     | 20       |
+| 3   | Charlie | NULL     |
 
 **Departments**
 
-| id | dept\_name  |
-| -- | ----------- |
-| 10 | HR          |
-| 20 | Engineering |
-| 30 | Marketing   |
+| id  | dept\_name  |
+| --- | ----------- |
+| 10  | HR          |
+| 20  | Engineering |
+| 30  | Marketing   |
 
 **✅ INNER JOIN Example:**
 
@@ -320,3 +320,5 @@ WHERE id = 1;
 - _What are different **normal forms** (1NF, 2NF, 3NF, BCNF)?_  
 - _Why is normalization important?_  
 - _Provide examples of normalized vs non-normalized tables._
+
+- What is the difference between SQL and NoSQL databases?
