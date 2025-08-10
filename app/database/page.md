@@ -290,35 +290,159 @@ WHERE id = 1;
 ## 5. 🔐 Transactions
 
 - _What is a **transaction** in a database?_  
+```text
+A transaction is a sequence of one or more SQL operations executed as a single unit of work.
+Either all the operations are committed (saved) together, or none are applied (rolled back).
+```
 - _Why are transactions important?_  
+```text
+Transactions ensure data integrity, especially in multi-user environments.
+They allow multiple related operations to be treated as one atomic action, avoiding partial updates.
+```
 - _What are the properties of a transaction?_
+```text
+ACID Properties:
+- Atomicity: All operations succeed or none are applied.
+- Consistency: Database state remains valid after transaction.
+- Isolation: Transactions are isolated from each other.
+- Durability: Changes are permanently saved.
+```
+**Example of Transaction:** 
 
+```sql
+BEGIN;
+
+UPDATE Accounts SET balance = balance - 100 WHERE account_id = 1;
+UPDATE Accounts SET balance = balance + 100 WHERE account_id = 2;
+
+COMMIT;
+```
 ---
 
 ## 6. 📇 Indexing (With Types & Examples)
 
 - _What is **indexing** in databases?_  
+```text
+Indexing is a data structure technique used to quickly locate and access data in a database table.
+It works like an index in a book — speeding up lookups without scanning the entire table.
+```
 - _What are the types of indexes (e.g., **single-column**, **composite**, **unique**, **full-text**)_
-- _When and why should indexes be used?_  
-- _Provide examples of indexing._
 
+| Type              | Description                                          | Example Use Case                    |
+| ----------------- | ---------------------------------------------------- | ----------------------------------- |
+| **Single-column** | Index on one column.                                 | Search by username                  |
+| **Composite**     | Index on multiple columns.                           | Search by (first\_name, last\_name) |
+| **Unique**        | Ensures no duplicate values for indexed columns.     | Email addresses                     |
+| **Full-text**     | Optimized for text searching with relevance ranking. | Article content                     |
+
+- _When and why should indexes be used?_  
+```text
+Indexes should be used when:
+- Frequent lookups are required.
+- Data is frequently sorted or filtered.
+- Performance is critical for large datasets.
+
+Indexes improve SELECT query performance but slow down INSERT, UPDATE, and DELETE operations due to maintenance overhead. They should be used on columns frequently queried in WHERE, JOIN, or ORDER BY clauses.
+```
+- _Provide examples of indexing._
+**Example:**
+
+```sql
+-- Single-column index
+CREATE INDEX idx_username ON Users(username);
+
+-- Composite index
+CREATE INDEX idx_fullname ON Users(first_name, last_name);
+
+-- Unique index
+CREATE UNIQUE INDEX idx_email_unique ON Users(email);
+```
 ---
 
 ## 7. 🧱 ACID Properties
 
 - _What does **ACID** stand for?_  
-- _What is **Atomicity**?_  
+```text
+ACID is an acronym for Atomicity, Consistency, Isolation, and Durability — the four key properties of a reliable transaction.
+```
+- _What is **Atomicity**?_
+```text
+Atomicity ensures that a transaction is completed as a single unit of work. If any part fails, the entire transaction is rolled back.
+```
 - _What is **Consistency**?_  
+```text
+Consistency ensures that a transaction leaves the database in a valid state, maintaining data integrity.
+```
 - _What is **Isolation**?_  
+```text
+Isolation ensures that concurrent transactions do not interfere with each other, maintaining data consistency.
+```
 - _What is **Durability**?_
-
+```text
+Durability ensures that once a transaction is committed, its changes are permanently saved, even in the event of a system failure.
+```
 ---
 
 ## 8. ⚖️ Normalization
 
 - _What is **normalization** in relational databases?_  
+```text
+Normalization is the process of organizing data in a database to reduce redundancy and improve data integrity.
+```
 - _What are different **normal forms** (1NF, 2NF, 3NF, BCNF)?_  
+
+| Normal Form | Rule                                                                                 | Example                                                                      |
+| ----------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- |
+| **1NF**     | No repeating groups or arrays; each cell contains atomic (indivisible) values.       | A table with multiple phone numbers in one column should be split into rows. |
+| **2NF**     | 1NF + no partial dependency on part of a composite key.                              | Order details table with product info split into separate product table.     |
+| **3NF**     | 2NF + no transitive dependency (non-key columns depending on other non-key columns). | Customer city stored separately in `City` table instead of `Customer`.       |
+| **BCNF**    | Stronger form of 3NF where every determinant is a candidate key.                     | Rare cases of overlapping candidate keys.                                    |
+
 - _Why is normalization important?_  
+```text
+Normalization is important because it helps prevent data redundancy, reduces data duplication, and ensures data consistency. It also makes it easier to maintain and update the database.
+```
 - _Provide examples of normalized vs non-normalized tables._
 
-- What is the difference between SQL and NoSQL databases?
+**Example:**
+
+```sql
+-- Non-normalized table
+CREATE TABLE Orders (
+  id INT PRIMARY KEY,
+  customer_id INT,
+  order_date DATE,
+  product_name VARCHAR(100),
+  quantity INT,
+  price DECIMAL(10, 2)
+);
+
+-- Normalized tables
+CREATE TABLE Customers (
+  id INT PRIMARY KEY,
+  name VARCHAR(100),
+  email VARCHAR(100)
+);
+
+CREATE TABLE Orders (
+  id INT PRIMARY KEY,
+  customer_id INT,
+  order_date DATE,
+  product_name VARCHAR(100),
+  quantity INT,
+  price DECIMAL(10, 2)
+);
+```
+
+- _What is the difference between SQL and NoSQL databases?_
+| Feature            | SQL (Relational)                  | NoSQL (Non-Relational)                          |
+| ------------------ | --------------------------------- | ----------------------------------------------- |
+| **Data Model**     | Tables with rows & columns        | Document, key-value, graph, column-family       |
+| **Schema**         | Fixed, predefined                 | Flexible, dynamic                               |
+| **Scaling**        | Vertical scaling (bigger servers) | Horizontal scaling (more servers)               |
+| **Transactions**   | Strong ACID compliance            | Often eventual consistency (some support ACID)  |
+| **Query Language** | SQL                               | API-specific or query languages (e.g., MongoDB) |
+| **Best For**       | Complex queries, structured data  | Unstructured or semi-structured data            |
+| **Examples**       | MySQL, PostgreSQL, Oracle         | MongoDB, Cassandra, Redis, Neo4j                |
+
+---
