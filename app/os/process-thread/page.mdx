@@ -1,0 +1,133 @@
+# **Process, Thread, and Task**
+
+### **1. Process**
+A **process** is an instance of a running program. It has its own memory space, system resources, and execution state.
+
+<details>
+<summary>Key Characteristics:</summary>
+- Each process runs independently.
+- Processes do not share memory (unless explicitly using IPC - Inter-Process Communication).
+- Heavyweight (takes more time to create and terminate).
+- Managed by the OS.
+
+### **Example:**
+- When you open **Google Chrome** and **Microsoft Word**, they run as separate processes.
+- If one crashes, the other remains unaffected.
+</details>
+---
+### **2. Thread**
+A **thread** is the smallest unit of execution within a process. Multiple threads share the same memory space.
+
+<details>
+<summary>Key Characteristics:</summary>
+- Lightweight compared to processes.
+- Threads within the same process share memory and resources.
+- Faster context switching than processes.
+- If one thread crashes, it can affect the entire process.
+
+### **Example:**
+- A **web browser** uses multiple threads:
+  - One thread loads a webpage.
+  - Another thread plays a video.
+  - A third thread handles user input.
+</details>
+---
+
+### **3. Task**
+A **task** is a unit of work that needs to be executed. It can be a process, a thread, or an operation scheduled by the OS.
+
+<details>
+<summary>Key Characteristics:</summary>
+- A broader term than a process or thread.
+- Can refer to a single operation or a set of instructions.
+- Used in scheduling (e.g., in real-time operating systems).
+
+### **Example:**
+- Printing a document while editing another in Microsoft Word involves multiple tasks (UI handling, background printing).
+</details>
+---
+
+Threads sit right in between **process** and **task** — they’re the *actual execution units* inside a process.
+
+---
+
+### **Process → Thread → Task Relationship**
+
+* **Process** = the container (memory, resources, files, environment)
+* **Thread** = the worker inside that container (runs instructions)
+* **Task** = the actual work the thread executes
+
+---
+
+**Analogy:**
+
+* **Process** = Kitchen
+* **Thread** = Chef in the kitchen
+* **Task** = Cooking a specific dish
+
+---
+
+* **Process** = Office building
+* **Thread** = Employee in the office
+* **Task** = Assignment given to the employee
+
+---
+
+### **How They Relate**
+
+* A process can have **one or many threads**.
+* Each thread shares the process’s memory and resources.
+* A *task* can be run by a single thread or spread across multiple threads.
+
+---
+
+### **In Go**
+
+* Go programs **usually run as a single process**.
+* Inside, goroutines are like **tasks**, but the Go runtime maps them to OS **threads** under the hood.
+* Multiple goroutines can share the same OS thread, or be moved to different threads dynamically.
+
+---
+
+### **Questions**
+
+- **Q:** What is the difference between a process and a thread?  
+  **A:** Processes are independent with separate memory, while threads share memory and are lightweight.
+
+- **Q:** Can threads communicate directly?  
+  **A:** Yes, since they share memory. Processes need IPC (pipes, sockets, shared memory).
+
+- **Q:** Why use multithreading?  
+  **A:** For parallelism, responsiveness (UI thread + worker thread), and efficiency.
+
+### **Real-world Scenarios**
+- **Web Server:** Uses multiple threads to handle requests.
+- **Gaming:** One thread for rendering, another for AI.
+
+### **Avoid Common Mistakes**
+- ❌ Don’t say "Process and thread are the same."
+- ✅ Instead: "Threads are subsets of a process and share resources."
+
+---
+
+## **Key Differences**
+
+| Feature                      | Process                          | Thread                                | Task                                       |
+| ---------------------------- | -------------------------------- | ------------------------------------- | ------------------------------------------ |
+| **Definition**               | Independent program instance     | Sub-unit of a process                 | Unit of work (can run in a process/thread) |
+| **Memory Space**             | Separate per process             | Shared within a process               | Depends on where it runs                   |
+| **Overhead / Creation Cost** | High (OS allocates resources)    | Medium (shares process resources)     | Low (could just be a function call)        |
+| **Communication**            | Needs IPC (pipes, sockets)       | Can share variables directly          | N/A (depends on thread/process)            |
+| **Lifetime**                 | Until process ends               | Until process ends or thread finishes | Until work completes                       |
+| **OS Role**                  | Schedules processes              | Schedules threads                     | Scheduled via threads/process              |
+| **Crash Impact**             | Does not affect other processes  | Can crash the entire process          | Depends on process/thread stability        |
+| **Example**                  | Running Chrome & Word separately | Multiple tabs in Chrome               | Printing while editing                     |
+
+---
+
+## **Final Thoughts**
+- **Process** = Independent program (Chrome, Word).  
+- **Thread** = Lightweight sub-process (multiple tabs in Chrome).  
+- **Task** = General term for work (can be a process or thread).  
+
+**Pro Tip:** Relate to real-world examples (e.g., "Chrome uses multiple processes for security, and each tab may have threads for faster loading").
