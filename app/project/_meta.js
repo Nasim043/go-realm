@@ -3,4 +3,5 @@ export default {
   architecture: "Architechture",
   package: "Package",
   route: "Route",
+  middleware: "Middleware",
 };

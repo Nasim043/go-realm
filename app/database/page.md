@@ -435,6 +435,8 @@ CREATE TABLE Orders (
 ```
 
 - _What is the difference between SQL and NoSQL databases?_
+</br>
+
 | Feature            | SQL (Relational)                  | NoSQL (Non-Relational)                          |
 | ------------------ | --------------------------------- | ----------------------------------------------- |
 | **Data Model**     | Tables with rows & columns        | Document, key-value, graph, column-family       |
@@ -446,3 +448,14 @@ CREATE TABLE Orders (
 | **Examples**       | MySQL, PostgreSQL, Oracle         | MongoDB, Cassandra, Redis, Neo4j                |
 
 ---
+
+## 9. 📊 Data Modeling (With Examples)
+
+- _What is **data modeling** in databases?_  
+```text
+Data modeling is the process of structuring and organizing data in a database to optimize performance, maintain data integrity, and support specific business requirements.
+```
+- _What are the different **data models** (e.g., **relational**, **document**, **graph**, **column-family**)?_  
+```text
+Data models define the structure and organization of data in a database.
+```
