@@ -1,0 +1,359 @@
+# REST API
+
+## Table of Contents
+- [REST Fundamentals](#rest-fundamentals)
+- [Key REST Principles](#key-rest-principles)
+- [Resource Design](#resource-design)
+- [Endpoint Design](#endpoint-design)
+- [Request & Response Handling](#request--response-handling)
+- [Versioning Strategies](#versioning-strategies)
+- [Error Handling](#error-handling)
+- [Performance Considerations](#performance-considerations)
+- [Security Practices](#security-practices)
+- [Common Interview Questions](#common-interview-questions)
+
+---
+
+## REST Fundamentals
+
+**REST (Representational State Transfer)** - Architectural style for designing networked applications
+
+- **Resource-based**: Everything is a resource (users, products, orders)
+- **HTTP as foundation**: Uses standard HTTP methods and status codes
+- **Stateless**: Each request contains all necessary information
+- **Client-Server**: Separation of concerns between UI and data storage
+- **Cacheable**: Responses must define if they can be cached
+
+>REST is an architectural concept and REST API is its practical implementation
+
+## Key REST Principles
+
+1. **Uniform Interface**
+   - Resources identified in requests (URIs)
+   - Manipulation through representations (JSON/XML)
+   - Self-descriptive messages
+   - Hypermedia (HATEOAS)
+
+2. **Statelessness**
+   - No client context stored on server
+   - Each request contains all needed information
+
+3. **Cacheability**
+   - Responses explicitly marked as cacheable or not
+   - Improves performance and scalability
+
+4. **Layered System**
+   - Client doesn't need to know if connected to end server or intermediary
+
+5. **Code on Demand (optional)**
+   - Ability to send executable code (JavaScript) to extend client functionality
+
+---
+
+### Key Characteristics of REST:
+1. **Stateless**: Each request from a client to a server must contain all the information needed to understand and process the request. The server does not store any state about the client session.
+2. **Client-Server Architecture**: The client and server are independent of each other, allowing them to evolve separately.
+3. **Uniform Interface**: The API follows a consistent set of rules to make it simpler for clients to interact with resources.
+4. **Resource-Based**: Resources are identified by URLs, and interactions are based on these resources.
+5. **Representation**: The client interacts with representations of resources (e.g., JSON or XML), not the resource itself.
+6. **Stateless Communication**: The server doesn’t store the state of the client. Each request is independent.
+
+
+## Resource Design
+
+### Resource Identification
+- Use nouns (not verbs) for resources
+  - Good: `/orders`
+  - Bad: `/getOrders`
+- Use plural form for collections
+  - `/products` not `/product`
+
+### Resource Relationships
+```
+/users               - Collection of users
+/users/{id}          - Specific user
+/users/{id}/orders   - Orders for specific user
+```
+
+### Common Resource Types
+- Documents (single resource): `/users/123`
+- Collections: `/users`
+- Stores (client-managed): `/users/123/playlists`
+- Controllers (procedural): `/convert?from=USD&to=EUR`
+
+---
+## Endpoint Design
+
+### Standard Endpoint Structure
+| Resource | POST (Create) | GET (Read) | PUT (Update) | DELETE (Remove) |
+|----------|---------------|------------|--------------|------------------|
+| /users   | Create user   | List users | Bulk update  | Remove all users |
+| /users/1 | -             | Get user 1 | Update user 1 | Remove user 1    |
+
+### Naming Conventions
+- Use lowercase with hyphens: `/user-profiles`
+- Avoid file extensions: `/users` not `/users.json`
+- Keep URLs simple and intuitive
+
+### Query Parameters
+- Filtering: `/products?category=books`
+- Sorting: `/users?sort=-createdAt,name`
+- Pagination: `/orders?page=2&limit=20`
+- Field selection: `/users?fields=name,email`
+
+---
+## Request & Response Handling
+
+### Request Headers
+- `Accept`: Response format (application/json)
+- `Content-Type`: Request body format
+- `Authorization`: Authentication credentials
+
+### Response Best Practices
+```json
+{
+  "data": {
+    "id": "123",
+    "type": "users",
+    "attributes": {
+      "name": "John Doe",
+      "email": "john@example.com"
+    },
+    "links": {
+      "self": "/users/123"
+    }
+  },
+  "meta": {
+    "total": 100,
+    "page": 2
+  }
+}
+```
+
+### HATEOAS Implementation
+```json
+{
+  "id": 123,
+  "name": "Sample Order",
+  "status": "pending",
+  "links": [
+    {
+      "rel": "self",
+      "href": "/orders/123",
+      "method": "GET"
+    },
+    {
+      "rel": "cancel",
+      "href": "/orders/123",
+      "method": "DELETE"
+    }
+  ]
+}
+```
+
+---
+
+## Versioning Strategies
+
+1. **URI Path Versioning**
+   - `https://api.example.com/v1/users`
+   - Most common and visible approach
+
+2. **Header Versioning**
+   - `Accept: application/vnd.company.api.v1+json`
+   - Keeps URIs clean
+
+3. **Query Parameter Versioning**
+   - `https://api.example.com/users?version=1`
+   - Less preferred but simple to implement
+
+**Best Practice**: Always version your API from the start
+
+---
+
+## Error Handling
+
+### Standard Error Response
+```json
+{
+  "error": {
+    "code": "invalid_request",
+    "message": "Email is required",
+    "target": "email",
+    "details": [
+      {
+        "code": "empty_field",
+        "message": "Email cannot be empty"
+      }
+    ]
+  }
+}
+```
+
+### Common Error Codes
+- `400 Bad Request`: Validation errors
+- `401 Unauthorized`: Authentication required
+- `403 Forbidden`: Insufficient permissions
+- `404 Not Found`: Resource doesn't exist
+- `429 Too Many Requests`: Rate limiting
+- `500 Internal Server Error`: Server-side error
+
+---
+
+## Performance Considerations
+
+1. **Pagination**
+   - Offset-based: `?page=2&limit=20`
+   - Cursor-based: `?after=123&limit=20`
+
+2. **Caching**
+   - `Cache-Control` headers
+   - ETags for conditional requests
+
+3. **Compression**
+   - Support `gzip` and `deflate`
+
+4. **Field Filtering**
+   - Allow clients to request only needed fields: `?fields=name,email`
+
+5. **Bulk Operations**
+   - Support for batch requests where appropriate
+
+---
+
+## Security Practices
+
+1. **Always Use HTTPS**
+2. **Authentication**
+   - OAuth 2.0 (for delegated access)
+   - JWT (for stateless authentication)
+   - API Keys (for simple services)
+
+3. **Input Validation**
+   - Validate all incoming data
+   - Sanitize inputs to prevent injection
+
+4. **Rate Limiting**
+   - Protect against abuse and DDoS
+   - `X-RateLimit-Limit`, `X-RateLimit-Remaining` headers
+
+5. **CORS Configuration**
+   - Restrict origins when possible
+   - `Access-Control-Allow-Origin` header
+
+---
+
+
+
+
+
+
+## HTTP Methods in REST API
+
+- **GET**: Retrieve data from the server.
+- **POST**: Send data to the server to create a new resource.
+- **PUT**: Update an existing resource with new data.
+- **DELETE**: Remove a resource from the server.
+- **PATCH**: Apply partial modifications to a resource.
+
+## RESTful Principles
+
+1. **Stateless**: Every request from the client to the server is independent, and the server does not retain information about the client state.
+2. **Cacheable**: Responses must define if they can be cached or not.
+3. **Layered System**: The API architecture can consist of several layers (e.g., load balancers, firewalls), and clients interact with these layers without needing to understand them.
+4. **Code on Demand (Optional)**: Servers can temporarily extend client functionality by transferring executable code (e.g., JavaScript), though this is rarely used.
+5. **Uniform Interface**: Standardization of APIs, including HTTP methods and status codes, simplifies the API and makes it more consistent.
+
+## REST API Design Best Practices
+
+- **Use Nouns for Resource Names**: Use descriptive, plural nouns to represent resources (e.g., `/users`, `/products`).
+  - Correct: `/users`, `/orders`
+  - Incorrect: `/getUser`, `/createProduct`
+  
+- **Use HTTP Status Codes Properly**: Use appropriate HTTP status codes to indicate the result of an API request.
+  - **200 OK**: The request has succeeded.
+  - **201 Created**: A resource has been created successfully.
+  - **400 Bad Request**: The request could not be understood or was missing required parameters.
+  - **401 Unauthorized**: Authentication is required or has failed.
+  - **404 Not Found**: The resource could not be found.
+  - **500 Internal Server Error**: The server encountered an error.
+
+- **Version Your API**: Version your API to ensure backward compatibility.
+  - Example: `/api/v1/users`
+  
+- **Use Query Parameters for Filtering, Sorting, and Pagination**:
+  - Example: `/users?page=2&limit=20`
+  
+- **Accept and Return Standard Formats**: Use **JSON** (or XML) for data representation in the request and response bodies.
+  
+- **Use Meaningful, Readable URLs**: URLs should clearly represent the resources.
+  - Example: `/users/123` for accessing a specific user.
+
+## REST API Authentication Methods
+
+- **Basic Authentication**: Uses a username and password in the HTTP header.
+- **Bearer Token (OAuth 2.0)**: Commonly used in modern REST APIs, where a token (like JWT) is passed in the HTTP header for authorization.
+- **API Keys**: A unique identifier passed along with requests, usually in the query string or headers, to authenticate the client.
+
+## REST API Response Structure
+
+A typical REST API response will contain:
+- **Status Code**: To indicate whether the request was successful or failed (e.g., `200 OK`, `404 Not Found`).
+- **Headers**: Metadata about the response (e.g., `Content-Type`, `Authorization`).
+- **Body**: Contains the data being returned (often in JSON format).
+
+### Example:
+
+**Request**:
+```http
+GET /users/123 HTTP/1.1
+Host: api.example.com
+Authorization: Bearer <token>
+````
+
+**Response**:
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "id": 123,
+  "name": "John Doe",
+  "email": "john.doe@example.com"
+}
+```
+
+## Common HTTP Status Codes in REST API
+
+* **200 OK**: The request has been successfully processed.
+* **201 Created**: A new resource has been created.
+* **204 No Content**: The request was successful but no content is returned.
+* **400 Bad Request**: The server cannot process the request due to client-side issues.
+* **401 Unauthorized**: The request requires authentication, but it was not provided or was incorrect.
+* **403 Forbidden**: The server understands the request but refuses to authorize it.
+* **404 Not Found**: The requested resource could not be found.
+* **500 Internal Server Error**: The server encountered an error while processing the request.
+
+## Example REST API Endpoints
+
+1. **GET** `/users`: Fetch a list of users.
+2. **GET** `/users/{id}`: Fetch a specific user by ID.
+3. **POST** `/users`: Create a new user.
+4. **PUT** `/users/{id}`: Update an existing user by ID.
+5. **DELETE** `/users/{id}`: Delete a user by ID.
+
+## Tools for Working with REST APIs
+
+* **Postman**: A popular tool for testing REST APIs, making it easy to send requests and view responses.
+* **cURL**: A command-line tool for making HTTP requests, often used for testing APIs.
+* **Swagger/OpenAPI**: A specification for documenting REST APIs and generating interactive API documentation.
+
+
+#### FAQ 
+
+1. **What's the difference between PUT and PATCH?**
+   - PUT replaces entire resource, PATCH does partial update
+
+2. **What are alternatives to REST?**
+   - GraphQL, gRPC, WebSockets, SOAP
