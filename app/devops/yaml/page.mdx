@@ -1,0 +1,376 @@
+# YAML (YAML Ain't Markup Language)
+
+## What is YAML?
+**YAML** (YAML Ain't Markup Language) is a human-readable data serialization format, commonly used for 
+- configuration files and 
+- data exchange.
+
+## Basic Syntax
+
+### Key-Value Pairs
+```yaml
+key: value
+name: John Doe
+age: 30
+is_student: false
+```
+
+### Strings
+```yaml
+# Single line
+name: John Doe
+
+# Multi-line (preserves newlines)
+description: |
+  This is a
+  multi-line
+  string
+
+# Multi-line (folds newlines)
+# same as
+# description: "This will be a single line string"
+description: >
+  This will be
+  a single line
+  string
+```
+
+### Numbers
+```yaml
+integer: 42
+float: 3.14
+scientific: 1.2e+34
+infinity: .inf
+not_a_number: .nan
+```
+
+### Booleans
+```yaml
+true_value: true
+false_value: false
+yes: yes    # Also true
+no: no      # Also false
+```
+
+### Null Values
+```yaml
+null_value: null
+empty: ~    # Also null
+```
+
+## Collections
+
+### Lists/Arrays
+```yaml
+# Block style
+fruits:
+  - Apple
+  - Banana
+  - Orange
+
+# Inline style
+fruits: [Apple, Banana, Orange]
+```
+
+### Dictionaries/Maps
+```yaml
+# Block style
+person:
+  name: John
+  age: 30
+  city: New York
+
+# Inline style
+person: {name: John, age: 30, city: New York}
+```
+
+### Nested Structures
+```yaml
+users:
+  - name: John
+    age: 30
+    hobbies:
+      - reading
+      - swimming
+  - name: Jane
+    age: 25
+    hobbies: [hiking, photography]
+```
+
+## Advanced Features
+
+### Anchors and Aliases (Reuse)
+```yaml
+defaults: &defaults
+  adapter: postgres
+  host: localhost
+
+development:
+  <<: *defaults
+  database: dev_db
+
+test:
+  <<: *defaults
+  database: test_db
+```
+
+### Multi-document Files
+```yaml
+---
+# Document 1
+name: John
+age: 30
+---
+# Document 2
+name: Jane
+age: 25
+```
+
+### Comments
+```yaml
+# This is a comment
+key: value  # Inline comment
+```
+
+## Special Syntax
+
+### Environment Variables
+```yaml
+# Some YAML parsers support this
+database_url: ${DATABASE_URL:-sqlite:///default.db}
+```
+
+### Type Casting (YAML 1.2)
+```yaml
+# Some parsers support explicit types
+string: !!str 123
+integer: !!int "123"
+float: !!float "3.14"
+boolean: !!bool "true"
+```
+
+## Common Use Cases
+
+### Docker Compose YAML and JSON
+
+<div style={{display: 'flex', justifyContent: 'space-between'}}>
+  <div style={{width: '45%'}}>
+    #### YAML Format
+    ```yaml
+    version: '3.8'
+    services:
+      web:
+        image: nginx:alpine
+        ports:
+          - "80:80"
+        environment:
+          - NODE_ENV=production
+        volumes:
+          - ./app:/app
+
+      database:
+        image: postgres:13
+        environment:
+          POSTGRES_DB: myapp
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: pass
+    ```
+  </div>
+  <div style={{width: '45%'}}>
+    #### JSON Format
+    ```json
+    {
+      "version": "3.8",
+      "services": {
+        "web": {
+          "image": "nginx:alpine",
+          "ports": [
+            "80:80"
+          ],
+          "environment": [
+            "NODE_ENV=production"
+          ],
+          "volumes": [
+            "./app:/app"
+          ]
+        },
+        "database": {
+          "image": "postgres:13",
+          "environment": {
+            "POSTGRES_DB": "myapp",
+            "POSTGRES_USER": "user",
+            "POSTGRES_PASSWORD": "pass"
+          }
+        }
+      }
+    }
+    ```
+  </div>
+</div>
+
+
+### CI/CD Pipeline YAML and JSON
+
+<div style={{display: 'flex', justifyContent: 'space-between'}}>
+  <div style={{width: '45%'}}>
+    #### YAML Format
+    ```yaml
+    name: CI/CD Pipeline
+    on: [push, pull_request]
+    
+    jobs:
+      test:
+        runs-on: ubuntu-latest
+        steps:
+          - uses: actions/checkout@v2
+          - name: Run tests
+            run: npm test
+    ```
+  </div>
+  <div style={{width: '45%'}}>
+    #### JSON Format
+    ```json
+    {
+      "name": "CI/CD Pipeline",
+      "on": ["push", "pull_request"],
+      "jobs": {
+        "test": {
+          "runs-on": "ubuntu-latest",
+          "steps": [
+            {
+              "uses": "actions/checkout@v2"
+            },
+            {
+              "name": "Run tests",
+              "run": "npm test"
+            }
+          ]
+        }
+      }
+    }
+    ```
+  </div>
+</div>
+
+
+## Best Practices
+
+### 1. Indentation
+```yaml
+# Good (2 spaces)
+key:
+  nested:
+    - item1
+    - item2
+
+# Bad (mixing tabs and spaces)
+key:
+    nested:
+      - item1
+      - item2
+```
+
+### 2. Quotes
+```yaml
+# Use quotes when needed
+special_chars: "value with: colon"
+boolean_string: "true"
+numeric_string: "123"
+```
+
+### 3. Readability
+```yaml
+# Good - clear structure
+server:
+  host: localhost
+  port: 8080
+  ssl:
+    enabled: true
+    cert: /path/to/cert
+
+# Bad - too compact
+server: {host: localhost, port: 8080, ssl: {enabled: true, cert: /path/to/cert}}
+```
+
+## Common Pitfalls
+
+### 1. Boolean Interpretation
+```yaml
+# These might be interpreted as booleans
+yes: yes    # → true
+no: no      # → false
+on: on      # → true
+off: off    # → false
+
+# Use quotes to force string
+yes: "yes"  # → "yes"
+```
+
+### 2. Floating Point Numbers
+```yaml
+# This might be interpreted as time
+version: 3.10  # → 3.1 (float)
+version: "3.10" # → "3.10" (string)
+```
+
+### 3. Special Characters
+```yaml
+# Use quotes for special characters
+special: "value with: colon & asterisk *"
+```
+
+## Validation Tools
+
+### Online Validators
+- [YAML Lint](http://www.yamllint.com/)
+- [Online YAML Parser](https://yaml-online-parser.appspot.com/)
+
+### Command Line
+```bash
+# Install yamllint
+pip install yamllint
+
+# Validate file
+yamllint file.yaml
+
+# Validate with specific rules
+yamllint -d relaxed file.yaml
+```
+
+## YAML vs JSON
+
+| Feature | YAML | JSON |
+|---------|------|------|
+| Readability | High | Medium |
+| Comments | Yes | No |
+| Multi-line strings | Yes | No |
+| References/Anchors | Yes | No |
+| Strict syntax | Less strict | Very strict |
+| File size | Smaller | Larger |
+
+```yaml
+# YAML
+person:
+  name: John
+  age: 30
+  hobbies: [reading, swimming]
+```
+
+```json
+// JSON
+{
+  "person": {
+    "name": "John",
+    "age": 30,
+    "hobbies": ["reading", "swimming"]
+  }
+}
+```
+
+Remember: **YAML is a superset of JSON** - all valid JSON is valid YAML!
+
+#### Key Features of YAML:
+- **Human-readable**: YAML is designed to be easy to read and write.
+- **Hierarchical structure**: Data is represented in a tree structure, which makes it easy to represent complex data.
+- **Indentation-based**: YAML relies on indentation to represent the structure, so there are no brackets or other delimiters.
+- **Supports complex data types**: YAML supports scalar values (strings, numbers), lists, and maps (key-value pairs).

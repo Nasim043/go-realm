@@ -8,4 +8,6 @@ export default {
   project: "Build Project",
   "algo-technique": "Algo & Technique",
   os: "OS",
+  api: "API",
+  devops: "DevOps",
 };
