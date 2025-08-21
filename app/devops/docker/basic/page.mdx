@@ -1,0 +1,29 @@
+## 📝 Essential Flags to Remember
+```bash
+# Run in detached mode (in background)
+-d
+
+# Interactive mode (with TTY)
+-it
+
+# Remove container after exit (auto-cleanup)
+--rm
+
+# Set container name
+--name my_container
+
+# Port mapping
+-p host_port:container_port
+
+# Volume mounting
+-v host_path:container_path
+
+# Environment variables
+-e VAR=value
+
+# Read-only root filesystem
+--read-only
+
+# Resource limits
+--memory="512m" --cpus="1.0"
+```

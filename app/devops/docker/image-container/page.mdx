@@ -1,0 +1,77 @@
+### 🐳 **Docker Image**
+
+* A **read-only template** used to create containers.
+* A **blueprint/template/building blocks** for creating containers.
+* Includes everything (OS, code, dependencies, libraries, and environment) needed to run the application.
+* Built from a **Dockerfile** (instructions for building the image).
+* Immutable: once created, it cannot be changed (new versions = new images).
+* Can be stored in **Docker Hub** or private registries.
+* Example: `nginx:latest`, `mysql:8.0`
+
+---
+
+### 📦 **Docker Container**
+
+* A **running instance** of a Docker image.
+* Created from a Docker image.
+* Each container is **isolated** and runs its own environment.
+* Containers can be started, stopped, deleted, recreated.
+* You can run many containers from a single image.
+* Changes inside the container do not affect the original image.
+* Example: Running `docker run -d -p 8080:80 nginx` → starts an Nginx container.
+
+---
+
+### ⚖️ **Image vs Container (Quick Comparison)**
+
+| Feature    | Docker Image                | Docker Container                           |
+| ---------- | --------------------------- | ------------------------------------------ |
+| Nature     | Blueprint / Template        | Running instance                           |
+| Mutability | Immutable                   | Mutable|
+| Storage    | Registry (Docker Hub, etc.) | Host system (RAM/FS while running)         |
+| Lifecycle  | Built once, reused          | Start → Stop → Remove                      |
+| Example    | `mysql:8.0`                 | A MySQL DB instance running in a container |
+
+---
+
+👉 In short:
+
+* **Image = Recipe** 🍳
+* **Container = Dish prepared from that recipe** 🍲
+
+---
+
+## 🐳 **Image Commands**
+
+| Command                              | Description                                |
+| ------------------------------------ | ------------------------------------------ |
+| `docker images`                      | List all images on your system             |
+| `docker pull <image>:<tag>`          | Download an image from Docker Hub/registry |
+| `docker build -t <name>:<tag> .`     | Build an image from a Dockerfile           |
+| `docker rmi <image_id>`              | Remove an image                            |
+| `docker tag <image_id> <repo>:<tag>` | Tag an image with a name                   |
+| `docker push <repo>:<tag>`           | Push an image to Docker Hub/registry       |
+| `docker inspect <image_id>`          | Get detailed info about an image           |
+| `docker history <image_id>`          | Show image layers                          |
+
+---
+
+## 📦 **Container Commands**
+
+| Command                                     | Description                                       |
+| ------------------------------------------- | ------------------------------------------------- |
+| `docker ps`                                 | List running containers                           |
+| `docker ps -a`                              | List all containers (running + stopped)           |
+| `docker run <image>`                        | Run a container from an image                     |
+| `docker run -d <image>`                     | Run in detached (background) mode                 |
+| `docker run -it <image> /bin/bash`          | Run interactively with terminal                   |
+| `docker stop <container_id>`                | Stop a running container                          |
+| `docker start <container_id>`               | Start a stopped container                         |
+| `docker restart <container_id>`             | Restart a container                               |
+| `docker rm <container_id>`                  | Remove a container                                |
+| `docker exec -it <container_id> <command>`  | Run command inside a running container            |
+| `docker logs <container_id>`                | View container logs                               |
+| `docker inspect <container_id>`             | Get detailed info about a container               |
+| `docker cp <container_id>:/path /host/path` | Copy files from container to host (or vice versa) |
+
+---
