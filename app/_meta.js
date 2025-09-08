@@ -10,4 +10,5 @@ export default {
   os: "OS",
   api: "API",
   devops: "DevOps",
+  "system-design": "System Design",
 };

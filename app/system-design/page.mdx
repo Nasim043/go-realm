@@ -1,0 +1,72 @@
+# 📦 CDN (Content Delivery Network)
+
+## 🔹 What is a CDN?
+A **Content Delivery Network (CDN)** is a globally distributed network of servers that caches and delivers **static and sometimes dynamic content** (like images, videos, CSS, JS, API responses) from servers that are **closer to the user** instead of always fetching from the main/origin server.
+
+👉 Think of it like **branch libraries** spread across the world, each holding copies of popular books so readers don’t always have to travel to the central library.
+
+---
+
+## 🔹 Why use a CDN?
+- ⚡ **Faster load times** → users get content from the nearest edge server.  
+- 🌍 **Global availability** → better experience for users far from your origin server.  
+- 📉 **Reduced origin load** → fewer requests hit your main server.  
+- 🔒 **Improved security** → many CDNs provide DDoS protection, SSL, and firewall features.  
+- 💾 **Scalability** → handles large spikes in traffic more easily.  
+
+---
+
+## 🔹 How does a CDN work?
+1. User requests a file (e.g., `logo.png`).  
+2. The request is routed via **DNS + Anycast** to the **nearest CDN edge server**.  
+3. Edge server checks its cache:  
+   - ✅ Cached → return immediately.  
+   - ❌ Not cached → fetch from origin server, cache it, then serve.  
+4. Future requests from nearby users get the cached version until expiry (controlled by `Cache-Control` headers).  
+
+---
+
+## 🔹 CDN for APIs (Dynamic Content)
+- Public API responses (e.g., `/api/products`) → cache for short duration.  
+- Private/personalized responses (e.g., `/api/user/123/orders`) → **bypass cache**.  
+
+---
+
+## 🔹 Disadvantages of CDN
+
+* 💰 **Cost** → can get expensive with high traffic or advanced features.
+* ⚙️ **Configuration complexity** → caching rules must be carefully set (risk of stale data).
+* 🐞 **Debugging harder** → issues may happen at CDN layer instead of origin.
+* 🚫 **Not always useful** → for small/local apps with no global users, CDN adds little value.
+* 📦 **Limited caching for dynamic content** → user-specific data often can’t be cached.
+
+---
+
+### ❓ Are CDN edges like read replicas of the origin?
+
+* ❌ No. Edge servers are **not database slaves/replicas**.
+* ✅ They are **smart caches** that only store requested content temporarily.
+* They fetch missing content from the origin **on demand** (Pull CDN).
+* Some CDNs allow pre-uploading (Push CDN).
+
+### ❓ How does a request get served from the nearest CDN server?
+
+* Done via **DNS + Anycast routing** → no need to implement in your code.
+* The CDN automatically routes users to the nearest edge server.
+
+### ❓ Can dynamic API responses be cached?
+
+* ✅ Yes, for **public/frequently used endpoints** (short TTL).
+* ❌ No, for **user-specific/private endpoints**.
+* Controlled via **Cache-Control headers** in your API responses.
+
+---
+
+## 🔹 Popular CDN Providers
+
+* **Cloudflare** (free tier available)
+* **AWS CloudFront**
+* **Akamai**
+* **Fastly**
+
+---
