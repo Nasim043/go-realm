@@ -27,3 +27,32 @@
 # Resource limits
 --memory="512m" --cpus="1.0"
 ```
+
+# 🖥️ Virtual Machine vs Container — Comparison Table
+
+| Feature                  | Virtual Machine (VM)                                                            | Container                                                                                 |
+| ------------------------ | ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| **Definition**           | A VM emulates an entire physical computer system including the OS and hardware. | A container virtualizes only the OS user space, sharing the host kernel.                  |
+| **Isolation Level**      | Full hardware-level isolation (each VM runs its own OS).                        | Process-level isolation (containers share the host OS kernel).                            |
+| **Boot Time**            | Slow — minutes (full OS startup).                                               | Fast — seconds (lightweight and shares OS).                                               |
+| **Resource Usage**       | Heavy — needs its own OS, uses more RAM & CPU.                                  | Lightweight — shares kernel, minimal overhead.                                            |
+| **OS Dependency**        | Each VM can run a different OS.                                                 | Must use the same OS kernel as the host.                                                  |
+| **Storage Size**         | Large — typically in GBs (full OS image).                                       | Small — typically in MBs (application image).                                             |
+| **Performance**          | Slightly slower due to hypervisor overhead.                                     | Near-native performance since kernel is shared.                                           |
+| **Security**             | Strong isolation; one VM cannot easily affect another.                          | Weaker isolation (kernel shared); uses namespaces & cgroups.                              |
+| **Scalability**          | Slower to scale; more resource-intensive.                                       | Highly scalable; quick to spin up/down containers.                                        |
+| **Portability**          | VM images are less portable; depend on hypervisor.                              | Highly portable across environments supporting container runtimes (Docker, Podman, etc.). |
+| **Management Tooling**   | Managed using hypervisors (VMware, VirtualBox, Hyper-V).                        | Managed using container runtimes & orchestrators (Docker, Kubernetes).                    |
+| **Use Case**             | Best for running multiple OS environments or legacy apps.                       | Best for microservices, CI/CD pipelines, and lightweight deployments.                     |
+| **Example Technologies** | VMware, VirtualBox, KVM, Hyper-V                                                | Docker, Podman, Kubernetes, LXC                                                           |
+
+---
+
+### 🔍 Summary
+
+* **VMs**: Heavy, secure, ideal for full OS isolation.
+* **Containers**: Lightweight, fast, ideal for modern cloud-native and microservice architectures.
+
+---
+
+📘 *Note:* Containers are often used **within** VMs in enterprise setups for additional isolation and control.
