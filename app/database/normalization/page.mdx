@@ -1,0 +1,50 @@
+# ⚖️ Normalization
+
+- _What is **normalization** in relational databases?_  
+```text
+Normalization is the process of organizing data in a database to reduce redundancy and improve data integrity.
+```
+- _What are different **normal forms** (1NF, 2NF, 3NF, BCNF)?_  
+
+| Normal Form | Rule                                                                                 | Example                                                                      |
+| ----------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- |
+| **1NF**     | No repeating groups or arrays; each cell contains atomic (indivisible) values.       | A table with multiple phone numbers in one column should be split into rows. |
+| **2NF**     | 1NF + no partial dependency on part of a composite key.                              | Order details table with product info split into separate product table.     |
+| **3NF**     | 2NF + no transitive dependency (non-key columns depending on other non-key columns). | Customer city stored separately in `City` table instead of `Customer`.       |
+| **BCNF**    | Stronger form of 3NF where every determinant is a candidate key.                     | Rare cases of overlapping candidate keys.                                    |
+
+- _Why is normalization important?_  
+```text
+Normalization is important because it helps prevent data redundancy, reduces data duplication, and ensures data consistency. It also makes it easier to maintain and update the database.
+```
+- _Provide examples of normalized vs non-normalized tables._
+
+**Example:**
+
+```sql
+-- Non-normalized table
+CREATE TABLE Orders (
+  id INT PRIMARY KEY,
+  customer_id INT,
+  order_date DATE,
+  product_name VARCHAR(100),
+  quantity INT,
+  price DECIMAL(10, 2)
+);
+
+-- Normalized tables
+CREATE TABLE Customers (
+  id INT PRIMARY KEY,
+  name VARCHAR(100),
+  email VARCHAR(100)
+);
+
+CREATE TABLE Orders (
+  id INT PRIMARY KEY,
+  customer_id INT,
+  order_date DATE,
+  product_name VARCHAR(100),
+  quantity INT,
+  price DECIMAL(10, 2)
+);
+```

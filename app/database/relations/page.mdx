@@ -1,0 +1,79 @@
+# 🔁 Relation Types (With Examples)
+
+- _What is a **one-to-one** relationship?_
+```text
+A one-to-one relationship means each row in Table A is linked to one and only one row in Table B, and vice versa. This type is used when two tables share the same primary key but store different types of data.
+```
+- _What is a **one-to-many** relationship?_
+```text
+A one-to-many relationship means one row in Table A can be associated with many rows in Table B, but each row in Table B relates to only one row in Table A. This is the most common relationship in relational databases.
+```
+- _What is a **many-to-many** relationship?_  
+```text
+A many-to-many relationship occurs when multiple records in Table A relate to multiple records in Table B. To implement it, an intermediate (junction) table is used containing foreign keys referencing both tables.
+```
+- _Give real-world examples of each relationship type._
+
+| Relationship Type | Real-World Example                    | Tables Involved                                                    |
+| ----------------- | ------------------------------------- | ------------------------------------------------------------------ |
+| **One-to-One**    | A person and their passport           | `Person(id)` ↔ `Passport(person_id)`                               |
+| **One-to-Many**   | A customer placing multiple orders    | `Customer(id)` → `Order(customer_id)`                              |
+| **Many-to-Many**  | Students enrolled in multiple courses | `Student(id)` ↔ `Enrollment(student_id, course_id)` ↔ `Course(id)` |
+
+---
+
+**📌 Example SQL Schema**
+
+✅ One-to-One Example:
+
+```sql
+CREATE TABLE Person (
+  id INT PRIMARY KEY,
+  name VARCHAR(100)
+);
+
+CREATE TABLE Passport (
+  id INT PRIMARY KEY,
+  person_id INT UNIQUE,
+  passport_number VARCHAR(50),
+  FOREIGN KEY (person_id) REFERENCES Person(id)
+);
+```
+
+✅ One-to-Many Example:
+
+```sql
+CREATE TABLE Customer (
+  id INT PRIMARY KEY,
+  name VARCHAR(100)
+);
+
+CREATE TABLE Orders (
+  id INT PRIMARY KEY,
+  order_date DATE,
+  customer_id INT,
+  FOREIGN KEY (customer_id) REFERENCES Customer(id)
+);
+```
+
+✅ Many-to-Many Example:
+
+```sql
+CREATE TABLE Student (
+  id INT PRIMARY KEY,
+  name VARCHAR(100)
+);
+
+CREATE TABLE Course (
+  id INT PRIMARY KEY,
+  course_name VARCHAR(100)
+);
+
+CREATE TABLE Enrollment (
+  student_id INT,
+  course_id INT,
+  PRIMARY KEY (student_id, course_id),
+  FOREIGN KEY (student_id) REFERENCES Student(id),
+  FOREIGN KEY (course_id) REFERENCES Course(id)
+);
+```

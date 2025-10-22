@@ -1,0 +1,30 @@
+# 🔐 Transactions
+
+- _What is a **transaction** in a database?_  
+```text
+A transaction is a sequence of one or more SQL operations executed as a single unit of work.
+Either all the operations are committed (saved) together, or none are applied (rolled back).
+```
+- _Why are transactions important?_  
+```text
+Transactions ensure data integrity, especially in multi-user environments.
+They allow multiple related operations to be treated as one atomic action, avoiding partial updates.
+```
+- _What are the properties of a transaction?_
+```text
+ACID Properties:
+- Atomicity: All operations succeed or none are applied.
+- Consistency: Database state remains valid after transaction.
+- Isolation: Transactions are isolated from each other.
+- Durability: Changes are permanently saved.
+```
+**Example of Transaction:** 
+
+```sql
+BEGIN;
+
+UPDATE Accounts SET balance = balance - 100 WHERE account_id = 1;
+UPDATE Accounts SET balance = balance + 100 WHERE account_id = 2;
+
+COMMIT;
+```

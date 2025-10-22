@@ -1,0 +1,115 @@
+# 🔗 Join Types (With Examples)
+
+- _What is an **INNER JOIN**?_
+```text
+An INNER JOIN returns only the rows that have matching values in both tables. If there is no match, the row is excluded from the result.
+```
+- _What is a **LEFT JOIN**?_
+```text
+A LEFT JOIN returns all rows from the left table, and the matched rows from the right table. If there is no match, NULLs are returned for columns from the right table.
+```
+- _What is a **RIGHT JOIN**?_
+```text
+A RIGHT JOIN returns all rows from the right table, and the matched rows from the left table. If there is no match, NULLs are returned for columns from the left table.
+```
+- _What is a **FULL OUTER JOIN**?_
+```text
+A FULL OUTER JOIN returns all rows when there is a match in either the left or right table. Rows with no match in one of the tables will have NULLs for the missing side.
+```
+- _When should each type of join be used?_
+
+```text
+- Use **INNER JOIN** when you only want records with matches in both tables.
+- Use **LEFT JOIN** when you need all records from the left table, even if there's no match.
+- Use **RIGHT JOIN** when you need all records from the right table, even if there's no match.
+- Use **FULL OUTER JOIN** when you want all records from both tables, matched where possible.
+```
+
+- _Provide examples for each join type:_
+
+Assume two tables:
+**Employees**
+
+| id  | name    | dept_id |
+| --- | ------- | -------- |
+| 1   | Alice   | 10       |
+| 2   | Bob     | 20       |
+| 3   | Charlie | NULL     |
+
+**Departments**
+
+| id  | dept_name  |
+| --- | ----------- |
+| 10  | HR          |
+| 20  | Engineering |
+| 30  | Marketing   |
+
+**✅ INNER JOIN Example:**
+
+```sql
+SELECT Employees.name, Departments.dept_name
+FROM Employees
+INNER JOIN Departments ON Employees.dept_id = Departments.id;
+```
+
+*Result:*
+
+| name  | dept_name  |
+| ----- | ----------- |
+| Alice | HR          |
+| Bob   | Engineering |
+
+---
+
+**✅ LEFT JOIN Example:**
+
+```sql
+SELECT Employees.name, Departments.dept_name
+FROM Employees
+LEFT JOIN Departments ON Employees.dept_id = Departments.id;
+```
+
+*Result:*
+
+| name    | dept_name  |
+| ------- | ----------- |
+| Alice   | HR          |
+| Bob     | Engineering |
+| Charlie | NULL        |
+
+---
+
+**✅ RIGHT JOIN Example:**
+
+```sql
+SELECT Employees.name, Departments.dept_name
+FROM Employees
+RIGHT JOIN Departments ON Employees.dept_id = Departments.id;
+```
+
+*Result:*
+
+| name  | dept_name  |
+| ----- | ----------- |
+| Alice | HR          |
+| Bob   | Engineering |
+| NULL  | Marketing   |
+
+---
+
+**✅ FULL OUTER JOIN Example:**
+
+```sql
+SELECT Employees.name, Departments.dept_name
+FROM Employees
+FULL OUTER JOIN Departments ON Employees.dept_id = Departments.id;
+```
+
+*Result:*
+
+| name    | dept_name  |
+| ------- | ----------- |
+| Alice   | HR          |
+| Bob     | Engineering |
+| Charlie | NULL        |
+| NULL    | Marketing   |

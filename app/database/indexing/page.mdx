@@ -1,0 +1,38 @@
+# 📇 Indexing (With Types & Examples)
+
+- _What is **indexing** in databases?_  
+```text
+Indexing is a data structure technique used to quickly locate and access data in a database table.
+It works like an index in a book — speeding up lookups without scanning the entire table.
+```
+- _What are the types of indexes (e.g., **single-column**, **composite**, **unique**, **full-text**)_
+
+| Type              | Description                                          | Example Use Case                    |
+| ----------------- | ---------------------------------------------------- | ----------------------------------- |
+| **Single-column** | Index on one column.                                 | Search by username                  |
+| **Composite**     | Index on multiple columns.                           | Search by (first_name, last_name) |
+| **Unique**        | Ensures no duplicate values for indexed columns.     | Email addresses                     |
+| **Full-text**     | Optimized for text searching with relevance ranking. | Article content                     |
+
+- _When and why should indexes be used?_  
+```text
+Indexes should be used when:
+- Frequent lookups are required.
+- Data is frequently sorted or filtered.
+- Performance is critical for large datasets.
+
+Indexes improve SELECT query performance but slow down INSERT, UPDATE, and DELETE operations due to maintenance overhead. They should be used on columns frequently queried in WHERE, JOIN, or ORDER BY clauses.
+```
+- _Provide examples of indexing._
+**Example:**
+
+```sql
+-- Single-column index
+CREATE INDEX idx_username ON Users(username);
+
+-- Composite index
+CREATE INDEX idx_fullname ON Users(first_name, last_name);
+
+-- Unique index
+CREATE UNIQUE INDEX idx_email_unique ON Users(email);
+```
