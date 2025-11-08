@@ -5,6 +5,7 @@ export default {
   oop: "OOP",
   database: "Database",
   topics: "Topics",
+  "go-routines": "Go Routines",
   project: "Build Project",
   "algo-technique": "Algo & Technique",
   os: "OS",

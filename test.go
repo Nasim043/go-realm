@@ -2,23 +2,27 @@ package main
 
 import (
 	"fmt"
+	"time"
 )
 
-func calculate() int {
-	result := 0
-	fmt.Println("first", result)
-
-	defer func() {
-		result = result + 10
-		fmt.Println("defer", result)
-	}()
-
-	result = 5
-	fmt.Println("second", result)
-
-	return result
+func cookSoup(){
+	for i:=0;i<5;i++{
+		fmt.Println("soup",i)
+		time.Sleep(time.Millisecond * 500)
+	}
 }
-func main() {
-	unnamedReturn := calculate()
-	fmt.Println("Unnamed Return", unnamedReturn)
+
+func chopVegetables(){
+	for i:=0;i<5;i++{
+		fmt.Println("vegetables",i)
+		time.Sleep(time.Millisecond * 500)
+	}
+}
+
+func main(){
+	go cookSoup()        // concurreny - context swithing
+	go chopVegetables()  // concurreny - context swithing
+
+	time.Sleep(time.Second * 3)
+	fmt.Println("All tasks managed concurrently!")
 }
