@@ -2,19 +2,20 @@ package main
 
 import (
 	"fmt"
+	"sync"
 )
 
 func main() {
-	ch := make(chan int)
+	var counter = 0
+	var wg sync.WaitGroup
 
-	go func() {
-		for i := 1; i <= 5; i++ {
-			ch <- i
-		}
-		close(ch)
-	}()
-
-	for v := range ch {
-		fmt.Println(v)
+	wg.Add(1000)
+	for i := 0; i < 1000; i++ {
+		go func() {
+			defer wg.Done()
+			counter++
+		}()
 	}
+	wg.Wait()
+	fmt.Println("Final Counter", counter)
 }
