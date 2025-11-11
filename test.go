@@ -2,20 +2,22 @@ package main
 
 import (
 	"fmt"
-	"sync"
+	"time"
 )
 
 func main() {
-	var counter = 0
-	var wg sync.WaitGroup
+	ch1 := make(chan string)
+	
+	go func () {
+		time.Sleep(2 * time.Second)
+		ch1 <- "🍎 From channel 1"
+	}()
 
-	wg.Add(1000)
-	for i := 0; i < 1000; i++ {
-		go func() {
-			defer wg.Done()
-			counter++
-		}()
+
+	select {
+		case msg1 := <-ch1:
+			fmt.Println(msg1)
+		case <-time.After(2 * time.Second):
+			fmt.Println("Timeout! ⏰ No data received.")
 	}
-	wg.Wait()
-	fmt.Println("Final Counter", counter)
 }
