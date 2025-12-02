@@ -3,4 +3,5 @@ export default {
     "api-design": "API Design",
     "content-delivery-network": "Content Delivery Network",
     "draft-roadmap": "Draft Roadmap",
+    "dns": "Domain Name System",
   };

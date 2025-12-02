@@ -1,0 +1,476 @@
+## 🚀 **SESSION 1 — DNS BASICS**
+
+### 📘 **SESSION OBJECTIVES**
+
+এই সেশনে আপনি শিখবেন—
+
+ - Domain কী
+ - Subdomain কী
+ - TLD, gTLD, ccTLD
+ - Registry vs Registrar vs Registry Operator
+ - Nameserver কী
+ - DNS Zone & Zone File
+ - A, AAAA, CNAME, MX, TXT, NS, PTR, SRV, SOA রেকর্ড
+ - DNS propagation কী
+ - google.com / facebook.com / mydomain.com দিয়ে বাস্তব উদাহরণ
+ - Exercises after each section
+ - ASCII diagrams for clear understanding
+
+---
+
+## ⭐ **TOPIC 1: Domain vs Subdomain**
+
+### 🔹 **What is a Domain?**
+
+Domain হলো IP address এর মানুষের জন্য বোঝার মতো নাম।
+
+**Example:**
+
+```
+google.com → 142.250.190.14  
+facebook.com → 157.240.22.35
+```
+
+এটাই DNS-এর মূল কাজ: **Name → IP Mapping**
+
+---
+
+### 🔹 **What is a Subdomain?**
+
+Domain-এর আগে যেকোনো prefix অর্থাৎ অংশকে Subdomain বলা হয়।
+
+**Example:**
+
+```
+mail.google.com  
+docs.google.com  
+developers.facebook.com  
+api.mydomain.com  
+```
+
+### 👉 Formula:
+
+```
+subdomain.domain.tld
+```
+
+---
+
+### 🔹 **Diagram: Domain vs Subdomain**
+
+```
+               +---------------------+
+               |     google.com      |
+               +---------------------+
+                /       |        \
+               /        |         \
+      mail.google.com  docs.google.com  maps.google.com
+```
+
+---
+
+### 🔥 **Exercises**
+
+1. তোমার নিজের ডোমেইন ধরো: `mydomain.com`
+
+   * ৩টি subdomain তৈরি করে লিখো
+2. নিচের কোনটি domain কোনটি subdomain?
+
+   * support.mydomain.com
+   * mydomain.com
+   * cdn.images.mydomain.com
+
+---
+
+### ⭐ **TOPIC 2: TLD, gTLD, ccTLD**
+
+### 🔹 **TLD (Top Level Domain)**
+
+ডোমেইনের শেষ অংশ `.com`, `.org`, `.net`—এগুলোই TLD।
+
+**Example:**
+
+```
+google.com → .com = TLD
+gov.bd     → .bd = TLD
+```
+
+---
+
+### 🔹 **gTLD (Generic TLD)**
+
+Generic অর্থ Category-Based:
+
+Examples:
+
+```
+.com   → Commercial  
+.org   → Organization  
+.net   → Network  
+.xyz  
+.dev  
+.tech  
+.app  
+```
+
+---
+
+### 🔹 **ccTLD (Country Code TLD)**
+
+দেশভিত্তিক TLD, দুই অক্ষরের।
+
+Examples:
+
+```
+.bd  → Bangladesh  
+.in  → India  
+.uk  → United Kingdom  
+.us  → USA  
+```
+
+---
+
+### 🔥 Exercises
+
+1. নিচেরগুলো কোন গ্রুপের TLD?
+
+   * `.ai`
+   * `.bd`
+   * `.io`
+   * `.hospital`
+2. তুমি কোন ccTLD ব্যবহার করতে চাও এবং কেন?
+
+---
+
+## ⭐ **TOPIC 3: Registry vs Registrar vs Registry Operator**
+
+### 🔹 **Registry**
+
+Domain database পরিচালনা করে।
+
+**Examples:**
+
+* Verisign → `.com`, `.net`
+* PIR → `.org`
+* Nominet → `.uk`
+
+---
+
+### 🔹 **Registrar**
+
+যেখান থেকে আমরা Domain কিনি।
+
+**Examples:**
+
+* Namecheap
+* GoDaddy
+* Google Domains
+* Hostinger
+* Porkbun
+
+---
+
+### 🔹 **Registry Operator**
+
+যারা backend infrastructure চালায়।
+
+---
+
+### 🔹 Diagram
+
+```
+Registry (Database)  →  Verisign  
+Registrar (Store)    →  Namecheap  
+User (Buyer)         →  You  
+```
+
+---
+
+### 🔥 Exercises
+
+1. `.com` কে manage করে?
+2. তুমি কোন Registrar-এ domain কিনেছো?
+
+---
+
+## ⭐ **TOPIC 4: Nameserver কী?**
+
+Nameserver হলো DNS configuration সংরক্ষণকারী Server।
+
+**Example:**
+
+```
+ns1.cloudflare.com  
+ns2.cloudflare.com  
+
+ns1.hostinger.com  
+ns2.hostinger.com
+```
+
+---
+
+### 🔹 Nameserver কী রাখে?
+
+* Domain-এর A record
+* CNAME
+* MX
+* TXT
+* NS
+* SOA
+
+**এগুলো মিলেই একটা Zone File তৈরি হয়।**
+
+---
+
+### 🔹 Diagram (Simple)
+
+```
+Browser → Nameserver → Records → IP Address
+```
+
+---
+
+## ⭐ **TOPIC 5: DNS Zone & Zone File**
+
+### 🔹 DNS Zone
+
+একটি Domain এর DNS configuration এর এলাকায় যাকে Zone বলা হয়।
+
+### 🔹 Zone File
+
+সব DNS record যেখানে সংরক্ষণ করা থাকে।
+
+---
+
+# ⭐ **TOPIC 6: DNS RECORDS — (Most Important)**
+
+নীচে প্রতিটি Record-ই বাংলা + Example + Purpose সহ দেওয়া হলো:
+
+---
+
+### 1️⃣ **A Record (IPv4 Address)**
+
+```
+google.com → 142.250.190.14
+```
+
+---
+
+### 2️⃣ **AAAA Record (IPv6 Address)**
+
+```
+google.com → 2607:f8b0:4004:837::200e
+```
+
+---
+
+### 3️⃣ **CNAME (Alias)**
+
+একটা Domain কে অন্য Domain এর দিকে point করা।
+
+Example:
+
+```
+www.mydomain.com → mydomain.com
+```
+
+---
+
+### 4️⃣ **MX Record (Mail Server)**
+
+Email কোথায় যাবে সেটা নির্ধারণ করে।
+
+Example:
+
+```
+mydomain.com → mail.protection.outlook.com
+```
+
+---
+
+### 5️⃣ **TXT Record**
+
+Verification + SPF + Security
+
+Examples:
+
+```
+google-site-verification=xxxx  
+v=spf1 include:_spf.google.com ~all
+```
+
+---
+
+### 6️⃣ **NS Record**
+
+Nameserver নির্দেশ করে।
+
+---
+
+### 7️⃣ **PTR Record (Reverse DNS)**
+
+IP → Domain mapping
+Used in Email security.
+
+---
+
+### 8️⃣ **SRV Record**
+
+Service specific record
+Example:
+
+```
+_ldap._tcp.example.com
+```
+
+---
+
+### 9️⃣ **SOA Record**
+
+Start of Authority – zone information
+
+Contains:
+
+* admin email
+* serial number
+* refresh, retry, expire, TTL
+
+---
+
+# ⭐ **TOPIC 7: DNS Propagation**
+
+DNS change (A, CNAME, MX, etc) বিশ্বব্যাপী ছড়াতে সময় লাগে।
+
+Usually: **5 minutes – 48 hours**
+
+Because:
+
+* Every ISP has caches
+* TTL respected
+
+---
+
+### 🔹 Diagram: Propagation
+
+```
+You Change DNS → Nameserver → ISP Cache → Worldwide Update
+```
+
+---
+
+# ⭐ **Real Examples (google.com, facebook.com)**
+
+### 🔹 google.com
+
+`dig google.com` gives:
+
+```
+google.com.   300   IN   A   142.250.190.14
+```
+
+### 🔹 facebook.com
+
+```
+facebook.com. 1800 IN A 157.240.22.35
+```
+
+### 🔹 mydomain.com Example
+
+```
+A: mydomain.com → 206.189.120.10
+CNAME: www → mydomain.com
+MX: mail → mail.mydomain.com
+```
+
+---
+
+## 🔥 **SESSION 1 PRACTICAL EXERCISES**
+
+### **Exercise 1: Identify Parts**
+
+Break this domain:
+
+```
+cdn.images.blog.mydomain.com
+```
+
+Identify:
+
+* TLD
+* Domain
+* Subdomain
+* Root domain
+
+---
+
+### **Exercise 2: Create DNS Records**
+
+ধরো তোমার domain: `examplebd.com`
+
+তুমি তৈরি করবে—
+
+* A record
+* AAAA record
+* CNAME
+* MX
+* TXT
+* NS
+
+---
+
+### **Exercise 3: Use Dig Command**
+
+Run these:
+
+```
+dig google.com
+dig facebook.com
+dig example.com MX
+dig example.com ANY
+```
+
+Explain:
+
+* TTL
+* IP
+* Nameserver
+* Resolved answer
+
+---
+
+### **Exercise 4: Spot the Error**
+
+ধরো তুমি লিখেছো:
+
+```
+www A 127.0.0.1
+```
+
+But website load হচ্ছে না।
+
+Find reason:
+
+* Should be **CNAME, not A**?
+* Should point to root domain
+
+---
+
+## 🧠 **END OF SESSION 1 SUMMARY (Cheat Sheet)**
+
+```
+Domain → Name of the website  
+Subdomain → prefix of domain  
+TLD → Last part (.com/.bd)  
+DNS → Converts Name to IP  
+Nameserver → Stores DNS records  
+A → IPv4  
+AAAA → IPv6  
+CNAME → Alias  
+MX → Mail server  
+TXT → Verification  
+NS → Nameserver  
+SOA → Zone info  
+Propagation → DNS Update Time  
+```
+
+---
