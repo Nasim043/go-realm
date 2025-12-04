@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  go-realm:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: go-realm
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=4300
+    ports:
+      - "4300:4300"
