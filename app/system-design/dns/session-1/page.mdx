@@ -2,8 +2,6 @@
 
 ### 📘 **SESSION OBJECTIVES**
 
-এই সেশনে আপনি শিখবেন—
-
  - Domain কী
  - Subdomain কী
  - TLD, gTLD, ccTLD
@@ -48,10 +46,10 @@ developers.facebook.com
 api.mydomain.com  
 ```
 
-### 👉 Formula:
+### 👉 Formula: 🔥
 
 ```
-subdomain.domain.tld
+subdomain.domain.tld | domain.tld
 ```
 
 ---
@@ -242,7 +240,7 @@ Browser → Nameserver → Records → IP Address
 
 ---
 
-# ⭐ **TOPIC 6: DNS RECORDS — (Most Important)**
+## ⭐ **TOPIC 6: DNS RECORDS — (Most Important)**
 
 নীচে প্রতিটি Record-ই বাংলা + Example + Purpose সহ দেওয়া হলো:
 
@@ -337,7 +335,7 @@ Contains:
 
 ---
 
-# ⭐ **TOPIC 7: DNS Propagation**
+## ⭐ **TOPIC 7: DNS Propagation**
 
 DNS change (A, CNAME, MX, etc) বিশ্বব্যাপী ছড়াতে সময় লাগে।
 
@@ -358,7 +356,7 @@ You Change DNS → Nameserver → ISP Cache → Worldwide Update
 
 ---
 
-# ⭐ **Real Examples (google.com, facebook.com)**
+### ⭐ **Real Examples (google.com, facebook.com)**
 
 ### 🔹 google.com
 
@@ -401,6 +399,13 @@ Identify:
 * Subdomain
 * Root domain
 
+#### ✅ Solution
+
+- **TLD:** `.com`
+- **Domain:** `mydomain.com`
+- **Subdomain:** `cdn.images.blog`
+- **Root domain:** `mydomain.com` (domain + TLD)
+
 ---
 
 ### **Exercise 2: Create DNS Records**
@@ -416,13 +421,30 @@ Identify:
 * TXT
 * NS
 
+#### ✅ Solution
+
+একটি sample setup (dummy IP ব্যবহার করা হয়েছে, production-এ নিজের server IP ব্যবহার করবে):
+
+- **A:** `examplebd.com → 206.189.120.10`  
+  (IPv4 address)
+- **AAAA:** `examplebd.com → 2001:db8::10`  
+  (IPv6 address)
+- **CNAME:** `www → examplebd.com`  
+  (www subdomain root ডোমেইনের দিকে point করবে)
+- **MX:** `examplebd.com → 10 mail.examplebd.com`  
+  (priority 10, mail server)
+- **TXT:** `"v=spf1 include:_spf.google.com ~all"`  
+  (SPF / verification record উদাহরণ)
+- **NS:** `ns1.examplebd.com`, `ns2.examplebd.com`  
+  (nameserver pair)
+
 ---
 
 ### **Exercise 3: Use Dig Command**
 
 Run these:
 
-```
+```bash
 dig google.com
 dig facebook.com
 dig example.com MX
@@ -436,13 +458,28 @@ Explain:
 * Nameserver
 * Resolved answer
 
+#### ✅ Solution
+
+`dig` output-এ সাধারণভাবে যা দেখবে:
+
+- **TTL:**  
+  প্রতিটি record লাইনে name-এর পাশে থাকা সংখ্যা (seconds)।  
+  উদাহরণ: `google.com. 300 IN A 142.250.190.14` → এখানে `300` হলো TTL।
+- **IP:**  
+  `A` বা `AAAA` record-এর শেষে থাকা address।  
+  উপরের example-এ: `142.250.190.14`।
+- **Nameserver:**  
+  AUTHORITY section / NS records-এ যে server নাম আসে, অথবা `SERVER:` লাইনে যে nameserver থেকে answer এসেছে।
+- **Resolved answer:**  
+  ANSWER section-এর পুরো লাইনটাই actual DNS answer (record type + value)।
+
 ---
 
 ### **Exercise 4: Spot the Error**
 
 ধরো তুমি লিখেছো:
 
-```
+```bash
 www A 127.0.0.1
 ```
 
@@ -452,6 +489,16 @@ Find reason:
 
 * Should be **CNAME, not A**?
 * Should point to root domain
+
+#### ✅ Solution
+
+- `127.0.0.1` হলো **local machine** (localhost) এর IP; public website সাধারণত এই IP-তে থাকে না।
+- Public web server-এর real IP use করা উচিত, উদাহরণ:  
+  `mydomain.com A 203.0.113.10`
+- `www` এর জন্য best practice:  
+  `www CNAME mydomain.com`  
+  এবং root domain-এ A record থাকবে।
+- এখনকার config-এ `www` আসলে তোমার নিজের PC-তে point করছে, তাই public internet থেকে site open হচ্ছে না।
 
 ---
 
