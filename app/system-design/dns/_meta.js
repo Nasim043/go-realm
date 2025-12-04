@@ -2,4 +2,5 @@
 export default {
     "session-1": "DNS Basic",
     "session-2": "Advanced DNS",
+    "session-3": "Production DNS",
 };
