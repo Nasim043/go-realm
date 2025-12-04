@@ -1,166 +1,272 @@
-# Getting Started with Nextra
+# Go Realm
 
-This guide will help you set up a Next.js project using **Nextra** and its **theme-docs** for building a documentation website.
+A comprehensive documentation website built with **Nextra 4** and **Next.js**, covering Go programming, databases, system design, DevOps, and more.
 
-## 1. Install Dependencies
+---
 
-First, create a Next.js app and install Nextra and the required theme:
+## 🚀 Quick Start
 
-```bash
-npx create-next-app@latest
-npm install nextra nextra-theme-docs
-```
-
-## 2. Update Next.js Configuration
-
-Rename `next.config.js` to `next.config.mjs` and set up Nextra with the configuration:
-
-```js
-// next.config.mjs
-import nextra from "nextra";
-
-// Set up Nextra with its configuration
-const withNextra = nextra({
-  // Add Nextra-specific options here (e.g., themes, plugins)
-});
-
-// Export the final Next.js config with Nextra included
-export default withNextra({
-  // Add regular Next.js options here (e.g., reactStrictMode)
-});
-```
-
-Additionally, in your `tsconfig.json`, add the following to the `include` array:
-
-```json
-{
-  "include": [
-    "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts",
-    "next.config.mjs"
-  ]
-}
-```
-
-## 3. Add MDX Components
-
-Create an `mdx-components.js` file in the root directory to customize the MDX components for your theme:
-
-```js
-// mdx-components.js
-import { useMDXComponents as getThemeComponents } from "nextra-theme-docs"; // or nextra-theme-blog or your custom theme
-
-// Get the default MDX components
-const themeComponents = getThemeComponents();
-
-// Merge and override components
-export function useMDXComponents(components) {
-  return {
-    ...themeComponents,
-    ...components,
-  };
-}
-```
-
-## 4. Set Up Root Layout
-
-Create a `layout.jsx` file in the `app` directory for the root layout of your documentation site:
-
-```js
-// app/layout.jsx
-import { Footer, Layout, Navbar } from "nextra-theme-docs";
-import { Banner, Head } from "nextra/components";
-import { getPageMap } from "nextra/page-map";
-import "nextra-theme-docs/style.css";
-
-export const metadata = {
-  // Define your metadata here (e.g., title, description, keywords, etc.)
-  // Refer to the Next.js metadata API for more details: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
-};
-
-const banner = <Banner storageKey="some-key">Nextra 4.0 is released 🎉</Banner>;
-const navbar = (
-  <Navbar
-    logo={<b>Nextra</b>}
-    // Add additional navbar options here
-  />
-);
-const footer = <Footer>MIT {new Date().getFullYear()} © Nextra.</Footer>;
-
-export default async function RootLayout({ children }) {
-  return (
-    <html lang="en" dir="ltr" suppressHydrationWarning>
-      <Head
-      // Your additional head options (e.g., meta tags, styles)
-      >
-        {/* Additional tags should be passed as children of `<Head>` */}
-      </Head>
-      <body>
-        <Layout
-          banner={banner}
-          navbar={navbar}
-          pageMap={await getPageMap()}
-          docsRepositoryBase="https://github.com/shuding/nextra/tree/main/docs"
-          footer={footer}
-          // Additional layout options
-        >
-          {children}
-        </Layout>
-      </body>
-    </html>
-  );
-}
-```
-
-## 5. Run the Project
-
-Once everything is set up, you can run your project locally:
+**Prerequisites:** Node.js 20.x or higher
 
 ```bash
+# Clone and install
+git clone <your-repo-url>
+cd go-realm
+npm install
+
+# Build (required for sidebar and search)
+npm run build
+
+# Start development server
 npm run dev
 ```
 
-Your Nextra-based documentation website should now be running at `http://localhost:3000`.
+Visit `http://localhost:4300`
+
+> **⚠️ Important:** Running `npm run build` is **required** for sidebar navigation and search to work. It generates the page structure and creates the search index in `public/_pagefind/` (gitignored).
+
+**Quick one-liner:**
+```bash
+npm install && npm run build && npm run dev
+```
 
 ---
 
-### Additional Resources
+## 📜 Available Scripts
 
-- [Nextra Documentation](https://nextra.vercel.app/docs)
-- [Next.js Documentation](https://nextjs.org/docs)
+- `npm run dev` - Start the development server on port 4300
+- `npm run build` - Build the project for production (includes search indexing)
+- `npm start` - Start the production server on port 4300
+- `npm run lint` - Run ESLint to check code quality
 
 ---
 
-# My Nextra-Based Next.js Project
+## 🔍 Search Functionality
 
-## 🔧 Setup Changes
+This project uses **Pagefind** for full-text search:
 
-### 1. Removed Default Page
+- Search is automatically indexed during the build process via the `postbuild` script
+- The search index is stored in `public/_pagefind/` (gitignored)
+- After a fresh clone, you **must** run `npm run build` to generate the search index
 
-The default Next.js page file `app/page.jsx` has been deleted to avoid conflict with custom routing and Nextra configuration.
+### How It Works
 
-### 2. Updated `next.config.mjs`
+The `postbuild` script in `package.json`:
 
-The `next.config.mjs` file has been configured to use Nextra and includes a redirect from `/` to `/resources`.
+```json
+"postbuild": "pagefind --site .next/server/app --output-path public/_pagefind"
+```
+
+This automatically runs after `npm run build` and:
+1. Scans the built HTML files in `.next/server/app/`
+2. Creates a search index
+3. Outputs it to `public/_pagefind/`
+
+---
+
+## 🧭 Sidebar Navigation
+
+The sidebar navigation is dynamically generated by Nextra based on:
+- `_meta.js` files in each directory (define order and labels)
+- The file structure in the `app/` directory
+- The page map generated during the build process
+
+**Note:** The sidebar will only work properly after running `npm run build` at least once.
+
+---
+
+## 📁 Project Structure
+
+```
+go-realm/
+├── app/                    # Main content directory
+│   ├── _meta.js           # Root navigation configuration
+│   ├── layout.tsx         # Root layout with Nextra theme
+│   ├── docs/              # Documentation pages
+│   ├── database/          # Database-related content
+│   ├── go-routines/       # Go concurrency topics
+│   ├── devops/            # DevOps guides
+│   └── ...                # Other topic directories
+├── public/                # Static assets
+│   └── _pagefind/         # Search index (generated, gitignored)
+├── next.config.mjs        # Next.js configuration with Nextra
+├── package.json           # Project dependencies and scripts
+└── README.md              # This file
+```
+
+---
+
+## 🛠️ Technology Stack
+
+- **[Next.js 15](https://nextjs.org/)** - React framework
+- **[Nextra 4](https://nextra.site/)** - Documentation theme
+- **[Pagefind](https://pagefind.app/)** - Static search library
+- **[TailwindCSS 4](https://tailwindcss.com/)** - Styling
+- **TypeScript** - Type safety
+
+---
+
+## 🤝 How to Contribute
+
+We welcome contributions! Here's how you can help:
+
+### 1. Fork and Clone
+
+```bash
+git fork <repo-url>
+git clone <your-fork-url>
+cd go-realm
+```
+
+### 2. Create a Branch
+
+```bash
+git checkout -b feature/your-feature-name
+```
+
+### 3. Make Your Changes
+
+- **Adding new content**: Create `.md` or `.mdx` files in the appropriate `app/` subdirectory
+- **Organizing navigation**: Update or create `_meta.js` files to control sidebar order
+- **Styling**: Use TailwindCSS classes or update `globals.css`
+
+### 4. Test Your Changes
+
+```bash
+npm install
+npm run build
+npm run dev
+```
+
+Verify that:
+- ✅ The sidebar shows your new pages
+- ✅ Search can find your content
+- ✅ No console errors appear
+
+### 5. Commit and Push
+
+```bash
+git add .
+git commit -m "feat: add new content on [topic]"
+git push origin feature/your-feature-name
+```
+
+### 6. Open a Pull Request
+
+- Go to the original repository
+- Click "New Pull Request"
+- Select your branch and describe your changes
+
+### Contribution Guidelines
+
+- Follow the existing file structure and naming conventions
+- Use descriptive commit messages (conventional commits preferred)
+- Test your changes locally before submitting
+- Keep content clear, concise, and well-formatted
+- Add appropriate metadata in `_meta.js` files for new sections
+
+---
+
+## 📝 Creating New Content
+
+### Adding a New Page
+
+1. Create a new `.mdx` file in the appropriate directory:
+
+```bash
+# Example: Adding a new database topic
+app/database/my-new-topic.mdx
+```
+
+2. Add metadata to `app/database/_meta.js`:
 
 ```js
-// next.config.mjs
-
-import withNextra from "nextra";
-
-// Export the final Next.js config with Nextra included
-export default withNextra({
-  // ... Add regular Next.js options here
-  async redirects() {
-    return [
-      {
-        source: "/",
-        destination: "/resources",
-        permanent: true,
-      },
-    ];
-  },
-});
+export default {
+  'my-new-topic': 'My New Topic Title'
+}
 ```
+
+3. Write your content using Markdown/MDX syntax
+
+4. Rebuild to update search and sidebar:
+
+```bash
+npm run build
+```
+
+### Adding a New Section
+
+1. Create a new directory in `app/`:
+
+```bash
+mkdir app/my-section
+```
+
+2. Create `_meta.js` in the new directory:
+
+```js
+export default {
+  'page-1': 'First Page',
+  'page-2': 'Second Page'
+}
+```
+
+3. Add the section to `app/_meta.js`:
+
+```js
+export default {
+  // ... existing sections
+  'my-section': 'My New Section'
+}
+```
+
+---
+
+## 🐛 Troubleshooting
+
+### Search Not Working
+
+**Problem:** Search shows "No results" or doesn't load
+
+**Solution:**
+```bash
+npm run build  # Rebuild to regenerate search index
+npm run dev    # Restart dev server
+```
+
+### Sidebar Missing or Empty
+
+**Problem:** Sidebar doesn't show navigation
+
+**Solution:**
+```bash
+npm run build  # Generate page map
+npm run dev    # Restart dev server
+```
+
+### Port Already in Use
+
+**Problem:** Port 4300 is already in use
+
+**Solution:**
+```bash
+# Kill the process using port 4300, or change the port in package.json
+"dev": "next --turbopack --port 4301"
+```
+
+---
+
+## 📚 Additional Resources
+
+- [Nextra Documentation](https://nextra.site/docs)
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Pagefind Documentation](https://pagefind.app/docs/)
+- [MDX Documentation](https://mdxjs.com/)
+
+---
+
+## 📄 License
+
+This project is maintained by **Go Realm** team.
+
+© 2025 Go Realm. All rights reserved.
