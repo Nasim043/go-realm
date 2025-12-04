@@ -1,0 +1,13 @@
+node_modules
+npm-debug.log*
+Dockerfile*
+docker-compose*
+.git
+.gitignore
+.next
+.vercel
+.env
+.env.*
+.vscode
+.DS_Store
+public/_pagefind
