@@ -4,6 +4,7 @@ export default {
   topics: "Topics",
   oop: "OOP",
   database: "Database",
+  "ent-guide": "ENT Guide",
   "go-routines": "Go Routines",
   project: "Build Project",
   "algo-technique": "Algo & Technique",
