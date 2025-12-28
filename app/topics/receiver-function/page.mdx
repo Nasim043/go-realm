@@ -1,8 +1,8 @@
-### Receiver Functions in Go
+# গোল্যাঙ্গে রিসিভার ফাংশন
 
-### What Are Receiver Functions?
+## রিসিভার ফাংশন কি?
 
-Receiver functions allow you to define methods on types. They're Go's way of attaching functionality to structs (or any user-defined type).
+Go (Golang)-এ Receiver Function হলো এমন একটি ফাংশন, যা কোনো নির্দিষ্ট type (সাধারণত struct)–এর সাথে যুক্ত থাকে। সহজ ভাষায় বললে, এটি Go-তে কোনো struct বা user-defined type-এর উপর method তৈরি করার উপায়।
 
 ```go
 type User struct {
@@ -28,10 +28,10 @@ func (receiverName ReceiverType) MethodName(parameters) returnTypes {
 
 | Feature           | Value Receiver (`u User`) | Pointer Receiver (`u *User`) |
 | ----------------- | ------------------------- | ---------------------------- |
-| Modifies original | ❌ No                     | ✅ Yes                       |
-| Memory Usage      | Copies entire value       | Uses reference (4/8 bytes)   |
-| Best For          | Read-only operations      | Mutating operations          |
-| Nil Safety        | Always safe               | May cause panics             |
+| অরিজিনাল ডাটা পরিবর্তন | ❌ না                     | ✅ হ্যাঁ                       |
+| মেমোরি ব্যবহার      | সম্পূর্ণ ভ্যালুর কপি তৈরি করে       | শুধু রেফারেন্স ব্যবহার করে (৪/৮ বাইট)   |
+| কোন কাজে উপযুক্ত        | শুধুমাত্র ডাটা পড়ার কাজ (Read-only)      | ডাটা পরিবর্তনের কাজ (Mutating)          |
+| Nil (নাল) সেফটি        | সবসময় নিরাপদ               | Nil হলে panic হতে পারে             |
 
 ```go
 // Value receiver (read-only)
@@ -45,19 +45,21 @@ func (u *User) Birthday() {
 }
 ```
 
-## FAQ: Common Interview Questions
+## FAQ: সাধারণ ইন্টারভিউ প্রশ্ন
 
-### 1. When to use pointer receivers?
+### 1. কখন Pointer Receiver ব্যবহার করা উচিত?
 
-**A:** Use when:
+**A:** Pointer receiver ব্যবহার করা হয় যখন—
 
-- You need to modify the receiver
-- Working with large structs (avoid copying)
-- Implementing interface methods that require mutation
+- রিসিভারের ভ্যালু পরিবর্তন (modify) করার প্রয়োজন হয়
 
-### 2. Can any type have methods?
+- বড় struct নিয়ে কাজ করতে হয় (অপ্রয়োজনীয় কপি এড়ানোর জন্য)
 
-**A:** Yes, but with restrictions:
+- এমন interface method ইমপ্লিমেন্ট করতে হয় যেখানে ডাটা পরিবর্তন দরকার
+
+### 2. যেকোনো type-এর method কি থাকতে পারে?
+
+**A:** হ্যাঁ, পারে — তবে কিছু সীমাবদ্ধতা আছেঃ
 
 ```go
 type MyInt int
@@ -67,27 +69,27 @@ func (m MyInt) Double() int {
 }
 ```
 
-**Exception:** Cannot define methods on:
+**Exception:** কিছু সীমাবদ্ধতা আছেঃ
 
-- Built-in types directly (must alias)
-- Pointers directly
-- Interfaces
+- Built-in types সরাসরি ব্যবহার করা যায় না (alias করতে হবে)
+- Pointers সরাসরি ব্যবহার করা যায় না
+- Interfaces-এ ব্যবহার করা যায় না
 
-### 3. What's the convention for receiver names?
+### 3. Receiver name-এর কনভেনশন কী?
 
-**A:** Typically 1-2 letters matching type:
+**A:** সাধারণত টাইপের সাথে মিল রেখে ১-২ অক্ষর ব্যবহার করা হয়:
 
-- `u` for `User`
-- `p` for `Product`
-- `c` for `Client`
+- `User`-এর জন্য `u`
+- `Product`-এর জন্য `p`
+- `Client`-এর জন্য `c`
 
-### 4. Can interfaces have receiver methods?
+### 4. Interfaces-এ কি receiver method থাকতে পারে?
 
-**A:** No, interfaces define method signatures but can't implement them.
+**A:** না, interfaces শুধুমাত্র method signatures ডিফাইন করে কিন্তু সেগুলো implement করতে পারে না।
 
-### 5. Can built-in types have methods?
+### 5. Built-in types-এর method থাকতে পারে কি?
 
-**A:** Only via type aliasing:
+**A:** শুধুমাত্র type aliasing-এর মাধ্যমে সম্ভব:
 
 ```go
 type Celsius float64
@@ -97,9 +99,9 @@ func (c Celsius) ToFahrenheit() float64 {
 }
 ```
 
-### 6. What's the zero-value receiver behavior?
+### 6. Zero-value receiver-এর আচরণ কেমন?
 
-**A:** Methods can be called on nil receivers if properly handled:
+**A:** Nil receivers-এও method কল করা যায় যদি সঠিকভাবে হ্যান্ডল করা হয়:
 
 ```go
 func (a *Account) Balance() float64 {
@@ -110,16 +112,16 @@ func (a *Account) Balance() float64 {
 }
 ```
 
-### 7. How does Go handle method calls on values vs pointers?
+### 7. Go কীভাবে value এবং pointer-এ method call হ্যান্ডল করে?
 
-**A:** Go automatically converts:
+**A:** Go স্বয়ংক্রিয়ভাবে কনভার্ট করে:
 
-- `value.Method()` works for both value and pointer receivers
-- `pointer.Method()` works for both receiver types
+- `value.Method()` উভয় value এবং pointer receiver-এর জন্য কাজ করে
+- `pointer.Method()` উভয় receiver type-এর জন্য কাজ করে
 
-### Practical Patterns
+### প্র্যাক্টিক্যাল প্যাটার্নসমূহ
 
-#### Method Chaining
+#### মেথড চেইনিং
 
 ```go
 type Calculator struct { Value float64 }
@@ -138,7 +140,7 @@ func (c *Calculator) Multiply(x float64) *Calculator {
 result := new(Calculator).Add(5).Multiply(2).Value // 10
 ```
 
-#### Interface Implementation
+#### ইন্টারফেস ইমপ্লিমেন্টেশন
 
 ```go
 type Speaker interface { Speak() string }
@@ -150,7 +152,7 @@ func (d Dog) Speak() string { return "Woof!" }
 // Dog implicitly implements Speaker
 ```
 
-#### Nil Receiver Handling
+#### Nil Receiver হ্যান্ডলিং
 
 ```go
 func (u *User) SafeGreet() string {
@@ -165,23 +167,23 @@ var emptyUser *User
 fmt.Println(emptyUser.SafeGreet()) // "Hello, guest!"
 ```
 
-### Common Pitfalls & Solutions
+### সাধারণ সমস্যা এবং সমাধান
 
-1. **Inconsistent Receiver Types**
+1. **অসংগত Receiver Types**
 
    ```go
-   // Avoid mixing receiver types for the same struct
+   // একই struct-এ receiver types মিশ্রিত করা এড়িয়ে চলুন
    type Product struct{}
 
    func (p Product) GetPrice() float64 {...}  // Value
    func (p *Product) SetPrice() {...}        // Pointer
    ```
 
-2. **Accidental Value Copies**
+2. **অনিচ্ছাকৃত Value কপি**
 
    ```go
    func (u User) UpdateName() {
-       u.Name = "Changed" // Doesn't modify original!
+       u.Name = "Changed" // অরিজিনাল পরিবর্তন হয় না!
    }
    ```
 
@@ -189,35 +191,35 @@ fmt.Println(emptyUser.SafeGreet()) // "Hello, guest!"
 
    ```go
    var u *User
-   u.Birthday() // Panic!
+   u.Birthday() // Panic হবে!
    ```
 
-4. **Consistency Matters**
+4. **ধারাবাহিকতা গুরুত্বপূর্ণ**
 
-   - Choose one receiver type (value or pointer) per struct
-   - Exception: When specific methods need mutation capability
+   - প্রতিটি struct-এর জন্য একটি receiver type (value বা pointer) বেছে নিন
+   - ব্যতিক্রম: যখন নির্দিষ্ট method-এ mutation capability প্রয়োজন
 
-5. **Receiver Naming**
+5. **Receiver নামকরণ**
 
-   - Keep short (1-2 chars) and type-related:
-     - `u` for `User`
-     - `c` for `Client`
-     - `db` for `Database`
+   - ছোট (১-২ অক্ষর) এবং টাইপ সম্পর্কিত রাখুন:
+     - `User`-এর জন্য `u`
+     - `Client`-এর জন্য `c`
+     - `Database`-এর জন্য `db`
 
-6. **Size Considerations**
+6. **সাইজ বিবেচনা**
 
    ```go
-   // Use pointer receivers for large structs
+   // বড় structs-এর জন্য pointer receiver ব্যবহার করুন
    type BigData struct {
        data [1_000_000]int
    }
 
-   func (b *BigData) Process() {...} // Better for memory
+   func (b *BigData) Process() {...} // মেমোরির জন্য ভালো
    ```
 
-## Memory Aid
+## মনে রাখার কৌশল
 
-- **V**alue receiver = **V**iew-only
-- **P**ointer receiver = **P**ermission to modify
-- `(t T)` = "Take a copy"
-- `(t *T)` = "Take the original"
+- **V**alue receiver = **V**iew-only (শুধু দেখার জন্য)
+- **P**ointer receiver = **P**ermission to modify (পরিবর্তনের অনুমতি)
+- `(t T)` = "একটি কপি নাও"
+- `(t *T)` = "অরিজিনালটি নাও"
