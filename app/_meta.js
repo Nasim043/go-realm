@@ -5,6 +5,7 @@ export default {
   oop: "OOP",
   database: "Database",
   "ent-guide": "ENT Guide",
+  "validator-v10": "Go DTO Validator/v10",
   "go-routines": "Go Routines",
   project: "Build Project",
   "algo-technique": "Algo & Technique",
