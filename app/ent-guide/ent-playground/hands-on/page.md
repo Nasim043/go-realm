@@ -865,7 +865,7 @@ import (
 
 func main() {
 	client, err := ent.Open("postgres",
-		"host=localhost port=5432 user=postgres password=password dbname=entdb sslmode=disable")
+		"host=localhost port=5432 user=postgres password=123456 dbname=entdb sslmode=disable")
 	if err != nil {
 		log.Fatalf("failed opening connection to postgres: %v", err)
 	}
@@ -879,14 +879,14 @@ func createPostsDemo(ctx context.Context, client *ent.Client) {
 	fmt.Println("\n=== Creating Posts with Relations ===\n")
 
 	// Get existing user or create new one
-	user, err := client.User.
+	u, err := client.User.
 		Query().
 		Where(user.EmailEQ("tonmoy@example.com")).
 		Only(ctx)
-	
+
 	if err != nil {
 		// Create user if doesn't exist
-		user, err = client.User.
+		u, err = client.User.
 			Create().
 			SetName("Tonmoy Talukder").
 			SetEmail("tonmoy@example.com").
@@ -897,7 +897,7 @@ func createPostsDemo(ctx context.Context, client *ent.Client) {
 		}
 	}
 
-	fmt.Printf("User: %s (ID=%d)\n\n", user.Name, user.ID)
+	fmt.Printf("User: %s (ID=%d)\n\n", u.Name, u.ID)
 
 	// Create posts for user
 	post1, err := client.Post.
@@ -905,7 +905,7 @@ func createPostsDemo(ctx context.Context, client *ent.Client) {
 		SetTitle("My First Blog Post").
 		SetContent("This is the content of my first blog post using ENT!").
 		SetPublished(true).
-		SetAuthor(user).
+		SetAuthor(u).
 		Save(ctx)
 	if err != nil {
 		log.Fatalf("failed creating post: %v", err)
@@ -917,7 +917,7 @@ func createPostsDemo(ctx context.Context, client *ent.Client) {
 		SetTitle("Understanding ENT Relations").
 		SetContent("ENT makes it easy to work with database relations.").
 		SetPublished(true).
-		SetAuthor(user).
+		SetAuthor(u).
 		Save(ctx)
 	if err != nil {
 		log.Fatalf("failed creating post: %v", err)
@@ -928,7 +928,7 @@ func createPostsDemo(ctx context.Context, client *ent.Client) {
 		Create().
 		SetTitle("Draft Post").
 		SetContent("This is a draft post, not published yet.").
-		SetAuthor(user).
+		SetAuthor(u).
 		Save(ctx)
 	if err != nil {
 		log.Fatalf("failed creating post: %v", err)
