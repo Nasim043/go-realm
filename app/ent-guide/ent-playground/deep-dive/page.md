@@ -120,7 +120,7 @@ users, err := client.User.
 
 ## 13. Unique Constraints & Indexing {#constraints-indexing}
 
-### Unique Constraints
+### Unique Constraints 🔥
 
 **Single Field Unique:**
 ```go
@@ -154,7 +154,7 @@ func (User) Indexes() []ent.Index {
 CREATE UNIQUE INDEX idx_user_email_tenant_id ON users(email, tenant_id);
 ```
 
-### Database Indexing
+### Database Indexing 🔥
 
 **Single Column Index:**
 ```go
@@ -217,7 +217,7 @@ client.User.Query().
     Where(user.AgeGT(18))                // AND age > 18
 ```
 
-#### Terminator Methods (Execute Query)
+#### Terminator Methods 🔥 (Execute Query) 🔥
 
 | Method | Returns | Use Case | SQL |
 |--------|---------|----------|-----|
@@ -228,7 +228,7 @@ client.User.Query().
 | `Exist(ctx)` | `bool, error` | Check if any exist | `SELECT EXISTS(SELECT 1 ...)` |
 | `IDs(ctx)` | `[]int, error` | Get only IDs | `SELECT id FROM users` |
 
-### `Save(ctx)` vs `Exec(ctx)`
+### `Save(ctx)` vs `Exec(ctx)` 🔥
 
 #### `Save(ctx)` - Returns the entity
 ```go
