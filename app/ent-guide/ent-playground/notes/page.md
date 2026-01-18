@@ -40,15 +40,15 @@ edge.From("user", User.Type).
   Required()
 ```
 
-### 📊 Foreign Key Options Table
+### 📊 Foreign Key Options Table 🔥
 
 | Method | Laravel Equivalent | Production Use |
 |--------|-------------------|----------------|
 | `.Required()` | `->nullable(false)` | Mandatory relationships |
 | `.Optional()` | `->nullable()` | Optional relationships |
-| `.Unique()` | `->unique()` | One-to-one relationships |
+| `.Unique()` | `->unique()` | One-to-one relationships 🔥|
 | `.Immutable()` | N/A | Prevent FK updates |
-| `.OnDelete(ent.Cascade)` | `->onDelete('cascade')` | Delete children with parent |
+| `.OnDelete(ent.Cascade)` | `->onDelete('cascade')` | Delete children with parent🔥 |
 | `.OnDelete(ent.Restrict)` | `->onDelete('restrict')` | Prevent parent deletion |
 | `.OnDelete(ent.SetNull)` | `->onDelete('set null')` | Nullify on parent delete |
 
@@ -196,7 +196,7 @@ public function users() {
 }
 ```
 
-#### Ent Schema (Auto Pivot)
+#### Ent Schema (Auto Pivot🔥)
 
 **User Schema**
 ```go
@@ -220,7 +220,7 @@ func (Role) Edges() []ent.Edge {
 
 ---
 
-### With Custom Pivot Table (Production Ready)
+### With Custom Pivot Table (Production Ready)🔥🔥
 
 When you need extra fields on the pivot (timestamps, metadata).
 
@@ -275,6 +275,7 @@ edge.To("users", User.Type).
 | Setup complexity | Simple | More code |
 | Production use | Basic relationships | Complex relationships |
 | Access pivot data | ❌ No | ✅ Yes via queries |
+| ⭐ | To <=> To | To Through <=> To Through |
 
 > **🎯 Production Tip:** Use custom pivot when you need `created_at`, `updated_at`, or audit fields.
 
@@ -381,7 +382,7 @@ edge.From("category", Category.Type).
     OnDelete(ent.Restrict)  // ← Can't delete category with products
 ```
 
-### Pattern 3: Optional Relationships
+### Pattern 3: Optional Relationships 🔥
 ```go
 field.Int("company_id").Optional()  // ← Nullable FK
 
@@ -411,7 +412,7 @@ edge.From("user", User.Type).
 | Define FK | Automatic | Manual: `field.Int("user_id")` |
 | One-to-one | `hasOne()` + `belongsTo()` | `edge.To().Unique()` + FK |
 | One-to-many | `hasMany()` + `belongsTo()` | `edge.To()` + FK |
-| Many-to-many | `belongsToMany()` | `edge.To()` on both sides |
+| Many-to-many | `belongsToMany()` | `edge.To()` on both sides🔥|
 | Pivot fields | In migration | Separate schema |
 | Cascade delete | `->onDelete('cascade')` | `.OnDelete(ent.Cascade)` |
 | Nullable FK | `->nullable()` | `.Optional()` |
@@ -484,7 +485,7 @@ edge.From("user", User.Type).
 
 ---
 
-## 🎓 Quick Reference: Edge Direction
+## 🎓 Quick Reference: Edge Direction 🔥
 
 | Relationship | Has FK | Edge Direction | Edge Type |
 |--------------|--------|----------------|-----------|
@@ -492,9 +493,9 @@ edge.From("user", User.Type).
 | User → Profile (1:1) | User | `edge.To()` in User | No Field |
 | User → Posts (1:N) | Post | `edge.From()` in Post | `Field("user_id")` |
 | User → Posts (1:N) | User | `edge.To()` in User | No Field |
-| User ↔ Roles (M:N) | Pivot | `edge.To()` in both | Auto or Through |
+| User ↔ Roles (M:N) | Pivot | `edge.To()` in both🔥 | Auto or Through |
 
-> **🎯 Rule:** The schema with the FK field uses `edge.From()` with `.Field()`. The other uses `edge.To()`.
+> **🎯 Rule:** The schema with the FK field uses `edge.From()` with `.Field()`. The other uses `edge.To()`🔥
 
 ---
 
