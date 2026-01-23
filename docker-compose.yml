@@ -3,17 +3,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      # Enable BuildKit cache for faster builds
-      cache_from:
-        - type=local,src=/tmp/.buildx-cache
-      cache_to:
-        - type=local,dest=/tmp/.buildx-cache
     container_name: go-realm
     restart: unless-stopped
     environment:
       - NODE_ENV=production
       - PORT=4300
-      # Enable BuildKit
-      - DOCKER_BUILDKIT=1
     ports:
       - "4300:4300"
