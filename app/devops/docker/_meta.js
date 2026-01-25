@@ -5,6 +5,7 @@ export default {
     "linux": "Linux & Process Model",
     "dockerfile": "Dockerfile",
     "image-container": "Image & Container",
-    "docker-network": "Docker Network",
+    "network": "Docker Network",
+    "volume": "Docker Volume",
     "docker-compose": "Compose",
 };
