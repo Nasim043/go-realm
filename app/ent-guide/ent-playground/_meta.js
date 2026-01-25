@@ -4,5 +4,6 @@ export default {
   "deep-dive": "Part 2: Deep Dive Reference",
   "production": "Part 3: Production Checklist",
   "query-comparison": "Query Comparison",
-  "notes": "Devs moving to GO"
+  "notes": "Devs moving to GO",
+  "additional": "Laravel Eloquent to Ent"
 };
