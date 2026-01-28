@@ -5,5 +5,6 @@ export default {
   "production": "Part 3: Production Checklist",
   "query-comparison": "Query Comparison",
   "notes": "Devs moving to GO",
-  "additional": "Laravel Eloquent to Ent"
+  "additional": "Laravel Eloquent to Ent",
+  "seeder": "Database Seeding Guide"
 };
