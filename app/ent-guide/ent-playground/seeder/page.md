@@ -1,662 +1,1086 @@
-# Database Seeding: Laravel to Go Production Guide
+# Database Seeding Guide for Golang Projects
 
-## 🎯 For Laravel Developers
+A comprehensive guide for implementing professional database seeders in Go using Ent ORM with PostgreSQL, covering multiple approaches, upsert patterns, and Docker integration.
 
-This guide covers **essential patterns and best practices** for building production-grade database seeding in Go. Focus on **what's different**, **what's critical**, and **what you must know**.
-
----
-
-## 📊 Laravel vs Go: Key Differences
-
-| Aspect | Laravel | Go | Why It Matters |
-|--------|---------|----|----|
-| **Error Handling** | Exceptions | Explicit `error` returns | Handle errors at every DB call |
-| **Transactions** | `DB::transaction()` | `client.Tx(ctx)` + manual rollback | You control commit/rollback |
-| **Dependencies** | Auto-injected | Constructor injection | Pass dependencies explicitly |
-| **Context** | Not needed | Required everywhere | Enables cancellation & timeouts |
-| **Execution** | `php artisan db:seed` | Build your own CLI | No framework magic |
-| **Validation** | Manual | Build into interface | Verify seeding succeeded |
-
-### Critical Mindset Shifts
-
-❌ **Stop Thinking:**
-- "Laravel will handle it"
-- "Just throw an exception"
-- "The container will inject this"
-- "DB calls just work"
-
-✅ **Start Thinking:**
-- "Did this return an error?"
-- "Should I use context with timeout?"
-- "What if the transaction fails?"
-- "Is this idempotent?"
+## Table of Contents
+- [Overview](#overview)
+- [Project Structure](#project-structure)
+- [Seeding Approaches](#seeding-approaches)
+  - [Approach 1: Simple Seeder with Check-Before-Insert](#approach-1-simple-seeder-with-check-before-insert)
+  - [Approach 2: Upsert Using OnConflict](#approach-2-upsert-using-onconflict)
+  - [Approach 3: Modular Seeders (Recommended)](#approach-3-modular-seeders-recommended)
+  - [Approach 4: SQL-Based Seeding](#approach-4-sql-based-seeding)
+- [Running Seeders](#running-seeders)
+  - [Manual Execution](#manual-execution)
+  - [Docker Container Startup](#docker-container-startup)
+  - [Conditional Seeding](#conditional-seeding)
+- [Production Best Practices](#production-best-practices)
 
 ---
 
-## 🏗️ Essential Architecture
+## Overview
 
-### 1. The Seeder Interface (Must-Know Pattern)
-
-**Laravel Way:**
-```php
-class UserSeeder extends Seeder {
-    public function run() {
-        User::create(['email' => 'admin@app.com']);
-    }
-}
-```
-
-**Go Way:**
-```go
-// Define the contract first
-type Seeder interface {
-    Name() string
-    Seed(ctx context.Context, client *ent.Client) error
-    Validate(ctx context.Context, client *ent.Client) error
-}
-
-// Implement it
-type UserSeeder struct {
-    log logger.Logger
-}
-
-func (s *UserSeeder) Name() string {
-    return "UserSeeder"
-}
-
-func (s *UserSeeder) Seed(ctx context.Context, client *ent.Client) error {
-    // Must handle every error
-    exists, err := client.User.Query().
-        Where(user.EmailEQ("admin@app.com")).
-        Exist(ctx)
-    
-    if err != nil {
-        return fmt.Errorf("check failed: %w", err)
-    }
-    
-    if exists {
-        return nil // Already seeded
-    }
-    
-    _, err = client.User.Create().
-        SetEmail("admin@app.com").
-        Save(ctx)
-    
-    return err // Return error or nil
-}
-
-func (s *UserSeeder) Validate(ctx context.Context, client *ent.Client) error {
-    count, err := client.User.Query().Count(ctx)
-    if err != nil {
-        return err
-    }
-    
-    if count == 0 {
-        return fmt.Errorf("no users found")
-    }
-    
-    return nil
-}
-```
-
-**Key Differences:**
-- ✅ Explicit error handling at every step
-- ✅ Context passed to all DB operations
-- ✅ Idempotency built-in (check before create)
-- ✅ Validation as separate method
-- ✅ Dependency injection via constructor
+Database seeders populate initial or test data in your database. They should be:
+- **Idempotent**: Running multiple times produces the same result
+- **Safe**: Won't corrupt existing data
+- **Fast**: Optimized for bulk operations
+- **Maintainable**: Well-organized and easy to update
 
 ---
 
-## 🔑 Production Best Practices
+## Project Structure
 
-### 1. Idempotency is Non-Negotiable
-
-**Bad (Will fail on second run):**
-```go
-func (s *Seeder) Seed(ctx context.Context, client *ent.Client) error {
-    _, err := client.User.Create().SetEmail("admin@app.com").Save(ctx)
-    return err // ❌ Fails if user exists
-}
 ```
-
-**Good (Check first):**
-```go
-func (s *Seeder) Seed(ctx context.Context, client *ent.Client) error {
-    exists, err := client.User.Query().
-        Where(user.EmailEQ("admin@app.com")).
-        Exist(ctx)
-    
-    if err != nil {
-        return fmt.Errorf("existence check: %w", err)
-    }
-    
-    if exists {
-        return nil
-    }
-    
-    _, err = client.User.Create().SetEmail("admin@app.com").Save(ctx)
-    return err
-}
-```
-
-**Better (Upsert pattern):**
-```go
-func (s *Seeder) Seed(ctx context.Context, client *ent.Client) error {
-    return client.User.Create().
-        SetEmail("admin@app.com").
-        SetName("Admin").
-        OnConflict(
-            sql.ConflictColumns("email"),
-        ).
-        UpdateNewValues().
-        Exec(ctx)
-}
-```
-
-### 2. Transaction Management
-
-**Laravel:**
-```php
-DB::transaction(function () {
-    User::create(['email' => 'admin@app.com']);
-    Role::create(['name' => 'admin']);
-});
-```
-
-**Go:**
-```go
-func (s *Seeder) Seed(ctx context.Context, client *ent.Client) error {
-    // Start transaction
-    tx, err := client.Tx(ctx)
-    if err != nil {
-        return err
-    }
-    
-    // Defer rollback for panic recovery
-    defer func() {
-        if v := recover(); v != nil {
-            tx.Rollback()
-            panic(v)
-        }
-    }()
-    
-    // Create user
-    user, err := tx.User.Create().
-        SetEmail("admin@app.com").
-        Save(ctx)
-    
-    if err != nil {
-        tx.Rollback()
-        return fmt.Errorf("user creation: %w", err)
-    }
-    
-    // Create role
-    _, err = tx.Role.Create().
-        SetName("admin").
-        SetUserID(user.ID).
-        Save(ctx)
-    
-    if err != nil {
-        tx.Rollback()
-        return fmt.Errorf("role creation: %w", err)
-    }
-    
-    // Commit transaction
-    return tx.Commit()
-}
-```
-
-**Critical Points:**
-- ✅ You must manually rollback on error
-- ✅ Defer with panic recovery is best practice
-- ✅ Return errors with context using `fmt.Errorf`
-- ✅ Commit explicitly at the end
-
-### 3. Context Management (Must Understand)
-
-```go
-func (s *Seeder) Seed(ctx context.Context, client *ent.Client) error {
-    // Check if context is cancelled
-    select {
-    case <-ctx.Done():
-        return ctx.Err()
-    default:
-    }
-    
-    // Add timeout for long operations
-    ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
-    defer cancel()
-    
-    // Context is passed to every DB call
-    users, err := client.User.Query().All(ctx)
-    if err != nil {
-        return err
-    }
-    
-    return nil
-}
-```
-
-**Why Context Matters:**
-- Cancellation propagation
-- Timeout enforcement
-- Tracing and observability
-- Graceful shutdown
-
-### 4. Error Handling Patterns
-
-**Wrap errors with context:**
-```go
-user, err := client.User.Create().SetEmail(email).Save(ctx)
-if err != nil {
-    return fmt.Errorf("creating user %s: %w", email, err)
-}
-```
-
-**Check specific error types:**
-```go
-user, err := client.User.Create().SetEmail(email).Save(ctx)
-if err != nil {
-    if ent.IsConstraintError(err) {
-        return fmt.Errorf("duplicate email: %w", err)
-    }
-    if ent.IsNotFound(err) {
-        return fmt.Errorf("related entity missing: %w", err)
-    }
-    return fmt.Errorf("unexpected error: %w", err)
-}
-```
-
-**Never ignore errors:**
-```go
-// ❌ BAD
-client.User.Create().SetEmail(email).Save(ctx)
-
-// ✅ GOOD
-_, err := client.User.Create().SetEmail(email).Save(ctx)
-if err != nil {
-    return err
-}
-```
-
-### 5. Security Best Practices
-
-**Environment Variables for Secrets:**
-```go
-// ❌ NEVER
-const adminPassword = "secret123"
-
-// ✅ ALWAYS
-type Config struct {
-    AdminPassword string `env:"ADMIN_PASSWORD,required"`
-}
-
-func NewSeeder(cfg *Config) *Seeder {
-    return &Seeder{
-        adminPassword: cfg.AdminPassword,
-    }
-}
-```
-
-**Password Hashing:**
-```go
-import "golang.org/x/crypto/bcrypt"
-
-func (s *Seeder) hashPassword(password string) (string, error) {
-    hashed, err := bcrypt.GenerateFromPassword(
-        []byte(password),
-        bcrypt.DefaultCost, // Cost 10
-    )
-    if err != nil {
-        return "", err
-    }
-    return string(hashed), nil
-}
-```
-
-**Input Validation:**
-```go
-func (s *Seeder) validateEmail(email string) error {
-    if email == "" {
-        return fmt.Errorf("email required")
-    }
-    
-    if !strings.Contains(email, "@") {
-        return fmt.Errorf("invalid email format")
-    }
-    
-    return nil
-}
+go-initial/
+├── cmd/
+│   ├── api/
+│   │   └── main.go
+│   ├── migrate/
+│   │   └── main.go
+│   └── seed/
+│       └── main.go              # Main seeder entry point
+├── internal/
+│   ├── db/
+│   │   └── seeders/
+│   │       ├── seeder.go        # Base seeder interface
+│   │       ├── ticket_status.go # Individual seeders
+│   │       ├── ticket_subject.go
+│   │       └── all.go           # Run all seeders
+│   └── config/
+│       └── config.go
+└── scripts/
+    └── seed.sh                   # Helper script
 ```
 
 ---
 
-## 🚀 Building the CLI Tool
+## Seeding Approaches
 
-### Minimal Production CLI
+### Approach 1: Simple Seeder with Check-Before-Insert
+
+**File:** `cmd/seed/main.go` (Basic Pattern - Current Implementation)
 
 ```go
-// cmd/seed/main.go
 package main
 
 import (
-    "context"
-    "flag"
-    "fmt"
-    "os"
-    "time"
-)
+	"context"
+	"log"
 
-var (
-    dryRun  = flag.Bool("dry-run", false, "Test without changes")
-    timeout = flag.Duration("timeout", 5*time.Minute, "Timeout")
+	_ "github.com/lib/pq"
+	"github.com/w-tech/go-initial/internal/app/auth"
+	"github.com/w-tech/go-initial/internal/config"
+	dbent "github.com/w-tech/go-initial/internal/db/ent"
+	"github.com/w-tech/go-initial/internal/db/ent/user"
 )
 
 func main() {
-    flag.Parse()
-    
-    // Load config
-    cfg, err := loadConfig()
-    if err != nil {
-        fmt.Fprintf(os.Stderr, "Config error: %v\n", err)
-        os.Exit(1)
-    }
-    
-    // Create context with timeout
-    ctx, cancel := context.WithTimeout(context.Background(), *timeout)
-    defer cancel()
-    
-    // Connect to database
-    client, err := ent.Open("postgres", cfg.DatabaseURL)
-    if err != nil {
-        fmt.Fprintf(os.Stderr, "DB connection error: %v\n", err)
-        os.Exit(1)
-    }
-    defer client.Close()
-    
-    // Run seeders
-    if err := runSeeders(ctx, client, *dryRun); err != nil {
-        fmt.Fprintf(os.Stderr, "Seeding failed: %v\n", err)
-        os.Exit(1)
-    }
-    
-    fmt.Println("✅ Seeding completed")
-}
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatalf("Failed to load config: %v", err)
+	}
 
-func runSeeders(ctx context.Context, client *ent.Client, dryRun bool) error {
-    seeders := []Seeder{
-        NewRoleSeeder(),
-        NewUserSeeder(),
-    }
-    
-    for _, s := range seeders {
-        if dryRun {
-            fmt.Printf("[DRY RUN] Would run: %s\n", s.Name())
-            continue
-        }
-        
-        fmt.Printf("Running: %s\n", s.Name())
-        
-        if err := s.Seed(ctx, client); err != nil {
-            return fmt.Errorf("%s failed: %w", s.Name(), err)
-        }
-        
-        if err := s.Validate(ctx, client); err != nil {
-            return fmt.Errorf("%s validation failed: %w", s.Name(), err)
-        }
-    }
-    
-    return nil
+	client, err := dbent.Open("postgres", cfg.PostgresDSN())
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
+	defer client.Close()
+
+	ctx := context.Background()
+
+	// Check if admin user already exists
+	adminUser, err := client.User.
+		Query().
+		Where(user.EmailEQ(cfg.AdminEmail)).
+		Only(ctx)
+
+	if err == nil {
+		log.Printf("✓ Admin user already exists: %s (ID: %d)", adminUser.Username, adminUser.ID)
+		return
+	}
+
+	if !dbent.IsNotFound(err) {
+		log.Fatalf("Failed to check admin user: %v", err)
+	}
+
+	// Create password manager and hash password
+	passwordManager := auth.NewPasswordManager()
+	hashedPassword, err := passwordManager.HashPassword(cfg.AdminPassword)
+	if err != nil {
+		log.Fatalf("Failed to hash password: %v", err)
+	}
+
+	// Create admin user
+	user, err := client.User.
+		Create().
+		SetName(cfg.AdminName).
+		SetUsername(cfg.AdminUsername).
+		SetEmail(cfg.AdminEmail).
+		SetPasswordHash(hashedPassword).
+		SetStatus(true).
+		Save(ctx)
+
+	if err != nil {
+		log.Fatalf("Failed to create admin user: %v", err)
+	}
+
+	log.Printf("✓ Admin user created successfully: %s (ID: %d)", user.Username, user.ID)
 }
 ```
 
-**Run it:**
-```bash
-# Normal run
-go run cmd/seed/main.go
-
-# Dry run
-go run cmd/seed/main.go --dry-run
-
-# With timeout
-go run cmd/seed/main.go --timeout=10m
-```
+**Pros:** Simple, easy to understand
+**Cons:** Not true upsert, requires query before insert
 
 ---
 
-## ⚡ Performance Patterns
+### Approach 2: Upsert Using OnConflict
 
-### Bulk Inserts
-
-**Bad (N queries):**
-```go
-for _, email := range emails {
-    client.User.Create().SetEmail(email).Save(ctx)
-}
-```
-
-**Good (1 query):**
-```go
-func (s *Seeder) bulkInsert(ctx context.Context, client *ent.Client, emails []string) error {
-    builders := make([]*ent.UserCreate, len(emails))
-    
-    for i, email := range emails {
-        builders[i] = client.User.Create().SetEmail(email)
-    }
-    
-    return client.User.CreateBulk(builders...).Exec(ctx)
-}
-```
-
-### Batching for Large Datasets
+**File:** `internal/db/seeders/ticket_status.go`
 
 ```go
-func (s *Seeder) seedLarge(ctx context.Context, client *ent.Client) error {
-    const batchSize = 1000
-    items := generateItems(10000)
-    
-    for i := 0; i < len(items); i += batchSize {
-        end := i + batchSize
-        if end > len(items) {
-            end = len(items)
-        }
-        
-        batch := items[i:end]
-        if err := s.insertBatch(ctx, client, batch); err != nil {
-            return fmt.Errorf("batch %d failed: %w", i/batchSize, err)
-        }
-    }
-    
-    return nil
-}
-```
+package seeders
 
----
-
-## 🧪 Testing Essentials
-
-### Unit Test Pattern
-
-```go
-func TestUserSeeder(t *testing.T) {
-    // Use in-memory SQLite for tests
-    client := enttest.Open(t, "sqlite3", "file:ent?mode=memory&_fk=1")
-    defer client.Close()
-    
-    ctx := context.Background()
-    seeder := NewUserSeeder()
-    
-    // First run
-    err := seeder.Seed(ctx, client)
-    require.NoError(t, err)
-    
-    count, _ := client.User.Query().Count(ctx)
-    assert.Equal(t, 1, count)
-    
-    // Idempotency test
-    err = seeder.Seed(ctx, client)
-    require.NoError(t, err)
-    
-    count, _ = client.User.Query().Count(ctx)
-    assert.Equal(t, 1, count) // Still 1, not 2
-}
-```
-
----
-
-## 🔄 Environment Strategy
-
-### Development
-```go
-func (s *Seeder) Seed(ctx context.Context, client *ent.Client) error {
-    if os.Getenv("APP_ENV") == "development" {
-        // Seed test data
-    }
-    // Always seed critical data
-    return nil
-}
-```
-
-### Production
-```bash
-# Backup first
-pg_dump -h $DB_HOST -U $DB_USER $DB_NAME > backup.sql
-
-# Dry run
-go run cmd/seed/main.go --dry-run
-
-# Real run
-go run cmd/seed/main.go
-
-# Validate
-psql -h $DB_HOST -U $DB_USER $DB_NAME -c "SELECT COUNT(*) FROM users;"
-```
-
----
-
-## 📋 Quick Reference
-
-### Laravel to Go Translation
-
-| Laravel | Go Equivalent |
-|---------|--------------|
-| `User::create()` | `client.User.Create().Save(ctx)` |
-| `User::firstOrCreate()` | Check + Create or Upsert |
-| `DB::transaction()` | `client.Tx(ctx)` + manual rollback |
-| `throw new Exception()` | `return fmt.Errorf()` |
-| `try/catch` | `if err != nil { return err }` |
-| `$this->call(UserSeeder::class)` | `seeder.Seed(ctx, client)` |
-| `php artisan db:seed` | `go run cmd/seed/main.go` |
-
-### Must-Know Packages
-
-```go
 import (
-    "context"                           // Context management
-    "fmt"                               // Error formatting
-    "golang.org/x/crypto/bcrypt"        // Password hashing
-    "github.com/stretchr/testify/assert" // Testing
+	"context"
+	"log"
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/w-tech/go-initial/internal/db/ent"
+	"github.com/w-tech/go-initial/internal/db/ent/ticketstatus"
 )
+
+type TicketStatusSeeder struct {
+	client *ent.Client
+}
+
+func NewTicketStatusSeeder(client *ent.Client) *TicketStatusSeeder {
+	return &TicketStatusSeeder{client: client}
+}
+
+type TicketStatusData struct {
+	UUID       uuid.UUID
+	Code       string
+	Name       string
+	SortOrder  int
+	IsActive   bool
+	IsTerminal bool
+}
+
+func (s *TicketStatusSeeder) Seed(ctx context.Context) error {
+	statuses := []TicketStatusData{
+		{UUID: uuid.New(), Code: "open", Name: "Submitted", SortOrder: 10, IsActive: true, IsTerminal: false},
+		{UUID: uuid.New(), Code: "open", Name: "Assigned", SortOrder: 20, IsActive: true, IsTerminal: false},
+		{UUID: uuid.New(), Code: "open", Name: "Processing", SortOrder: 30, IsActive: true, IsTerminal: false},
+		{UUID: uuid.New(), Code: "closed", Name: "Solved", SortOrder: 40, IsActive: true, IsTerminal: true},
+		{UUID: uuid.New(), Code: "closed", Name: "Rejected", SortOrder: 50, IsActive: true, IsTerminal: true},
+		{UUID: uuid.New(), Code: "open", Name: "Re-open", SortOrder: 60, IsActive: true, IsTerminal: false},
+	}
+
+	now := time.Now()
+	
+	for _, status := range statuses {
+		// Method 1: Using UpdateOneID with OnConflict (if your Ent schema has unique constraint on 'code' + 'name')
+		err := s.client.TicketStatus.
+			Create().
+			SetUUID(status.UUID).
+			SetCode(status.Code).
+			SetName(status.Name).
+			SetSortOrder(status.SortOrder).
+			SetIsActive(status.IsActive).
+			SetIsTerminal(status.IsTerminal).
+			SetCreatedAt(now).
+			SetUpdatedAt(now).
+			OnConflict(
+				// Specify conflict columns (requires unique index on these columns)
+				// If record exists with same code+name, do nothing
+			).
+			Ignore().
+			Exec(ctx)
+
+		if err != nil {
+			log.Printf("✗ Failed to seed ticket status '%s': %v", status.Name, err)
+			return err
+		}
+		log.Printf("✓ Seeded ticket status: %s", status.Name)
+	}
+
+	log.Printf("✓ Ticket status seeding completed")
+	return nil
+}
+
+// Alternative: Using raw SQL for true UPSERT with ON CONFLICT
+func (s *TicketStatusSeeder) SeedWithRawSQL(ctx context.Context) error {
+	query := `
+		INSERT INTO ticket_statuses
+			(uuid, code, name, sort_order, is_active, is_terminal, created_by, updated_by, created_at, updated_at)
+		VALUES
+			($1, 'open',   'Submitted',  10, TRUE,  FALSE, NULL, NULL, now(), now()),
+			($2, 'open',   'Assigned',   20, TRUE,  FALSE, NULL, NULL, now(), now()),
+			($3, 'open',   'Processing', 30, TRUE,  FALSE, NULL, NULL, now(), now()),
+			($4, 'closed', 'Solved',     40, TRUE,  TRUE,  NULL, NULL, now(), now()),
+			($5, 'closed', 'Rejected',   50, TRUE,  TRUE,  NULL, NULL, now(), now()),
+			($6, 'open',   'Re-open',    60, TRUE,  FALSE, NULL, NULL, now(), now())
+		ON CONFLICT (code, name) DO NOTHING;
+	`
+
+	// Generate UUIDs
+	uuids := make([]uuid.UUID, 6)
+	for i := range uuids {
+		uuids[i] = uuid.New()
+	}
+
+	_, err := s.client.ExecContext(ctx, query,
+		uuids[0], uuids[1], uuids[2], uuids[3], uuids[4], uuids[5],
+	)
+
+	if err != nil {
+		log.Printf("✗ Failed to seed ticket statuses: %v", err)
+		return err
+	}
+
+	log.Printf("✓ Ticket status seeding completed (raw SQL)")
+	return nil
+}
 ```
 
-### Command Patterns
+**File:** `internal/db/seeders/ticket_subject.go`
+
+```go
+package seeders
+
+import (
+	"context"
+	"log"
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/w-tech/go-initial/internal/db/ent"
+)
+
+type TicketSubjectSeeder struct {
+	client *ent.Client
+}
+
+func NewTicketSubjectSeeder(client *ent.Client) *TicketSubjectSeeder {
+	return &TicketSubjectSeeder{client: client}
+}
+
+type TicketSubjectData struct {
+	UUID     uuid.UUID
+	Name     string
+	IsActive bool
+}
+
+func (s *TicketSubjectSeeder) Seed(ctx context.Context) error {
+	subjects := []TicketSubjectData{
+		{UUID: uuid.New(), Name: "Authentication related issue", IsActive: true},
+		{UUID: uuid.New(), Name: "Permission related issue", IsActive: true},
+		{UUID: uuid.New(), Name: "Other issue", IsActive: true},
+	}
+
+	now := time.Now()
+
+	for _, subject := range subjects {
+		err := s.client.TicketSubject.
+			Create().
+			SetUUID(subject.UUID).
+			SetName(subject.Name).
+			SetIsActive(subject.IsActive).
+			SetCreatedAt(now).
+			SetUpdatedAt(now).
+			OnConflict().
+			Ignore().
+			Exec(ctx)
+
+		if err != nil {
+			log.Printf("✗ Failed to seed ticket subject '%s': %v", subject.Name, err)
+			return err
+		}
+		log.Printf("✓ Seeded ticket subject: %s", subject.Name)
+	}
+
+	log.Printf("✓ Ticket subject seeding completed")
+	return nil
+}
+
+// Using raw SQL with ON CONFLICT
+func (s *TicketSubjectSeeder) SeedWithRawSQL(ctx context.Context) error {
+	query := `
+		INSERT INTO ticket_subjects
+			(uuid, name, is_active, created_by, updated_by, created_at, updated_at)
+		VALUES
+			($1, 'Authentication related issue', TRUE, NULL, NULL, now(), now()),
+			($2, 'Permission related issue',     TRUE, NULL, NULL, now(), now()),
+			($3, 'Other issue',                  TRUE, NULL, NULL, now(), now())
+		ON CONFLICT (name) DO NOTHING;
+	`
+
+	_, err := s.client.ExecContext(ctx, query,
+		uuid.New(), uuid.New(), uuid.New(),
+	)
+
+	if err != nil {
+		log.Printf("✗ Failed to seed ticket subjects: %v", err)
+		return err
+	}
+
+	log.Printf("✓ Ticket subject seeding completed (raw SQL)")
+	return nil
+}
+```
+
+---
+
+### Approach 3: Modular Seeders (Recommended)
+
+**File:** `internal/db/seeders/seeder.go`
+
+```go
+package seeders
+
+import "context"
+
+// Seeder interface for all seeders
+type Seeder interface {
+	Seed(ctx context.Context) error
+}
+
+// SeederOption for configuring seeder behavior
+type SeederOption struct {
+	SkipIfExists bool
+	Force        bool
+	Verbose      bool
+}
+```
+
+**File:** `internal/db/seeders/all.go`
+
+```go
+package seeders
+
+import (
+	"context"
+	"fmt"
+	"log"
+
+	"github.com/w-tech/go-initial/internal/db/ent"
+)
+
+// RunAll executes all seeders in order
+func RunAll(ctx context.Context, client *ent.Client) error {
+	seeders := []struct {
+		name   string
+		seeder Seeder
+	}{
+		{"Ticket Statuses", NewTicketStatusSeeder(client)},
+		{"Ticket Subjects", NewTicketSubjectSeeder(client)},
+		// Add more seeders here
+	}
+
+	log.Println("======================================")
+	log.Println("Starting Database Seeding Process")
+	log.Println("======================================")
+
+	for i, s := range seeders {
+		log.Printf("[%d/%d] Seeding %s...", i+1, len(seeders), s.name)
+		
+		if err := s.seeder.Seed(ctx); err != nil {
+			return fmt.Errorf("failed to seed %s: %w", s.name, err)
+		}
+	}
+
+	log.Println("======================================")
+	log.Println("✓ All seeders completed successfully")
+	log.Println("======================================")
+	return nil
+}
+
+// RunSpecific executes specific seeders
+func RunSpecific(ctx context.Context, client *ent.Client, seederNames []string) error {
+	availableSeeders := map[string]Seeder{
+		"ticket_status":  NewTicketStatusSeeder(client),
+		"ticket_subject": NewTicketSubjectSeeder(client),
+	}
+
+	for _, name := range seederNames {
+		seeder, exists := availableSeeders[name]
+		if !exists {
+			return fmt.Errorf("seeder '%s' not found", name)
+		}
+
+		log.Printf("Running seeder: %s", name)
+		if err := seeder.Seed(ctx); err != nil {
+			return fmt.Errorf("failed to run %s: %w", name, err)
+		}
+	}
+
+	return nil
+}
+```
+
+**File:** `cmd/seed/main.go` (Enhanced Version)
+
+```go
+package main
+
+import (
+	"context"
+	"flag"
+	"log"
+	"os"
+	"strings"
+
+	_ "github.com/lib/pq"
+	"github.com/w-tech/go-initial/internal/config"
+	dbent "github.com/w-tech/go-initial/internal/db/ent"
+	"github.com/w-tech/go-initial/internal/db/seeders"
+)
+
+func main() {
+	// Command line flags
+	seedAll := flag.Bool("all", false, "Run all seeders")
+	seedList := flag.String("seeders", "", "Comma-separated list of specific seeders to run (e.g., ticket_status,ticket_subject)")
+	flag.Parse()
+
+	// Load configuration
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatalf("Failed to load config: %v", err)
+	}
+
+	// Connect to database
+	client, err := dbent.Open("postgres", cfg.PostgresDSN())
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
+	defer client.Close()
+
+	ctx := context.Background()
+
+	// Determine which seeders to run
+	if *seedAll {
+		// Run all seeders
+		if err := seeders.RunAll(ctx, client); err != nil {
+			log.Fatalf("Seeding failed: %v", err)
+			os.Exit(1)
+		}
+	} else if *seedList != "" {
+		// Run specific seeders
+		names := strings.Split(*seedList, ",")
+		if err := seeders.RunSpecific(ctx, client, names); err != nil {
+			log.Fatalf("Seeding failed: %v", err)
+			os.Exit(1)
+		}
+	} else {
+		// Default: run all seeders
+		log.Println("No flags provided, running all seeders...")
+		if err := seeders.RunAll(ctx, client); err != nil {
+			log.Fatalf("Seeding failed: %v", err)
+			os.Exit(1)
+		}
+	}
+
+	log.Println("Seeding completed successfully!")
+}
+```
+
+---
+
+### Approach 4: SQL-Based Seeding
+
+**File:** `scripts/seeds/ticket_data.sql`
+
+```sql
+-- Ticket Statuses
+INSERT INTO ticket_statuses
+  (uuid, code, name, sort_order, is_active, is_terminal, created_by, updated_by, created_at, updated_at)
+VALUES
+  (gen_random_uuid(), 'open',   'Submitted',  10, TRUE,  FALSE, NULL, NULL, now(), now()),
+  (gen_random_uuid(), 'open',   'Assigned',   20, TRUE,  FALSE, NULL, NULL, now(), now()),
+  (gen_random_uuid(), 'open',   'Processing', 30, TRUE,  FALSE, NULL, NULL, now(), now()),
+  (gen_random_uuid(), 'closed', 'Solved',     40, TRUE,  TRUE,  NULL, NULL, now(), now()),
+  (gen_random_uuid(), 'closed', 'Rejected',   50, TRUE,  TRUE,  NULL, NULL, now(), now()),
+  (gen_random_uuid(), 'open',   'Re-open',    60, TRUE,  FALSE, NULL, NULL, now(), now())
+ON CONFLICT (code, name) DO NOTHING;
+
+-- Ticket Subjects
+INSERT INTO ticket_subjects
+  (uuid, name, is_active, created_by, updated_by, created_at, updated_at)
+VALUES
+  (gen_random_uuid(), 'Authentication related issue', TRUE, NULL, NULL, now(), now()),
+  (gen_random_uuid(), 'Permission related issue',     TRUE, NULL, NULL, now(), now()),
+  (gen_random_uuid(), 'Other issue',                  TRUE, NULL, NULL, now(), now())
+ON CONFLICT (name) DO NOTHING;
+```
+
+**File:** `scripts/run-seeds.sh`
 
 ```bash
-# Development
-go run cmd/seed/main.go
+#!/bin/bash
+set -e
 
-# Production (Docker)
-docker-compose run --rm app go run cmd/seed/main.go
+# Load environment variables
+source .env
 
-# With flags
-go run cmd/seed/main.go --dry-run --timeout=10m
+# Run SQL seed files
+psql "$DATABASE_URL" -f scripts/seeds/ticket_data.sql
+
+echo "✓ SQL seeds completed"
 ```
 
 ---
 
-## ✅ Production Checklist
+## Running Seeders
 
-Before deploying seeders:
+### Manual Execution
 
-- [ ] All seeders are idempotent
-- [ ] Errors are properly wrapped with context
-- [ ] Transactions used for related data
-- [ ] Context passed to all DB operations
-- [ ] Passwords are hashed (bcrypt)
-- [ ] Secrets from environment variables
-- [ ] Validation methods implemented
-- [ ] Unit tests written (80%+ coverage)
-- [ ] Dry-run tested in staging
-- [ ] Database backup created
-- [ ] Rollback plan documented
+#### Option 1: Using Go Command
+
+```bash
+# Run all seeders
+go run cmd/seed/main.go -all
+
+# Run specific seeders
+go run cmd/seed/main.go -seeders=ticket_status,ticket_subject
+```
+
+#### Option 2: Build and Run Binary
+
+```bash
+# Build seeder binary
+go build -o bin/seed cmd/seed/main.go
+
+# Run
+./bin/seed -all
+```
+
+#### Option 3: Using Makefile
+
+**File:** `Makefile`
+
+```makefile
+.PHONY: seed seed-all seed-specific
+
+# Run all seeds
+seed-all:
+	@echo "Running all seeders..."
+	@go run cmd/seed/main.go -all
+
+# Run specific seeders
+seed-specific:
+	@echo "Running specific seeders..."
+	@go run cmd/seed/main.go -seeders=$(SEEDERS)
+
+# Alias for seed-all
+seed: seed-all
+
+# Example usage: make seed-specific SEEDERS=ticket_status,ticket_subject
+```
+
+Usage:
+```bash
+make seed-all
+make seed-specific SEEDERS=ticket_status
+```
 
 ---
 
-## 🎓 Key Takeaways for Laravel Developers
+### Docker Container Startup
 
-### 1. **No Magic, No Facades**
-In Laravel, `User::create()` "just works." In Go, you must:
-- Handle the error
-- Pass context
-- Check for conflicts
-- Validate the result
+#### Option 1: Run Seeds After Migrations in Entrypoint
 
-### 2. **Errors are Values, Not Exceptions**
+**File:** `docker-entrypoint.sh` (Modified)
+
+```bash
+#!/usr/bin/env sh
+set -e
+
+echo "🔄 Starting database migration..."
+
+# ... existing migration code ...
+
+echo "✅ Migrations applied successfully"
+
+# ---------------------------
+# Run Seeds (Optional)
+# ---------------------------
+if [ "${RUN_SEEDS:-false}" = "true" ]; then
+  echo "🌱 Running database seeds..."
+  ./seed -all
+  echo "✅ Seeds applied successfully"
+else
+  echo "⏭️  Skipping seeds (RUN_SEEDS not set to true)"
+fi
+
+# ---------------------------
+# Start the app
+# ---------------------------
+echo "▶️  Starting API..."
+if [ "$#" -eq 0 ]; then
+  set -- ./api
+fi
+exec "$@"
+```
+
+**File:** `Dockerfile` (Modified)
+
+```dockerfile
+# ============================================
+# Stage 1: Build the Go Binary
+# ============================================
+FROM golang:1.24-alpine AS builder
+
+RUN apk add --no-cache git build-base
+
+WORKDIR /app
+
+COPY go.mod go.sum ./
+RUN go mod download
+RUN go mod verify
+
+COPY . .
+
+# Generate Ent code
+RUN go generate ./internal/db/ent
+
+# Build binaries
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o api ./cmd/api
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o migrate ./cmd/migrate
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o seed ./cmd/seed
+
+# ============================================
+# Stage 2: Runtime Image
+# ============================================
+FROM alpine:latest
+
+RUN apk --no-cache add ca-certificates tzdata curl netcat-openbsd postgresql-client
+
+# Install Atlas CLI
+RUN curl -sSf https://atlasgo.sh | sh
+
+WORKDIR /app
+
+# Copy binaries
+COPY --from=builder /app/api .
+COPY --from=builder /app/migrate .
+COPY --from=builder /app/seed .
+
+# Copy migration files
+COPY --from=builder /app/ent/migrate/migrations ./ent/migrate/migrations
+
+# Generate atlas.sum
+RUN atlas migrate hash --dir "file://ent/migrate/migrations"
+
+# Copy entrypoint script
+COPY docker-entrypoint.sh ./
+RUN chmod +x docker-entrypoint.sh
+
+EXPOSE 8082
+
+ENTRYPOINT ["./docker-entrypoint.sh"]
+CMD ["./api"]
+```
+
+**File:** `docker-compose.yml` (Add Environment Variable)
+
+```yaml
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8082:8082"
+    environment:
+      - RUN_SEEDS=true  # Enable seeding on startup
+      - DATABASE_URL=${DATABASE_URL}
+    depends_on:
+      - postgres
+    volumes:
+      - .:/app
+      - /app/tmp
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+```
+
+#### Option 2: Run Seeds as Separate Container
+
+**File:** `docker-compose.yml` (Multi-Container Approach)
+
+```yaml
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+    depends_on:
+      seed:
+        condition: service_completed_successfully
+
+  seed:
+    build:
+      context: .
+      dockerfile: Dockerfile.seed
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+```
+
+**File:** `Dockerfile.seed`
+
+```dockerfile
+FROM golang:1.24-alpine AS builder
+
+RUN apk add --no-cache git build-base
+
+WORKDIR /app
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+RUN go generate ./internal/db/ent
+RUN CGO_ENABLED=0 GOOS=linux go build -o seed ./cmd/seed
+
+FROM alpine:latest
+
+RUN apk --no-cache add ca-certificates postgresql-client
+
+WORKDIR /app
+
+COPY --from=builder /app/seed .
+
+CMD ["./seed", "-all"]
+```
+
+---
+
+### Conditional Seeding
+
+#### Development vs Production
+
+**File:** `docker-entrypoint.sh` (Environment-Based)
+
+```bash
+#!/usr/bin/env sh
+set -e
+
+# ... migration code ...
+
+# Run seeds based on environment
+if [ "${APP_ENV:-production}" = "development" ] || [ "${RUN_SEEDS:-false}" = "true" ]; then
+  echo "🌱 Running database seeds..."
+  ./seed -all
+  echo "✅ Seeds applied successfully"
+else
+  echo "⏭️  Skipping seeds (production mode)"
+fi
+
+# Start app
+exec "$@"
+```
+
+#### Time-Based Seeding
+
+**File:** `scripts/cron-seed.sh`
+
+```bash
+#!/bin/bash
+
+# Run seeds daily at 2 AM
+# Add to crontab: 0 2 * * * /app/scripts/cron-seed.sh
+
+cd /app
+./seed -seeders=daily_stats,aggregations
+```
+
+#### One-Time Seeding with Flag File
+
+**File:** `docker-entrypoint.sh` (Flag-Based)
+
+```bash
+#!/usr/bin/env sh
+set -e
+
+# ... migration code ...
+
+SEED_FLAG_FILE="/app/.seeded"
+
+if [ ! -f "$SEED_FLAG_FILE" ]; then
+  echo "🌱 First run detected, running seeds..."
+  ./seed -all
+  touch "$SEED_FLAG_FILE"
+  echo "✅ Seeds applied and flag created"
+else
+  echo "⏭️  Seeds already run (flag file exists)"
+fi
+
+# Start app
+exec "$@"
+```
+
+---
+
+## Production Best Practices
+
+### 1. Idempotent Seeds
+
+Always use `ON CONFLICT DO NOTHING` or check before insert:
+
 ```go
-// Every DB call can fail
-user, err := client.User.Create().Save(ctx)
-if err != nil {
-    // Handle it NOW, not in a catch block later
-    return fmt.Errorf("failed: %w", err)
+// Good: Upsert pattern
+err := client.TicketStatus.
+    Create().
+    SetCode("open").
+    SetName("Submitted").
+    OnConflict().
+    Ignore().
+    Exec(ctx)
+
+// Also Good: Check then insert
+exists, err := client.TicketStatus.
+    Query().
+    Where(ticketstatus.CodeEQ("open"), ticketstatus.NameEQ("Submitted")).
+    Exist(ctx)
+
+if !exists {
+    // Insert
 }
 ```
 
-### 3. **You Build Everything**
-- No `php artisan make:seeder`
-- No `DatabaseSeeder` class
-- Build your CLI tool
-- Build your orchestration
-- Build your validation
+### 2. Transaction Support
 
-### 4. **Context is Your Friend**
+**File:** `internal/db/seeders/transaction_seeder.go`
+
 ```go
-// Enables cancellation, timeouts, tracing
-func (s *Seeder) Seed(ctx context.Context, client *ent.Client) error {
-    // Use ctx in every DB call
-    user, err := client.User.Query().Where(...).First(ctx)
+package seeders
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/w-tech/go-initial/internal/db/ent"
+)
+
+func RunAllWithTransaction(ctx context.Context, client *ent.Client) error {
+	tx, err := client.Tx(ctx)
+	if err != nil {
+		return fmt.Errorf("starting transaction: %w", err)
+	}
+
+	defer func() {
+		if v := recover(); v != nil {
+			tx.Rollback()
+			panic(v)
+		}
+	}()
+
+	// Run seeders within transaction
+	if err := NewTicketStatusSeeder(tx.Client()).Seed(ctx); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := NewTicketSubjectSeeder(tx.Client()).Seed(ctx); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Commit transaction
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("committing transaction: %w", err)
+	}
+
+	return nil
 }
 ```
 
-### 5. **Interfaces > Classes**
-Define what something **can do**, not what it **is**:
+### 3. Logging and Monitoring
+
 ```go
-type Seeder interface {
-    Seed(ctx context.Context, client *ent.Client) error
+package seeders
+
+import (
+	"context"
+	"log"
+	"time"
+)
+
+type LoggingSeeder struct {
+	seeder Seeder
+	name   string
 }
 
-// Many types can implement this
-type UserSeeder struct { /* ... */ }
-type RoleSeeder struct { /* ... */ }
+func WithLogging(name string, seeder Seeder) Seeder {
+	return &LoggingSeeder{
+		seeder: seeder,
+		name:   name,
+	}
+}
+
+func (l *LoggingSeeder) Seed(ctx context.Context) error {
+	start := time.Now()
+	log.Printf("Starting seeder: %s", l.name)
+
+	err := l.seeder.Seed(ctx)
+
+	duration := time.Since(start)
+	if err != nil {
+		log.Printf("✗ Seeder %s failed after %v: %v", l.name, duration, err)
+		return err
+	}
+
+	log.Printf("✓ Seeder %s completed in %v", l.name, duration)
+	return nil
+}
+```
+
+### 4. Environment-Specific Data
+
+```go
+package seeders
+
+import (
+	"context"
+	"os"
+)
+
+func (s *TicketStatusSeeder) Seed(ctx context.Context) error {
+	env := os.Getenv("APP_ENV")
+	
+	if env == "production" {
+		// Seed only essential data
+		return s.seedProduction(ctx)
+	}
+	
+	// Seed test data for dev/staging
+	return s.seedDevelopment(ctx)
+}
+```
+
+### 5. Bulk Insert for Performance
+
+```go
+package seeders
+
+import (
+	"context"
+
+	"github.com/w-tech/go-initial/internal/db/ent"
+)
+
+func (s *TicketStatusSeeder) SeedBulk(ctx context.Context) error {
+	statuses := []struct {
+		code       string
+		name       string
+		sortOrder  int
+		isActive   bool
+		isTerminal bool
+	}{
+		{"open", "Submitted", 10, true, false},
+		{"open", "Assigned", 20, true, false},
+		// ... more statuses
+	}
+
+	bulk := make([]*ent.TicketStatusCreate, len(statuses))
+	for i, status := range statuses {
+		bulk[i] = s.client.TicketStatus.
+			Create().
+			SetCode(status.code).
+			SetName(status.name).
+			SetSortOrder(status.sortOrder).
+			SetIsActive(status.isActive).
+			SetIsTerminal(status.isTerminal)
+	}
+
+	// Bulk create (more efficient for large datasets)
+	_, err := s.client.TicketStatus.CreateBulk(bulk...).Save(ctx)
+	return err
+}
 ```
 
 ---
 
-## 📚 Essential Resources
+## Quick Reference Commands
 
-### Documentation
-- [Ent Guide](https://entgo.io/docs/getting-started) - ORM documentation
-- [Go Context](https://pkg.go.dev/context) - Understanding context
-- [Error Handling](https://go.dev/blog/error-handling-and-go) - Go error patterns
+```bash
+# Local development
+go run cmd/seed/main.go -all
+go run cmd/seed/main.go -seeders=ticket_status
 
-### Testing
-- [testify](https://github.com/stretchr/testify) - Assertions and mocking
-- [enttest](https://entgo.io/docs/testing) - Testing Ent schemas
+# Build seed binary
+go build -o bin/seed cmd/seed/main.go
 
-### Tools
-- [golang-migrate](https://github.com/golang-migrate/migrate) - Migrations
-- [air](https://github.com/cosmtrek/air) - Hot reload for development
+# Docker
+docker-compose up --build
+docker-compose run app ./seed -all
+
+# Enable seeds on container startup
+RUN_SEEDS=true docker-compose up
+
+# Run seeds in existing container
+docker-compose exec app ./seed -all
+
+# SQL-based seeding
+psql $DATABASE_URL -f scripts/seeds/ticket_data.sql
+```
 
 ---
 
-**🎉 You're Ready!** You now understand the essential patterns for building production-grade database seeders in Go. Focus on explicit error handling, idempotency, and understanding that in Go, you control everything—there's no framework magic, just solid code patterns.
+## Summary
+
+Choose the approach based on your needs:
+
+- **Approach 1**: Simple projects, quick setup
+- **Approach 2**: Recommended for most cases, true upsert support
+- **Approach 3**: Large projects with many seeders, best maintainability
+- **Approach 4**: SQL-native approach, when you prefer SQL over ORM
+
+Always ensure:
+✓ Seeds are idempotent
+✓ Use transactions for data integrity
+✓ Handle errors gracefully
+✓ Log seeding operations
+✓ Test in development before production
