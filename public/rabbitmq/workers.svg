@@ -1,0 +1,25 @@
+<svg width="980" height="340" viewBox="0 0 980 340" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="980" height="340" rx="28" fill="#F7FBFF"/>
+  <rect x="48" y="118" width="214" height="104" rx="24" fill="#D8F3DC" stroke="#2A9D8F" stroke-width="2"/>
+  <text x="155" y="160" text-anchor="middle" font-family="Arial" font-size="28" font-weight="700" fill="#112031">Job Queue</text>
+  <text x="155" y="192" text-anchor="middle" font-family="Arial" font-size="18" fill="#274C77">prefetch = 1</text>
+
+  <rect x="360" y="56" width="180" height="84" rx="22" fill="#D8ECFF" stroke="#3A86FF" stroke-width="2"/>
+  <rect x="360" y="160" width="180" height="84" rx="22" fill="#D8ECFF" stroke="#3A86FF" stroke-width="2"/>
+  <rect x="360" y="264" width="180" height="56" rx="22" fill="#D8ECFF" stroke="#3A86FF" stroke-width="2"/>
+  <text x="450" y="104" text-anchor="middle" font-family="Arial" font-size="24" font-weight="700" fill="#112031">Worker A</text>
+  <text x="450" y="208" text-anchor="middle" font-family="Arial" font-size="24" font-weight="700" fill="#112031">Worker B</text>
+  <text x="450" y="298" text-anchor="middle" font-family="Arial" font-size="22" font-weight="700" fill="#112031">Worker C</text>
+
+  <rect x="662" y="52" width="256" height="236" rx="24" fill="#FFFFFF" stroke="#112031" stroke-width="2"/>
+  <text x="790" y="96" text-anchor="middle" font-family="Arial" font-size="26" font-weight="700" fill="#112031">Fair Dispatch</text>
+  <text x="790" y="136" text-anchor="middle" font-family="Arial" font-size="18" fill="#274C77">Busy worker waits</text>
+  <text x="790" y="164" text-anchor="middle" font-family="Arial" font-size="18" fill="#274C77">Free worker gets next job</text>
+  <text x="790" y="208" text-anchor="middle" font-family="Arial" font-size="18" fill="#274C77">Slow consumer stops</text>
+  <text x="790" y="236" text-anchor="middle" font-family="Arial" font-size="18" fill="#274C77">hogging the whole queue</text>
+
+  <path d="M262 170H360" stroke="#2A9D8F" stroke-width="4"/>
+  <path d="M262 170L340 98" stroke="#2A9D8F" stroke-width="4"/>
+  <path d="M262 170L340 202" stroke="#2A9D8F" stroke-width="4"/>
+  <path d="M262 170L340 292" stroke="#2A9D8F" stroke-width="4"/>
+</svg>

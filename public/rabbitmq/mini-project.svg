@@ -1,0 +1,33 @@
+<svg width="980" height="420" viewBox="0 0 980 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="980" height="420" rx="28" fill="#F8FAFC"/>
+  <text x="490" y="46" text-anchor="middle" font-family="Arial" font-size="30" font-weight="700" fill="#112031">Mini Project: Order Event Pipeline</text>
+
+  <rect x="54" y="158" width="160" height="88" rx="22" fill="#D8ECFF" stroke="#3A86FF" stroke-width="2"/>
+  <rect x="292" y="94" width="180" height="72" rx="22" fill="#FFF4D6" stroke="#E9A820" stroke-width="2"/>
+  <rect x="292" y="192" width="180" height="72" rx="22" fill="#FFF4D6" stroke="#E9A820" stroke-width="2"/>
+  <rect x="570" y="58" width="154" height="68" rx="22" fill="#D8F3DC" stroke="#2A9D8F" stroke-width="2"/>
+  <rect x="570" y="144" width="154" height="68" rx="22" fill="#D8F3DC" stroke="#2A9D8F" stroke-width="2"/>
+  <rect x="570" y="230" width="154" height="68" rx="22" fill="#D8F3DC" stroke="#2A9D8F" stroke-width="2"/>
+  <rect x="790" y="94" width="138" height="72" rx="22" fill="#FFE3E3" stroke="#D9485F" stroke-width="2"/>
+  <rect x="790" y="196" width="138" height="72" rx="22" fill="#FFFFFF" stroke="#112031" stroke-width="2"/>
+
+  <g font-family="Arial" fill="#112031">
+    <text x="134" y="198" text-anchor="middle" font-size="26" font-weight="700">API</text>
+    <text x="382" y="138" text-anchor="middle" font-size="22" font-weight="700">order.events</text>
+    <text x="382" y="236" text-anchor="middle" font-size="22" font-weight="700">retry.events</text>
+    <text x="647" y="100" text-anchor="middle" font-size="20" font-weight="700">Payment</text>
+    <text x="647" y="186" text-anchor="middle" font-size="20" font-weight="700">Inventory</text>
+    <text x="647" y="272" text-anchor="middle" font-size="20" font-weight="700">Notification</text>
+    <text x="859" y="138" text-anchor="middle" font-size="20" font-weight="700">DLQ</text>
+    <text x="859" y="240" text-anchor="middle" font-size="20" font-weight="700">Dashboard</text>
+  </g>
+
+  <path d="M214 202H292" stroke="#3A86FF" stroke-width="4"/>
+  <path d="M472 128H570" stroke="#E9A820" stroke-width="4"/>
+  <path d="M472 128L550 178" stroke="#E9A820" stroke-width="4"/>
+  <path d="M472 128L550 260" stroke="#E9A820" stroke-width="4"/>
+  <path d="M724 100L790 128" stroke="#2A9D8F" stroke-width="4"/>
+  <path d="M724 272L790 230" stroke="#2A9D8F" stroke-width="4"/>
+  <path d="M647 212V230" stroke="#112031" stroke-width="3" stroke-dasharray="8 8"/>
+  <path d="M382 166V192" stroke="#112031" stroke-width="3" stroke-dasharray="8 8"/>
+</svg>

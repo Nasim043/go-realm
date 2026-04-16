@@ -1,0 +1,68 @@
+import { CheckpointCard, LessonHero, RevealBlock, ScenarioCard } from "@/components/rabbitmq/LessonKit";
+
+<LessonHero
+  day="Day 7"
+  title="Pub/Sub and Event-Driven Design"
+  subtitle="আজকে আমরা asynchronous architecture-এর design thinking শিখব। RabbitMQ শুধু code API না, এটি system boundary design করার টুল।"
+  accent="#fff4d6"
+/>
+
+## Pub/Sub মানে কী?
+
+একটি event publish হলে multiple independent consumers সেটি পেতে পারে। উদাহরণ:
+
+- order created -> payment
+- order created -> analytics
+- order created -> email notification
+
+## Fanout Example
+
+```go
+err := ch.ExchangeDeclare("orders.broadcast", "fanout", true, false, false, false, nil)
+if err != nil {
+	log.Fatal(err)
+}
+
+err = ch.Publish("orders.broadcast", "", false, false, amqp.Publishing{
+	ContentType: "application/json",
+	Body:        []byte(`{"order_id":77,"status":"created"}`),
+})
+if err != nil {
+	log.Fatal(err)
+}
+```
+
+## Command vs Event
+
+| Type | Meaning | Example |
+| --- | --- | --- |
+| Command | “এটি করো” | `send.invoice.email` |
+| Event | “এটি হয়ে গেছে” | `invoice.generated` |
+
+<ScenarioCard
+  title="Architecture Choice"
+  situation="User signup হলে profile service, email service, analytics service, audit log service react করবে।"
+  goal="Work queue না pub/sub?"
+  considerations={[
+    "সব consumer event পাবে",
+    "এক consumer-এর failure অন্যটাকে block করবে না",
+    "Future-এ নতুন subscriber যোগ হতে পারে",
+  ]}
+  answer="Pub/sub pattern best। Fanout বা topic exchange দিয়ে multiple independent queue bind করা যাবে। Work queue হলে event এক worker consume করেই শেষ হয়ে যাবে, যা ভুল behaviour।"
+/>
+
+<RevealBlock title="Naming tip" tone="success">
+  <p>
+    Event name past tense-এ রাখতে পারো: `user.registered`, `payment.failed`, `shipment.dispatched`।
+    এতে বোঝা যায় এটি already happened fact, not imperative command।
+  </p>
+</RevealBlock>
+
+<CheckpointCard
+  prompt="নিজে ভেবে দেখো: same payload payment আর analytics service ভিন্নভাবে consume করলে producer-এর কিছু বদলানো লাগা উচিত কি?"
+  points={[
+    "না, ideally না",
+    "consumer-specific logic producer-এ leak হওয়া উচিত না",
+    "এটাই loose coupling-এর value",
+  ]}
+/>

@@ -1,0 +1,56 @@
+import { CheckpointCard, LessonHero, RevealBlock } from "@/components/rabbitmq/LessonKit";
+
+<LessonHero
+  day="Day 5"
+  title="Durable Queue vs Persistent Message"
+  subtitle="আজকে আমরা restart survival matrix বুঝব। Queue durable হলেই message বেঁচে থাকবে, এমন ভাবা beginner trap।"
+  accent="#d8ecff"
+/>
+
+## দুইটি আলাদা জিনিস
+
+| Concept | কী survive করে | Go code knob |
+| --- | --- | --- |
+| Durable queue | queue definition broker restart-এর পরে থাকে | `QueueDeclare(... durable=true ...)` |
+| Persistent message | message disk-এ persist হওয়ার চেষ্টা করে | `DeliveryMode: amqp.Persistent` |
+
+## Survival Matrix
+
+| Queue durable? | Message persistent? | Restart-এর পরে কী আশা করা যায় |
+| --- | --- | --- |
+| No | No | queue-ও হারাতে পারে, message-ও হারাতে পারে |
+| Yes | No | queue থাকবে, in-flight/non-persistent message হারাতে পারে |
+| No | Yes | queue না থাকলে benefit নেই |
+| Yes | Yes | safest baseline |
+
+```go
+q, err := ch.QueueDeclare("billing.queue", true, false, false, false, nil)
+if err != nil {
+	log.Fatal(err)
+}
+
+err = ch.Publish("", q.Name, false, false, amqp.Publishing{
+	DeliveryMode: amqp.Persistent,
+	ContentType:  "application/json",
+	Body:         []byte(`{"invoice_id":9001}`),
+})
+if err != nil {
+	log.Fatal(err)
+}
+```
+
+<RevealBlock title="Production nuance" tone="warning">
+  <p>
+    Persistent message দিলেই zero-loss guarantee হয় না। Publisher confirms, queue type, disk condition,
+    consumer ack policy, and application idempotency একসাথে reliability shape করে।
+  </p>
+</RevealBlock>
+
+<CheckpointCard
+  prompt="একটি sentence-এ explain করো: durable queue মানে message durable না।"
+  points={[
+    "Queue metadata বাঁচে",
+    "Payload বাঁচার জন্য message persistence দরকার",
+    "End-to-end reliability আরও factors-এর ওপর নির্ভর করে",
+  ]}
+/>

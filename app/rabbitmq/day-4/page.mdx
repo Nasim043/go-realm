@@ -1,0 +1,54 @@
+import { CheckpointCard, LessonHero, RevealBlock, ScenarioCard } from "@/components/rabbitmq/LessonKit";
+
+<LessonHero
+  day="Day 4"
+  title="Exchange Types: Direct, Fanout, Topic, Headers"
+  subtitle="RabbitMQ routing power আসে exchange থেকে। আজকের lesson-এর উদ্দেশ্য হলো কোন use case-এ কোন exchange type সবচেয়ে sensible তা reason করা।"
+  accent="#fff4d6"
+/>
+
+![Exchange Routing](/rabbitmq/exchange-routing.svg)
+
+## Exchange Comparison
+
+| Exchange | Routing basis | Best for | Mental model |
+| --- | --- | --- | --- |
+| Direct | exact routing key | command-like routing | strict switchboard |
+| Fanout | no routing key match needed | broadcast | loudspeaker |
+| Topic | wildcard pattern | event families | smart router |
+| Headers | metadata headers | niche routing | policy gate |
+
+```go
+err := ch.ExchangeDeclare(
+	"events.topic",
+	"topic",
+	true,
+	false,
+	false,
+	false,
+	nil,
+)
+if err != nil {
+	log.Fatal(err)
+}
+```
+
+<ScenarioCard
+  title="Routing Decision"
+  situation="কিছু consumer শুধু `order.*`, কিছু `payment.#` family শুনবে।"
+  goal="একটি exchange type নির্বাচন করা।"
+  considerations={["event name hierarchy already আছে", "future routing expand হতে পারে", "broadcast না, filtered subscription দরকার"]}
+  answer="Topic exchange best fit। `order.*`, `payment.#` pattern দিয়ে clean subscription করা যাবে এবং future hierarchy extend করাও সহজ হবে।"
+/>
+
+<RevealBlock title="Headers exchange কবে ব্যবহার করবে?" tone="info">
+  <p>
+    খুব specific metadata-based routing লাগলে headers exchange useful হতে পারে। কিন্তু বেশিরভাগ backend design-এ direct বা topic যথেষ্ট।
+    Simpler option possible হলে headers avoid করাই ভালো।
+  </p>
+</RevealBlock>
+
+<CheckpointCard
+  prompt="নিজের ভাষায় direct আর topic-এর পার্থক্য explain করো।"
+  points={["Direct exact match চায়", "Topic pattern match চায়", "Topic future growth-এর জন্য বেশি flexible"]}
+/>

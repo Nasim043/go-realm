@@ -7,6 +7,7 @@ export default {
   "ent-guide": "ENT Guide",
   "validator-v10": "Go DTO Validator/v10",
   "go-routines": "Go Routines",
+  rabbitmq: "RabbitMQ",
   project: "Build Project",
   "algo-technique": "Algo & Technique",
   os: "OS",

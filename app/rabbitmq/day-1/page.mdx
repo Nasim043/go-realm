@@ -1,0 +1,100 @@
+import { CheckpointCard, FlowSteps, LessonHero, RevealBlock } from "@/components/rabbitmq/LessonKit";
+
+<LessonHero
+  day="Day 1"
+  title="RabbitMQ Basics: Broker, Producer, Consumer, Queue, Exchange"
+  subtitle="প্রথম দিনে লক্ষ্য হলো RabbitMQ-এর core building block গুলোকে চোখে দেখা, flow হিসেবে বোঝা, এবং কোন অংশ কোন কাজ করে তা পরিষ্কার করা।"
+  accent="#d8ecff"
+/>
+
+## আজকের লক্ষ্য
+
+1. Broker কী এবং কেন দরকার বোঝা
+2. Producer, queue, exchange, consumer-এর ভূমিকা আলাদা করা
+3. Message flow মুখস্থ না করে mentally simulate করতে পারা
+
+![RabbitMQ Core Architecture](/rabbitmq/core-architecture.svg)
+
+## Core Terms
+
+| টার্ম | সহজ ব্যাখ্যা | মনে রাখার উপায় |
+| --- | --- | --- |
+| Broker | RabbitMQ server যা message manage করে | “post office” |
+| Producer | message publish করে | sender |
+| Exchange | message কোন queue-তে যাবে তা decide করে | traffic police |
+| Queue | message ধরে রাখে | inbox |
+| Consumer | message নিয়ে process করে | worker |
+| Binding | exchange আর queue-এর relation | routing rule |
+
+<FlowSteps
+  title="একটি message-এর ভ্রমণ"
+  intro="এই flow ঠিকমতো না বুঝলে পরে ack, retry, exchange type সবকিছু এলোমেলো লাগবে।"
+  steps={[
+    {
+      title: "Producer",
+      body: "Go service একটি event তৈরি করে RabbitMQ-তে publish করে। এটি queue-তে direct না গিয়ে সাধারণত exchange-এ যায়।",
+    },
+    {
+      title: "Exchange",
+      body: "Exchange routing key, binding, এবং exchange type দেখে ঠিক করে কোন queue-তে message যাবে।",
+    },
+    {
+      title: "Queue",
+      body: "Queue message ধরে রাখে যতক্ষণ না consumer safe ভাবে সেটা process করে।",
+    },
+    {
+      title: "Consumer",
+      body: "Consumer message নিয়ে business logic চালায়, সফল হলে ack দেয়, ব্যর্থ হলে retry বা DLQ strategy কাজ করে।",
+    },
+  ]}
+/>
+
+```go
+package main
+
+import (
+	"log"
+
+	amqp "github.com/rabbitmq/amqp091-go"
+)
+
+func main() {
+	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer conn.Close()
+
+	ch, err := conn.Channel()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer ch.Close()
+
+	err = ch.Publish(
+		"orders.direct",
+		"order.created",
+		false,
+		false,
+		amqp.Publishing{
+			ContentType: "application/json",
+			Body:        []byte(`{"order_id":101}`),
+		},
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+```
+
+<RevealBlock title="Common misconception" tone="warning">
+  <p>
+    RabbitMQ কোনো magic background executor না। এটি শুধু message transport এবং delivery coordination দেয়।
+    Business logic এখনও তোমার consumer code-এই থাকবে।
+  </p>
+</RevealBlock>
+
+<CheckpointCard
+  prompt="কাউকে ৩০ সেকেন্ডে explain করো: exchange, queue, consumer আলাদা জিনিস কেন?"
+  points={["Exchange route করে", "Queue store করে", "Consumer process করে"]}
+/>

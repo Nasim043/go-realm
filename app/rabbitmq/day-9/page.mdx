@@ -1,0 +1,62 @@
+import { CheckpointCard, LessonHero, RevealBlock, ScenarioCard } from "@/components/rabbitmq/LessonKit";
+
+<LessonHero
+  day="Day 9"
+  title="Production Concerns in Go: Connections, Idempotency, Logging, Monitoring"
+  subtitle="আজকে আমরা tutorial mindset থেকে production mindset-এ যাব। বাস্তবে RabbitMQ integration-এর সবচেয়ে বড় challenge হলো failure, duplication, visibility, আর connection lifecycle।"
+  accent="#d8ecff"
+/>
+
+## Production Checklist Table
+
+| Concern | Bad pattern | Better pattern |
+| --- | --- | --- |
+| Connection lifecycle | প্রতি publish-এ new connection | long-lived connection, managed channel usage |
+| Error handling | log করে ignore | classify and react |
+| Duplicate processing | assume exactly once | idempotent consumer design |
+| Monitoring | queue full হলে বুঝব | depth, lag, redelivery, DLQ count track |
+| Shutdown | abrupt exit | graceful close and context-driven stop |
+
+```go
+type Publisher struct {
+	conn *amqp.Connection
+	ch   *amqp.Channel
+}
+
+func (p *Publisher) PublishJSON(exchange, key string, body []byte) error {
+	return p.ch.Publish(exchange, key, false, false, amqp.Publishing{
+		ContentType:  "application/json",
+		DeliveryMode: amqp.Persistent,
+		Body:         body,
+		Timestamp:    time.Now(),
+	})
+}
+```
+
+<ScenarioCard
+  title="Operational Smell"
+  situation="Queue depth steady বাড়ছে, consumer count 1, redelivery count বাড়ছে, logs-এ intermittent DB timeout।"
+  goal="প্রথম তিনটি suspicion identify করা।"
+  considerations={[
+    "consumer throughput কম?",
+    "downstream dependency slow?",
+    "retry strategy hot loop করছে?",
+  ]}
+  answer="Likely bottlenecks: consumer too slow or too few, downstream DB instability, and retry/requeue pattern causing repeat churn. শুধু queue depth দেখা যথেষ্ট না; ack latency আর redelivery trend-ও জরুরি।"
+/>
+
+<RevealBlock title="Production metrics idea" tone="success">
+  <ul>
+    <li>queue depth</li>
+    <li>unacked messages</li>
+    <li>consumer count</li>
+    <li>redelivery rate</li>
+    <li>DLQ inflow</li>
+    <li>publish/consume error rate</li>
+  </ul>
+</RevealBlock>
+
+<CheckpointCard
+  prompt="নিজেকে জিজ্ঞাসা করো: 'আমার consumer crash করলে business side effect duplicate হবে কি?'"
+  points={["database unique constraint কি আছে?", "processed message id track করছি কি?", "external API call repeat-safe কি?"]}
+/>

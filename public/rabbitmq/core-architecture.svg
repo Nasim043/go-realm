@@ -1,0 +1,34 @@
+<svg width="980" height="380" viewBox="0 0 980 380" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="980" height="380" rx="28" fill="#F7FBFF"/>
+  <rect x="44" y="112" width="170" height="128" rx="24" fill="#D8ECFF" stroke="#3A86FF" stroke-width="2"/>
+  <text x="129" y="156" text-anchor="middle" font-family="Arial" font-size="28" font-weight="700" fill="#112031">Producer</text>
+  <text x="129" y="194" text-anchor="middle" font-family="Arial" font-size="18" fill="#274C77">Go Service</text>
+
+  <rect x="306" y="68" width="364" height="212" rx="28" fill="#FFFFFF" stroke="#112031" stroke-width="2"/>
+  <text x="488" y="110" text-anchor="middle" font-family="Arial" font-size="30" font-weight="700" fill="#112031">RabbitMQ Broker</text>
+  <rect x="352" y="138" width="268" height="56" rx="18" fill="#FFF4D6" stroke="#E9A820" stroke-width="2"/>
+  <text x="486" y="172" text-anchor="middle" font-family="Arial" font-size="22" font-weight="700" fill="#112031">Exchange</text>
+  <rect x="358" y="214" width="120" height="40" rx="14" fill="#D8F3DC" stroke="#2A9D8F" stroke-width="2"/>
+  <rect x="500" y="214" width="120" height="40" rx="14" fill="#D8F3DC" stroke="#2A9D8F" stroke-width="2"/>
+  <text x="418" y="239" text-anchor="middle" font-family="Arial" font-size="19" font-weight="700" fill="#112031">Queue A</text>
+  <text x="560" y="239" text-anchor="middle" font-family="Arial" font-size="19" font-weight="700" fill="#112031">Queue B</text>
+
+  <rect x="758" y="92" width="176" height="72" rx="24" fill="#FFE3E3" stroke="#D9485F" stroke-width="2"/>
+  <rect x="758" y="186" width="176" height="72" rx="24" fill="#FFE3E3" stroke="#D9485F" stroke-width="2"/>
+  <text x="846" y="136" text-anchor="middle" font-family="Arial" font-size="24" font-weight="700" fill="#112031">Consumer 1</text>
+  <text x="846" y="230" text-anchor="middle" font-family="Arial" font-size="24" font-weight="700" fill="#112031">Consumer 2</text>
+
+  <path d="M214 176H306" stroke="#3A86FF" stroke-width="4" stroke-linecap="round"/>
+  <path d="M286 162L306 176L286 190" stroke="#3A86FF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <path d="M488 194V214" stroke="#E9A820" stroke-width="4" stroke-linecap="round"/>
+  <path d="M418 194V214" stroke="#E9A820" stroke-width="4" stroke-linecap="round"/>
+  <path d="M560 194V214" stroke="#E9A820" stroke-width="4" stroke-linecap="round"/>
+
+  <path d="M478 234H758" stroke="#2A9D8F" stroke-width="4" stroke-linecap="round"/>
+  <path d="M620 234V222H758" stroke="#2A9D8F" stroke-width="4" stroke-linecap="round"/>
+  <path d="M738 220L758 220L744 206" stroke="#2A9D8F" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M738 248L758 248L744 262" stroke="#2A9D8F" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <text x="486" y="332" text-anchor="middle" font-family="Arial" font-size="20" fill="#274C77">Producer publishes → Exchange routes → Queue stores → Consumer processes</text>
+</svg>

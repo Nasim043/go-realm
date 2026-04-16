@@ -1,0 +1,95 @@
+import { CheckpointCard, LessonHero, RevealBlock, ScenarioCard } from "@/components/rabbitmq/LessonKit";
+
+<LessonHero
+  day="Day 10"
+  title="Mini Project: Order Event Pipeline with Go and RabbitMQ"
+  subtitle="আজকে পুরো ট্র্যাকের concepts একত্রে ব্যবহার করব। goal হলো একটি ছোট কিন্তু realistic event pipeline কল্পনা ও structure করা।"
+  accent="#d8f3dc"
+/>
+
+![Mini Project Architecture](/rabbitmq/mini-project.svg)
+
+## Suggested Topology
+
+| Component | Design |
+| --- | --- |
+| Exchange | `orders.topic` |
+| Routing key | `order.created` |
+| Queues | `payment.q`, `inventory.q`, `notification.q`, `orders.dlq` |
+| Retry | optional `orders.retry` |
+
+```go
+type OrderCreated struct {
+	OrderID    string    `json:"order_id"`
+	UserID     string    `json:"user_id"`
+	Amount     int64     `json:"amount"`
+	OccurredAt time.Time `json:"occurred_at"`
+	EventID    string    `json:"event_id"`
+}
+
+func publishOrderCreated(ch *amqp.Channel, evt OrderCreated) error {
+	body, err := json.Marshal(evt)
+	if err != nil {
+		return err
+	}
+
+	return ch.Publish("orders.topic", "order.created", false, false, amqp.Publishing{
+		ContentType:  "application/json",
+		DeliveryMode: amqp.Persistent,
+		Body:         body,
+		Timestamp:    time.Now(),
+		MessageId:    evt.EventID,
+	})
+}
+```
+
+```go
+for msg := range msgs {
+	if alreadyProcessed(msg.MessageId) {
+		_ = msg.Ack(false)
+		continue
+	}
+
+	if err := handleOrderCreated(msg.Body); err != nil {
+		if isTemporary(err) {
+			_ = msg.Nack(false, true)
+		} else {
+			_ = msg.Nack(false, false)
+		}
+		continue
+	}
+
+	markProcessed(msg.MessageId)
+	_ = msg.Ack(false)
+}
+```
+
+<ScenarioCard
+  title="Final Design Check"
+  situation="Notification consumer fail করলেও payment আর inventory success হতে হবে।"
+  goal="একটি topology decision justify করা।"
+  considerations={[
+    "same event multiple independent services পাবে",
+    "one failure অন্যকে block করবে না",
+    "consumer-specific retry policy আলাদা হতে পারে",
+  ]}
+  answer="প্রতিটি service-এর own queue থাকা উচিত। Shared queue ব্যবহার করলে first consumer message নিয়ে নিলে অন্যরা message পাবে না। Separate queue per service true fanout/event-driven behaviour নিশ্চিত করে।"
+/>
+
+<RevealBlock title="Next steps after this course" tone="success">
+  <ul>
+    <li>publisher confirms শিখো</li>
+    <li>quorum queue vs classic queue তুলনা করো</li>
+    <li>delayed retry patterns implement করো</li>
+    <li>real service metrics dashboard বানাও</li>
+  </ul>
+</RevealBlock>
+
+<CheckpointCard
+  prompt="এই ১০ দিনের শেষে তুমি কি এই প্রশ্নের উত্তর confidently দিতে পারো: 'কোন use case-এ work queue, কোন use case-এ pub/sub, আর কোথায় DLQ লাগবে?'"
+  points={[
+    "যদি হ্যাঁ, তাহলে foundation strong",
+    "যদি না, Day 4, 6, 8 আবার পড়ো",
+    "নিজে একটি নতুন use case নিয়ে topology design করে দেখো",
+  ]}
+/>

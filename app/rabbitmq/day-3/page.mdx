@@ -1,0 +1,63 @@
+import { CheckpointCard, FlowSteps, LessonHero, RevealBlock } from "@/components/rabbitmq/LessonKit";
+
+<LessonHero
+  day="Day 3"
+  title="Message Lifecycle: Publish, Deliver, Ack, Nack, Requeue"
+  subtitle="আজকের ফোকাস হলো message success আর failure path। RabbitMQ শেখার সবচেয়ে critical জায়গাগুলোর একটি হচ্ছে acknowledgement behavior।"
+  accent="#ffe3e3"
+/>
+
+![Message Lifecycle](/rabbitmq/message-lifecycle.svg)
+
+## Ack Strategy Table
+
+| Situation | Recommended Action | কেন |
+| --- | --- | --- |
+| Success | `Ack` | message safe ভাবে complete |
+| Temporary DB timeout | `Nack(requeue=true)` বা retry queue | পরে আবার চেষ্টা করা যাবে |
+| Invalid payload | `Nack(requeue=false)` + DLQ | endless retry useless |
+| Consumer crash before ack | RabbitMQ redelivery করতে পারে | reliability বাড়ে |
+
+<FlowSteps
+  title="Successful vs failed processing"
+  steps={[
+    { title: "Publish", body: "Producer message publish করে এবং সেটা queue-তে stored বা routed হয়।" },
+    { title: "Deliver", body: "Consumer message receive করে কিন্তু তখনও RabbitMQ ধরে নেয় না যে কাজ শেষ।" },
+    { title: "Ack", body: "যদি consumer সফল হয়, message permanently remove হয়ে যায়।" },
+    { title: "Nack/Requeue", body: "Temporary failure হলে retry path, fatal failure হলে DLQ path ব্যবহার করা ভালো।" },
+  ]}
+/>
+
+```go
+msgs, err := ch.Consume("orders.queue", "", false, false, false, false, nil)
+if err != nil {
+	log.Fatal(err)
+}
+
+for msg := range msgs {
+	if err := process(msg.Body); err != nil {
+		_ = msg.Nack(false, true)
+		continue
+	}
+
+	if err := msg.Ack(false); err != nil {
+		log.Printf("ack failed: %v", err)
+	}
+}
+```
+
+<RevealBlock title="Auto Ack কেন production-এ risky?" tone="warning">
+  <p>
+    Auto ack mode-এ consumer message পেলেই RabbitMQ সেটাকে done ধরে নেয়। এখন যদি processing মাঝপথে crash হয়, message হারিয়ে যেতে পারে।
+    তাই important jobs-এ manual ack safer।
+  </p>
+</RevealBlock>
+
+<CheckpointCard
+  prompt="নিজে এই প্রশ্নের উত্তর দাও: 'ack মানে success signal, retry policy না' — কেন?"
+  points={[
+    "Ack শুধু current message fate finalize করে",
+    "Retry strategy application বা topology design-এর অংশ",
+    "Ack/Nack decision business error type-এর ওপর নির্ভরশীল",
+  ]}
+/>

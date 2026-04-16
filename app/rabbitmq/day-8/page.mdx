@@ -1,0 +1,53 @@
+import { CheckpointCard, LessonHero, RevealBlock, ScenarioCard } from "@/components/rabbitmq/LessonKit";
+
+<LessonHero
+  day="Day 8"
+  title="Retry Queues, Dead-Letter Queues, and Failure Flow"
+  subtitle="আজকের lesson production survival-এর জন্য। সব failure same না; তাই retry strategy আর poison-message handling clean হওয়া দরকার।"
+  accent="#ffe3e3"
+/>
+
+![Retry and DLQ](/rabbitmq/retry-dlq.svg)
+
+## Failure Types
+
+| Failure type | Example | Action |
+| --- | --- | --- |
+| Temporary | DB timeout, network glitch | retry |
+| Permanent | invalid JSON schema, unknown required field | DLQ / reject |
+| External slow dependency | payment provider lag | retry with delay |
+
+```go
+args := amqp.Table{
+	"x-dead-letter-exchange":    "",
+	"x-dead-letter-routing-key": "orders.dlq",
+}
+
+_, err := ch.QueueDeclare("orders.main", true, false, false, false, args)
+if err != nil {
+	log.Fatal(err)
+}
+```
+
+<ScenarioCard
+  title="Incident Thinking"
+  situation="একটি payment consumer downstream gateway timeout-এর কারণে fail করছে। Message requeue করা হচ্ছে, কিন্তু queue hot loop-এ চলে গেছে।"
+  goal="Safer redesign ভাবা।"
+  considerations={["immediate requeue same failure দ্রুত repeat করাবে", "delay দরকার", "max retry limit দরকার"]}
+  answer="Retry queue + TTL + DLQ strategy better। Temporary failure message কিছু delay পরে main queue-তে ফিরে আসবে। বারবার fail হলে DLQ-তে যাবে। এতে hot loop কমবে।"
+/>
+
+<RevealBlock title="Poison message বলতে কী বোঝায়?" tone="warning">
+  <p>
+    এমন message যা process করলেই fail করে এবং retry করলেও behaviour বদলায় না। Common কারণ: malformed payload, impossible state, unsupported version।
+  </p>
+</RevealBlock>
+
+<CheckpointCard
+  prompt="নিজে explain করো: retry queue আর DLQ একই জিনিস না।"
+  points={[
+    "Retry queue = আবার চেষ্টা করার staging area",
+    "DLQ = normal flow থেকে আলাদা inspection area",
+    "Retry loop bounded না হলে system unhealthy হয়",
+  ]}
+/>

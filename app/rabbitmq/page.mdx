@@ -1,0 +1,93 @@
+import { CheckpointCard, LessonHero, RevealBlock, ScenarioCard } from "@/components/rabbitmq/LessonKit";
+
+<LessonHero
+  day="RabbitMQ Learning Track"
+  title="RabbitMQ বাংলায়: ১০ দিনে Go দিয়ে শেখার রোডম্যাপ"
+  subtitle="এই ট্র্যাকটি এমনভাবে ডিজাইন করা হয়েছে যাতে তুমি RabbitMQ-এর থিওরি, Go integration, production mindset, এবং system design impact একসাথে বুঝতে পারো। প্রতিদিন থাকবে diagram, table, code, mini quiz, আর hands-on task।"
+  accent="#fff4d6"
+/>
+
+## RabbitMQ কী?
+
+RabbitMQ হলো একটি **message broker**। এটি producer থেকে message নিয়ে queue-তে রাখে, rule অনুযায়ী route করে, এবং consumer-কে deliver করে। এর ফলে service গুলো tightly coupled না হয়ে **asynchronous** এবং **resilient** হতে পারে।
+
+![RabbitMQ Core Architecture](/rabbitmq/core-architecture.svg)
+
+## কেন Go backend-এর সাথে RabbitMQ শেখা দরকার?
+
+| বিষয় | কেন গুরুত্বপূর্ণ |
+| --- | --- |
+| Background jobs | Email, report generation, image processing queue-তে পাঠানো যায় |
+| Decoupling | API service আর worker service আলাদা রাখা যায় |
+| Reliability | retry, ack, dead-letter queue দিয়ে fault tolerance বাড়ে |
+| Throughput | burst traffic absorb করা যায় |
+| Go fit | goroutine + channels mindset থেকে RabbitMQ বুঝতে সুবিধা হয় |
+
+## এই ট্র্যাক কার জন্য?
+
+- যারা Go backend লিখছে এবং queue-based architecture বুঝতে চায়
+- যারা pub/sub, async job processing, retry, DLQ production-grade ভাবে শিখতে চায়
+- যারা শুধু tutorial না, **reasoning + implementation** দুটোই চায়
+
+## শুরু করার আগে যা জানা ভালো
+
+- Go basics: `struct`, `goroutine`, `context`, package layout
+- Docker বা local service run করার বেসিক
+- HTTP API এবং JSON payload সম্পর্কে ধারণা
+
+## ১০ দিনের শেখার পথ
+
+| দিন | ফোকাস | Outcome |
+| --- | --- | --- |
+| Day 1 | Broker, producer, consumer, queue, exchange | RabbitMQ mental model তৈরি হবে |
+| Day 2 | Setup, UI, first Go producer/consumer | লোকালি message পাঠানো-নেওয়া পারবে |
+| Day 3 | ack, nack, requeue, lifecycle | message loss এবং duplicate risk বুঝবে |
+| Day 4 | direct, fanout, topic, headers | routing strategy বাছতে পারবে |
+| Day 5 | durable queue, persistent message | restart survival বুঝবে |
+| Day 6 | work queues, prefetch, fair dispatch | worker pattern implement করতে পারবে |
+| Day 7 | pub/sub, event-driven design | broadcast এবং event thinking develop হবে |
+| Day 8 | retry queue, DLQ, poison message | failure handling safer হবে |
+| Day 9 | connection management, idempotency, monitoring | production mindset তৈরি হবে |
+| Day 10 | full mini project | end-to-end RabbitMQ + Go flow বুঝবে |
+
+<CheckpointCard
+  title="কীভাবে এই কোর্সটি ব্যবহার করবে"
+  prompt="প্রতিদিনের lesson শুরু করার আগে নিজেকে জিজ্ঞাসা করো: আজ আমি কোন architectural pain solve করতে শিখছি?"
+  points={[
+    "Code block শুধু পড়বে না, মানসিকভাবে execute করবে।",
+    "প্রতিটি diagram দেখে message কোথায় যাচ্ছে তা নিজে explain করবে।",
+    "Quiz-এ ভুল হলে explanation পড়ে আবার decision নেবে।",
+    "Hands-on task-এ naming, routing key, ack strategy বদলে experiment করবে।",
+  ]}
+/>
+
+<ScenarioCard
+  title="Real-world Motivation"
+  situation="একটি e-commerce API order create করার পর payment, inventory, email notification, analytics event সবকিছু একই request-এ synchronously করছে।"
+  goal="response time কমানো, failure isolate করা, এবং services loosely coupled রাখা।"
+  considerations={[
+    "সব কাজ কি user response-এর আগে দরকার?",
+    "কোন কাজগুলো eventually consistent হতে পারে?",
+    "কোন failure retry করা নিরাপদ, আর কোনটা manual review-তে যাবে?",
+  ]}
+  answer="RabbitMQ order event publish করতে সাহায্য করবে। API শুধু order accepted করবে। Payment, notification, analytics আলাদা consumer দিয়ে process হবে। ফলে request fast থাকবে এবং failure isolation অনেক ভালো হবে।"
+/>
+
+<RevealBlock title="এই ট্র্যাকের design principle" tone="success">
+  <ul>
+    <li>Bangla explanation, English technical vocabulary</li>
+    <li>Small Go examples first, production concerns later</li>
+    <li>Every day = one clear operational lesson</li>
+    <li>“কেন” এবং “কীভাবে” দুটোই সমান গুরুত্বপূর্ণ</li>
+  </ul>
+</RevealBlock>
+
+## শেষ হলে তুমি কী পারবে?
+
+- RabbitMQ-এ কোন exchange type ব্যবহার করতে হবে তা reason করতে পারবে
+- Go দিয়ে clean producer/consumer লিখতে পারবে
+- ack, retry, requeue, DLQ decision বুঝতে পারবে
+- work queue বনাম pub/sub use case আলাদা করতে পারবে
+- production-ready messaging system-এর common pitfalls চিনতে পারবে
+
+পরের lesson থেকে আমরা mental model build শুরু করব।

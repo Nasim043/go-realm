@@ -1,0 +1,59 @@
+import { CheckpointCard, LessonHero, RevealBlock, ScenarioCard } from "@/components/rabbitmq/LessonKit";
+
+<LessonHero
+  day="Day 6"
+  title="Work Queues, Fair Dispatch, and Prefetch"
+  subtitle="আজকে আমরা এমন pattern শিখব যেখানে অনেক worker একটি shared queue থেকে job consume করে।"
+  accent="#d8f3dc"
+/>
+
+![Workers](/rabbitmq/workers.svg)
+
+## Work Queue Pattern
+
+- image resize
+- invoice generation
+- email sending
+- video processing
+
+```go
+err = ch.Qos(1, 0, false)
+if err != nil {
+	log.Fatal(err)
+}
+```
+
+```go
+for msg := range msgs {
+	if err := doHeavyJob(msg.Body); err != nil {
+		_ = msg.Nack(false, true)
+		continue
+	}
+
+	time.Sleep(2 * time.Second)
+	_ = msg.Ack(false)
+}
+```
+
+<ScenarioCard
+  title="Which Worker Gets What?"
+  situation="তিন worker আছে। Worker A slow, B fast, C fast। Queue-তে ১০টি job এসেছে। Prefetch = 1."
+  goal="Distribution-এর behavior predict করা।"
+  considerations={["Ack না দিলে worker নতুন job নেবে না", "Fast worker দ্রুত free হবে", "RabbitMQ only knows ack state, business cost না"]}
+  answer="A একটি job নিয়ে busy থাকবে। B এবং C দ্রুত ack করে আরও job নেবে। ফলে practical distribution fast worker-দের দিকে naturally shift করবে।"
+/>
+
+<RevealBlock title="কখন work queue উপযুক্ত নয়?" tone="info">
+  <p>
+    যদি same event একাধিক service-এ simultaneously পৌঁছাতে হয়, তখন shared work queue ভুল abstraction। সেখানে pub/sub বা topic/fanout exchange better।
+  </p>
+</RevealBlock>
+
+<CheckpointCard
+  prompt="কেউ যদি বলে 'queue আছে মানেই worker pattern', তুমি কীভাবে correction করবে?"
+  points={[
+    "Queue থাকা মানেই one-of-many worker না",
+    "Broadcast-এর জন্য fanout/topic binding দরকার হতে পারে",
+    "Consumption semantics use case drive করে",
+  ]}
+/>

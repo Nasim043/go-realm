@@ -1,0 +1,62 @@
+import { CheckpointCard, LessonHero, RevealBlock, ScenarioCard } from "@/components/rabbitmq/LessonKit";
+
+<LessonHero
+  day="Day 2"
+  title="Local Setup and First Go Producer/Consumer"
+  subtitle="আজকে আমরা RabbitMQ locally run করব, management UI দেখব, এবং Go দিয়ে first publish-consume cycle লিখব।"
+  accent="#d8f3dc"
+/>
+
+## Setup Checklist
+
+| Step | Command / Action | Expected |
+| --- | --- | --- |
+| 1 | `docker run -d --hostname rabbit-dev --name rabbit-dev -p 5672:5672 -p 15672:15672 rabbitmq:3-management` | RabbitMQ container up |
+| 2 | Browser খুলে `http://localhost:15672` | UI open |
+| 3 | Login with `guest / guest` | dashboard দেখাবে |
+| 4 | `go get github.com/rabbitmq/amqp091-go` | package ready |
+
+```go
+msgs, err := ch.Consume("hello.queue", "", true, false, false, false, nil)
+if err != nil {
+	log.Fatal(err)
+}
+
+for msg := range msgs {
+	log.Printf("received: %s", msg.Body)
+}
+```
+
+```go
+err = ch.Publish("", "hello.queue", false, false, amqp.Publishing{
+	ContentType: "text/plain",
+	Body:        []byte("hello rabbitmq from go"),
+})
+if err != nil {
+	log.Fatal(err)
+}
+```
+
+<ScenarioCard
+  title="Predict the Output"
+  situation="Consumer আগে চালু আছে। তারপর producer একবার চালানো হলো।"
+  goal="Console-এ কী হবে?"
+  considerations={["Queue আগে থেকেই declared", "Consumer auto-ack mode-এ আছে", "One message published হয়েছে"]}
+  answer="Consumer console-এ `received: hello rabbitmq from go` টাইপ আউটপুট দেখা যাবে, এবং queue depth আবার zero হয়ে যাবে।"
+/>
+
+<RevealBlock title="আজকের production note" tone="warning">
+  <p>
+    আজকের example intentionally simple। এখানে `autoAck=true`, durable queue নেই, connection retry নেই। এগুলো
+    production-safe না, কিন্তু প্রথম flow বোঝার জন্য useful।
+  </p>
+</RevealBlock>
+
+<CheckpointCard
+  prompt="নিজে explain করো: producer আর consumer উভয় code-এ `QueueDeclare` কেন থাকতে পারে?"
+  points={[
+    "Idempotent topology setup হিসেবে",
+    "Service startup-এ dependency reduce করতে",
+    "কিন্তু parameters mismatch হলে error আসতে পারে",
+  ]}
+/>

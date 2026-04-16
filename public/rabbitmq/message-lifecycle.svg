@@ -1,0 +1,36 @@
+<svg width="980" height="300" viewBox="0 0 980 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="980" height="300" rx="28" fill="#FFFDF7"/>
+  <g font-family="Arial" fill="#112031">
+    <rect x="40" y="104" width="136" height="92" rx="20" fill="#D8ECFF" stroke="#3A86FF" stroke-width="2"/>
+    <text x="108" y="145" text-anchor="middle" font-size="22" font-weight="700">Publish</text>
+    <text x="108" y="172" text-anchor="middle" font-size="16">Producer sends</text>
+
+    <rect x="222" y="104" width="136" height="92" rx="20" fill="#FFF4D6" stroke="#E9A820" stroke-width="2"/>
+    <text x="290" y="145" text-anchor="middle" font-size="22" font-weight="700">Store</text>
+    <text x="290" y="172" text-anchor="middle" font-size="16">Queue keeps it</text>
+
+    <rect x="404" y="104" width="136" height="92" rx="20" fill="#D8F3DC" stroke="#2A9D8F" stroke-width="2"/>
+    <text x="472" y="145" text-anchor="middle" font-size="22" font-weight="700">Deliver</text>
+    <text x="472" y="172" text-anchor="middle" font-size="16">Consumer gets</text>
+
+    <rect x="586" y="52" width="150" height="92" rx="20" fill="#EAF4FF" stroke="#3A86FF" stroke-width="2"/>
+    <text x="661" y="93" text-anchor="middle" font-size="22" font-weight="700">Ack</text>
+    <text x="661" y="120" text-anchor="middle" font-size="16">Delete safely</text>
+
+    <rect x="586" y="156" width="150" height="92" rx="20" fill="#FFE3E3" stroke="#D9485F" stroke-width="2"/>
+    <text x="661" y="197" text-anchor="middle" font-size="22" font-weight="700">Nack</text>
+    <text x="661" y="224" text-anchor="middle" font-size="16">Retry / route out</text>
+
+    <rect x="790" y="104" width="150" height="92" rx="20" fill="#F8FAFC" stroke="#112031" stroke-width="2"/>
+    <text x="865" y="145" text-anchor="middle" font-size="22" font-weight="700">Done</text>
+    <text x="865" y="172" text-anchor="middle" font-size="16">or Requeue/DLQ</text>
+  </g>
+
+  <path d="M176 150H222" stroke="#3A86FF" stroke-width="4" stroke-linecap="round"/>
+  <path d="M358 150H404" stroke="#E9A820" stroke-width="4" stroke-linecap="round"/>
+  <path d="M540 150H586" stroke="#2A9D8F" stroke-width="4" stroke-linecap="round"/>
+  <path d="M736 98H790" stroke="#3A86FF" stroke-width="4" stroke-linecap="round"/>
+  <path d="M736 202H790" stroke="#D9485F" stroke-width="4" stroke-linecap="round"/>
+  <path d="M770 84L790 98L770 112" stroke="#3A86FF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M770 188L790 202L770 216" stroke="#D9485F" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
