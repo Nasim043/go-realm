@@ -2,12 +2,6 @@
 
 import { useState, type ReactNode } from "react";
 
-type QuizOption = {
-  label: string;
-  detail: string;
-  correct?: boolean;
-};
-
 type RevealBlockProps = {
   title: string;
   children: ReactNode;
