@@ -43,3 +43,6 @@ next-env.d.ts
 
 # idea
 .idea
+
+# local test file
+test.go

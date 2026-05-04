@@ -107,7 +107,7 @@ func main() {
 
 ---
 
-## ৬. স্ট্রাক্ট মেথড ও রিসিভার (Methods & Receivers)
+## ৬. স্ট্রাক্ট মেথড ও রিসিভার (Methods & Receivers) 📌
 
 Go-তে ক্লাসের বদলে স্ট্রাক্টের সাথে ফাংশন বা মেথড যুক্ত করা হয় । মেথড ডিফাইন করার সময় **রিসিভার** ঠিক করা খুব গুরুত্বপূর্ণ।
 
@@ -225,4 +225,24 @@ func main() {
 
 
 3. **Memory:** বড় স্ট্রাক্ট ফাংশনে পাস করার সময় `Pointer` ব্যবহার করুন, এতে মেমোরি বাঁচে (পুরো স্ট্রাক্ট কপি হয় না)।
+
 ---
+
+## ১১. OOP → Go স্ট্রাক্ট চিটশিট 📋
+
+অন্যান্য OOP ল্যাঙ্গুয়েজ জানলে নিচের টেবিলটি Go-এর স্ট্রাক্ট দ্রুত বুঝতে সাহায্য করবে।
+
+| # | OOP Concept | Go-তে সমতুল্য | মূল বিবরণ |
+|:---:|:---|:---|:---|
+| 1 | `class` | `type Foo struct{}` | কাস্টম ডেটা টাইপ তৈরির একমাত্র উপায় |
+| 2 | `public` field | Uppercase field — `Name string` | যেকোনো প্যাকেজ থেকে সরাসরি অ্যাক্সেসযোগ্য |
+| 3 | `private` field | Lowercase field — `name string` | শুধুমাত্র একই প্যাকেজে দৃশ্যমান, বাইরে থেকে লুকানো |
+| 4 | `constructor` | `NewFoo()` factory function | `New` দিয়ে শুরু — ডিফল্ট ভ্যালু সেট করার Best Practice |
+| 5 | `method` | Receiver function | `func (f Foo) Bar()` — স্ট্রাক্টের সাথে যুক্ত ফাংশন |
+| 6 | `this` / `self` | Receiver variable | `r`, `p` ইত্যাদি — মেথডের ভেতরে নিজের স্ট্রাক্টের রেফারেন্স |
+| 7 | Read-only method | Value Receiver `(f Foo)` | স্ট্রাক্টের কপিতে কাজ করে, মূল ডেটা অপরিবর্তিত থাকে |
+| 8 | Mutating method | Pointer Receiver `(f *Foo)` | আসল স্ট্রাক্টের ডেটা পরিবর্তন করতে পারে |
+| 9 | `inheritance` | Struct Embedding | ফিল্ড নাম ছাড়া embed → child সরাসরি parent-এর ফিল্ড পায় |
+| 10 | `null` object | `nil` pointer — `var p *Foo` | nil pointer-এ ফিল্ড অ্যাক্সেস করলে runtime panic হয় |
+
+> **💡 মনে রাখুন:** Go-তে `class`, `public`, `private`, `extends`, `this` — এই কিওয়ার্ডগুলো নেই। কিন্তু উপরের টেবিলের সব ধারণাই Go-তে ভিন্নভাবে বিদ্যমান।

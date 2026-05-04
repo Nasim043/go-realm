@@ -15,7 +15,7 @@ export default {
   "receiver-function": "Receiver Function",
   slice: "Slice",
   string: "String",
-  struct: "Struct",
+  struct: "Struct 📌",
   "variadic-function": "Variadic Function",
   "###": {
     type: "separator",
