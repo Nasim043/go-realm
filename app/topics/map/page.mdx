@@ -188,17 +188,6 @@ func fib(n int) int {
 }
 ```
 
-### Visited Tracking (BFS / DFS)
-```go
-visited := make(map[string]bool)
-
-func dfs(node string) {
-    if visited[node] { return } // map returns false for missing keys — safe!
-    visited[node] = true
-    // ... explore neighbors
-}
-```
-
 > 💡 **CP Tip:** `m[key]++` is always safe even if the key doesn't exist yet — Go returns the zero value (`0` for int, `false` for bool), so you never need to pre-initialize.
 
 ---
