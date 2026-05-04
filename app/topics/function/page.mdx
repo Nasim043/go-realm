@@ -1,236 +1,265 @@
-### 🔹 1. What is a First-Class Function in Go?
+# Functions in Go
 
-**Answer:**
-In Go, functions are **first-class citizens**, meaning they:
-
-- Can be assigned to variables
-- Can be passed as arguments
-- Can be returned from other functions
-
-✅ **Example:**
-
-```go
-func greet(name string) string {
-	return "Hello, " + name
-}
-
-var f = greet
-
-fmt.Println(f("Go")) // Output: Hello, Go
-```
+Functions are **first-class citizens** in Go — they can be assigned to variables, passed as arguments, and returned from other functions.
 
 ---
 
-### 🔹 2. What is a Higher-Order Function?
-
-**Answer:**
-A **Higher-Order Function** is a function that:
-
-- **Takes one or more functions as parameters**
-- OR **returns a function**
-
-✅ **Example (passing function):**
+## 1. Syntax Anatomy
 
 ```go
-func operate(x int, y int, op func(int, int) int) int {
-	return op(x, y)
+//  ↓ keyword  ↓ name   ↓ parameters      ↓ return type
+func divide  (a, b int) (int, error) {
+    if b == 0 {
+        return 0, fmt.Errorf("divide by zero")
+    }
+    return a / b, nil
 }
-
-func add(a, b int) int {
-	return a + b
-}
-
-result := operate(5, 3, add) // 8
 ```
 
-✅ **Example (returning function):**
-
-```go
-func multiplier(factor int) func(int) int {
-	return func(x int) int {
-		return x * factor
-	}
-}
-
-double := multiplier(2)
-fmt.Println(double(5)) // Output: 10
-```
+- Parameters of the same type can share the type: `a, b int`
+- Multiple return values are wrapped in `()`
+- `error` is always the **last** return value by convention
 
 ---
 
-### 🔹 3. What is an Anonymous Function in Go?
-
-**Answer:**
-An **anonymous function** has no name. It's often used for short, one-time behavior.
-
-✅ **Example:**
+## 2. Return Styles
 
 ```go
-func() {
-	fmt.Println("Hello from anonymous function!")
-}()
-```
-
-Or assigned to a variable:
-
-```go
-square := func(x int) int {
-	return x * x
-}
-fmt.Println(square(4)) // 16
-```
-
----
-
-### 🔹 4. What is an IIFE (Immediately Invoked Function Expression) in Go?
-
-**Answer:**
-An **IIFE** is a function that is **declared and immediately executed**.
-
-✅ **Example:**
-
-```go
-result := func(a, b int) int {
-	return a + b
-}(10, 5)
-
-fmt.Println(result) // Output: 15
-```
-
-This is useful for **scoping** or initializing inline values.
-
----
-
-### 🔹 5. What is the Return Type in a Go Function?
-
-**Answer:**
-In Go, functions must explicitly declare their return types. They can return:
-
-- A **single value**
-- **Multiple values**
-- Named or unnamed return variables
-
-✅ **Example (single return):**
-
-```go
+// Single return
 func square(x int) int {
-	return x * x
+    return x * x
 }
-```
 
-✅ **Example (multiple return):**
-
-```go
+// Multiple returns — idiomatic Go
 func divide(a, b int) (int, error) {
-	if b == 0 {
-		return 0, fmt.Errorf("divide by zero")
-	}
-	return a / b, nil
+    if b == 0 { return 0, fmt.Errorf("divide by zero") }
+    return a / b, nil
+}
+
+// Named returns — use sparingly, good for short functions
+func minMax(nums []int) (min, max int) {
+    min, max = nums[0], nums[0]
+    for _, n := range nums[1:] {
+        if n < min { min = n }
+        if n > max { max = n }
+    }
+    return // naked return — returns min and max
 }
 ```
 
-✅ **Example (named returns):**
-
-```go
-func sumAndProduct(x, y int) (sum int, product int) {
-	sum = x + y
-	product = x * y
-	return
-}
-```
+> ⚠️ **Named returns + naked `return`** hurt readability in long functions. Use only when it clearly adds documentation value.
 
 ---
 
-### 🔹 6. Can a Function Return Another Function in Go?
-
-**Answer:**
-Yes. This is part of **functional programming** capability.
-
-✅ **Example:**
+## 3. First-Class Functions
 
 ```go
-func greeter(greeting string) func(string) string {
-	return func(name string) string {
-		return greeting + ", " + name
-	}
+// Assign to variable
+greet := func(name string) string {
+    return "Hello, " + name
 }
+fmt.Println(greet("Go")) // Hello, Go
 
-sayHello := greeter("Hello")
-fmt.Println(sayHello("John")) // Output: Hello, John
-```
-
----
-
-### 🔹 7. How to Pass a Function as an Argument?
-
-**Answer:**
-Use the function type in the parameter list.
-
-✅ **Example:**
-
-```go
+// Pass as argument (higher-order function)
 func apply(x int, fn func(int) int) int {
-	return fn(x)
+    return fn(x)
 }
+fmt.Println(apply(5, func(n int) int { return n * 2 })) // 10
 
-fmt.Println(apply(5, func(n int) int { return n * 2 })) // Output: 10
+// Return a function (factory / closure)
+func multiplier(factor int) func(int) int {
+    return func(x int) int {
+        return x * factor
+    }
+}
+double := multiplier(2)
+fmt.Println(double(7)) // 14
 ```
 
 ---
 
-### 🔹 8. Can Go Functions Be Recursive?
+## 4. Closures ⭐
 
-**Answer:**
-Yes, Go supports recursion.
+A closure is a function that **captures variables from its surrounding scope**. The captured variable is shared — not copied.
 
-✅ **Example:**
+```go
+func counter() func() int {
+    count := 0
+    return func() int {
+        count++ // count lives on the heap — shared with the closure
+        return count
+    }
+}
+
+c := counter()
+fmt.Println(c()) // 1
+fmt.Println(c()) // 2
+fmt.Println(c()) // 3
+
+c2 := counter() // independent counter
+fmt.Println(c2()) // 1
+```
+
+> **Production use:** closures are used for middleware, callbacks, memoization, and functional options patterns.
+
+---
+
+## 5. Anonymous Functions & IIFE
+
+```go
+// Anonymous function assigned to a variable
+square := func(x int) int { return x * x }
+fmt.Println(square(4)) // 16
+
+// IIFE — declared and called immediately
+result := func(a, b int) int {
+    return a + b
+}(10, 5)
+fmt.Println(result) // 15
+
+// Common use: goroutine IIFE
+go func(msg string) {
+    fmt.Println(msg)
+}("hello from goroutine")
+```
+
+---
+
+## 6. `defer` in Functions
+
+`defer` schedules a function call to run **when the surrounding function returns** — regardless of how it returns (normal, error, panic).
+
+```go
+func readFile(path string) error {
+    f, err := os.Open(path)
+    if err != nil { return err }
+    defer f.Close() // ✅ guaranteed to run even if function panics
+
+    // ... read file
+    return nil
+}
+```
+
+**Defer rules:**
+- Arguments are evaluated **immediately**, not at run time
+- Multiple defers run in **LIFO** order
+- Deferred functions can read/modify **named return values**
+
+```go
+// Defers run LIFO
+defer fmt.Println("third")
+defer fmt.Println("second")
+defer fmt.Println("first")
+// Output: first → second → third
+```
+
+---
+
+## 7. `init()` Function
+
+```go
+func init() {
+    // runs automatically before main()
+    // no parameters, no return value
+}
+```
+
+| Property | Detail |
+|:---|:---|
+| Runs before | `main()` |
+| Parameters / returns | None |
+| Per file | Multiple `init()` allowed |
+| Order | File order within package; import dependency order across packages |
+| Use for | Registering drivers, loading config, validating flags |
+| Avoid | Business logic, side effects that are hard to test |
+
+```go
+var db *sql.DB
+
+func init() {
+    var err error
+    db, err = sql.Open("postgres", os.Getenv("DB_URL"))
+    if err != nil {
+        log.Fatal(err)
+    }
+}
+```
+
+---
+
+## 8. Recursion
 
 ```go
 func factorial(n int) int {
-	if n == 0 {
-		return 1
-	}
-	return n * factorial(n-1)
+    if n == 0 { return 1 }
+    return n * factorial(n-1)
+}
+
+// With memoization (production pattern)
+var memo = map[int]int{}
+func fib(n int) int {
+    if n <= 1 { return n }
+    if v, ok := memo[n]; ok { return v }
+    memo[n] = fib(n-1) + fib(n-2)
+    return memo[n]
 }
 ```
 
 ---
 
-### 🔹 9. What Are Variadic Functions?
-
-**Answer:**
-A **variadic function** can accept a variable number of arguments.
-
-✅ **Example:**
+## 9. Function Types & Type Aliases
 
 ```go
-func sum(nums ...int) int {
-	total := 0
-	for _, n := range nums {
-		total += n
-	}
-	return total
+// Define a function type
+type Transformer func(int) int
+
+func applyAll(nums []int, fns ...Transformer) []int {
+    result := make([]int, len(nums))
+    copy(result, nums)
+    for _, fn := range fns {
+        for i, v := range result {
+            result[i] = fn(v)
+        }
+    }
+    return result
 }
 
-sum(1, 2, 3, 4) // Output: 10
+double := Transformer(func(x int) int { return x * 2 })
+addOne := Transformer(func(x int) int { return x + 1 })
+fmt.Println(applyAll([]int{1, 2, 3}, double, addOne)) // [3 5 7]
 ```
 
 ---
 
-### 🔹 10. Are Functions in Go Pure?
+## 10. Common Mistakes ⚠️
 
-**Answer:**
-Functions in Go **can be pure** (no side effects), but Go does not enforce functional purity.
-It supports both functional and imperative styles.
+| Mistake | Problem | Fix |
+|:---|:---|:---|
+| Ignoring error return | silent failures | always check `err != nil` |
+| Naked `return` in long function | hard to read | use explicit returns |
+| Closure capturing loop var (pre-1.22) | all closures see same value | shadow: `v := v` or use Go 1.22+ |
+| `defer` argument captured late | wrong value deferred | args evaluated at `defer` statement, not at call |
+| Calling `init()` manually | undefined behaviour | `init` is called by runtime only |
+| Huge function doing everything | untestable | break into small, single-purpose functions |
 
-### 🔹11. What is `init` function in go?
+---
 
-- Special function that runs **automatically before `main()`**
-- Used for **initial setup** (e.g., config, variable initialization)
-- Runs **once per file**
-- A package can have **multiple `init()` functions**
-- Executed in **file order within a package**
-- Executed in **import dependency order across packages**
-- **No parameters** and **no return values**
-- ⚠️ Should be used only for **minimal setup**, not business logic
-- 🧪 Also runs before test functions in `_test.go` files
+## 11. Interview Cheat Sheet
+
+**Q: What makes Go functions first-class?**
+> They can be assigned to variables, passed as arguments, and returned from other functions — just like any other value.
+
+**Q: What is a closure?**
+> A function that captures and shares variables from its enclosing scope. The captured variable lives on the heap and is shared between the closure and the outer scope.
+
+**Q: When are `defer` arguments evaluated?**
+> Immediately when the `defer` statement is reached — not when the deferred function actually executes. Only the function call is delayed.
+
+**Q: What is the difference between anonymous function and closure?**
+> All closures are anonymous functions, but not all anonymous functions are closures. A closure specifically **captures** at least one variable from the outer scope.
+
+**Q: What is `init()` and when does it run?**
+> A special no-arg, no-return function that runs automatically before `main()`. Multiple `init()` functions per file/package are allowed. Used for setup like registering drivers or validating env vars.
+
+**Q: Should you use named return values?**
+> Only for short functions where they act as documentation. In long functions, naked `return` statements make code hard to follow and should be avoided.

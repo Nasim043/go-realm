@@ -1,92 +1,216 @@
-## Go (Golang) Data Types
-Go is a statically typed language, meaning variables must have a defined type at compile time.
+# Data Types in Go
 
-
-| Type       | Description                     | Size (bits) | Range/Example                     |
-|------------|---------------------------------|-------------|-----------------------------------|
-| `int` ⬇️   | Signed integer (platform-dependent) | 32 or 64    | `-2³¹` to `2³¹-1` (32-bit)       |
-| `int8`     | 8-bit signed integer           | 8           | `-128` to `127`                  |
-| `int16`    | 16-bit signed integer          | 16          | `-32768` to `32767`              |
-| `int32`    | 32-bit signed integer          | 32          | `-2³¹` to `2³¹-1`                |
-| `int64`    | 64-bit signed integer          | 64          | `-2⁶³` to `2⁶³-1`                |
-| `uint` ⬇️  | Unsigned integer (platform-dependent) | 32 or 64    | `0` to `2³²-1` (32-bit)          |
-| `uint8` (byte)⭐ | 8-bit unsigned integer     | 8           | `0` to `255`                     |
-| `uint16`   | 16-bit unsigned integer        | 16          | `0` to `65535`                   |
-| `uint32`   | 32-bit unsigned integer        | 32          | `0` to `2³²-1`                   |
-| `uint64`   | 64-bit unsigned integer        | 64          | `0` to `2⁶⁴-1`                   |
-| `float32`⬇️  | 32-bit floating-point         | 32          | `±1.18e⁻³⁸` to `±3.4e³⁸`         |
-| `float64`⬇️  | 64-bit floating-point         | 64          | `±2.23e⁻³⁰⁸` to `±1.8e³⁰⁸`       |
-| `bool`    | Boolean (`true/false`) |8| `var flag bool = true` |
-| `string`  | Immutable UTF-8 text  |-| `s := "Hello, Go!"`  |
-| `Rune⭐`   | Alias for `int32` (Unicode code point) |32| `var r rune = 'A'`               |
+Go is **statically typed** — every variable has a type known at compile time. No implicit type coercion between different types.
 
 ---
 
-### Golang Formatting Verbs
+## 1. Type Categories
 
-| Verb  | Description                         | Example Types | Example Input       | Example Output             |
-| ----- | ----------------------------------- | ------------- | ------------------- | -------------------------- |
-| `%v`  | Default format                      | any           | `Person{"John",25}` | `{John 25}`                |
-| `%+v` | Struct fields with names            | structs       | `Person{"John",25}` | `{Name:John Age:25}`       |
-| `%#v` | Go syntax representation            | any           | `Person{"John",25}` | `main.Person{Name:"John"}` |
-| `%T⭐`  | Type of the value                   | any           | `"hello"`           | `string`                   |
-| `%%`  | Literal percent sign                | -             | `"%%"`              | `%`                        |
-| `%t`  | Boolean                             | bool          | `true`              | `true`                     |
-| `%d`  | Base-10 integer                     | integers      | `42`                | `42`                       |
-| `%b`  | Base-2 (binary)                     | integers      | `42`                | `101010`                   |
-| `%o`  | Base-8 (octal)                      | integers      | `42`                | `52`                       |
-| `%x`  | Base-16 (hex), lowercase            | integers      | `42`                | `2a`                       |
-| `%X`  | Base-16 (hex), uppercase            | integers      | `42`                | `2A`                       |
-| `%f`  | Decimal point, no exponent          | floats        | `3.14159265`        | `3.141593`                 |
-| `%e`  | Scientific notation (e)             | floats        | `3.14159265`        | `3.141593e+00`             |
-| `%E`  | Scientific notation (E)             | floats        | `3.14159265`        | `3.141593E+00`             |
-| `%g`  | %e or %f, whichever is more compact | floats        | `3.14159265`        | `3.141592653589793`        |
-| `%G`  | %E or %f, whichever is more compact | floats        | `3.14159265`        | `3.141592653589793`        |
-| `%s`  | Plain string                        | strings       | `"hello"`           | `hello`                    |
-| `%q`  | Quoted string                       | strings       | `"hello"`           | `"hello"`                  |
-| `%p`  | Pointer address                     | pointers      | `&x`                | `0xc000010050`             |
-| `%c⭐`  | Unicode character                   | runes         | `65`                | `A`                        |
-| `%U`  | Unicode format (U+1234)             | runes         | `65`                | `U+0041`                   |
+| Category | Types | Behaviour |
+|:---|:---|:---|
+| **Basic** | `bool`, `int*`, `uint*`, `float*`, `complex*`, `string`, `byte`, `rune` | Value type — copied on assignment |
+| **Composite** | `array`, `struct` | Value type — fully copied |
+| **Reference** | `slice`, `map`, `channel`, `pointer`, `func` | Header copied, underlying data shared |
+| **Interface** | `interface{}` / `any` | Holds type + value pair |
 
-### General Verbs
+---
 
-```go {6,9,12,15}
-  type Person struct {
-  	name string
-  	age  int
-  }
+## 2. Numeric Types
 
-  // %v: The "default" format. For structs, this shows field values without names.
-  fmt.Printf("%v", person) // {John 25}
+| Type | Size (bits) | Range | Use when |
+|:---|:---:|:---|:---|
+| `int` | 32 or 64 | platform-dependent | general integers — **default choice** |
+| `int8` | 8 | -128 to 127 | tight memory constraints |
+| `int16` | 16 | -32 768 to 32 767 | protocol fields |
+| `int32` / `rune` ⭐ | 32 | -2³¹ to 2³¹-1 | Unicode code point |
+| `int64` | 64 | -2⁶³ to 2⁶³-1 | timestamps, large IDs |
+| `uint8` / `byte` ⭐ | 8 | 0 to 255 | raw bytes, image pixels |
+| `uint16` | 16 | 0 to 65 535 | ports, small counts |
+| `uint32` | 32 | 0 to 2³²-1 | IPv4, file sizes |
+| `uint64` | 64 | 0 to 2⁶⁴-1 | large counters |
+| `float32` | 32 | ±1.18e-38 to ±3.4e38 | graphics, sensors |
+| `float64` | 64 | ±2.23e-308 to ±1.8e308 | **default float — always prefer** |
+| `complex64` | 64 | float32 parts | scientific computing |
+| `complex128` | 128 | float64 parts | scientific computing |
 
-  // %+v: For structs, includes field names.
-  fmt.Printf("%+v", person) // {Name:John Age:25}
+> **Rule:** Use `int` for integers, `float64` for floats, unless you have a specific reason to use a smaller type.
 
-  // %#v: Go-syntax representation of the value.
-  fmt.Printf("%#v", person) // main.Person{Name:"John", Age:25}
+---
 
-  //%T: Prints the type of a value.
-  fmt.Printf("%T", "hello") // string
+## 3. Other Basic Types
+
+```go
+var b bool   = true              // false by default
+var s string = "Hello, Go"      // "" by default, immutable
+var r rune   = 'A'              // int32 alias — Unicode code point
+var by byte  = 255              // uint8 alias — raw byte
 ```
 
-```go {3,8,14,18,19}
-// Integer Formatting
+---
+
+## 4. Zero Values ⭐
+
+Go **always initialises variables** — there is no garbage/undefined value.
+
+| Type | Zero Value |
+|:---|:---|
+| `int`, `int8` ... `int64` | `0` |
+| `uint`, `byte` ... `uint64` | `0` |
+| `float32`, `float64` | `0.0` |
+| `bool` | `false` |
+| `string` | `""` (empty, not nil) |
+| `pointer`, `slice`, `map`, `channel`, `func` | `nil` |
+| `struct` | all fields set to their zero values |
+| `array` | all elements set to their zero values |
+
+```go
+var i int      // 0
+var f float64  // 0.0
+var s string   // ""
+var b bool     // false
+var p *int     // nil
+```
+
+---
+
+## 5. Variable Declaration
+
+```go
+// Full form — explicit type
+var name string = "Go"
+
+// Type inferred from value
+var name = "Go"
+
+// Short declaration — inside functions only
+name := "Go"
+
+// Multiple variables
+var x, y int = 1, 2
+a, b := 10, "hello"
+
+// Block declaration
+var (
+    host string = "localhost"
+    port int    = 8080
+    tls  bool   = true
+)
+```
+
+---
+
+## 6. Type Conversion
+
+Go has **no implicit conversion** — all conversions are explicit.
+
+```go
+var i int = 42
+var f float64 = float64(i)   // must be explicit
+var u uint = uint(f)
+
+// string ↔ int — NOT with a cast, use strconv
+s := strconv.Itoa(42)        // int → string "42"
+n, err := strconv.Atoi("42") // string → int 42
+
+// string(65) converts a rune, NOT an integer to its digits
+fmt.Println(string(65))      // "A"  ← common mistake!
+fmt.Println(strconv.Itoa(65)) // "65" ← correct
+```
+
+> ⚠️ **Interview trap:** `string(65)` produces `"A"` (rune 65 = 'A'), not `"65"`. Use `strconv.Itoa` to get digits.
+
+---
+
+## 7. `fmt` Formatting Verbs
+
+### General
+
+| Verb | Description | Example output |
+|:---|:---|:---|
+| `%v` | Default format | `{John 25}` |
+| `%+v` | Struct with field names | `{Name:John Age:25}` |
+| `%#v` | Go syntax representation | `main.Person{Name:"John"}` |
+| `%T` ⭐ | Type of the value | `string`, `int`, `[]int` |
+| `%%` | Literal `%` sign | `%` |
+
+### Integers
+
+| Verb | Format | `42` → |
+|:---|:---|:---|
+| `%d` | Decimal | `42` |
+| `%b` | Binary | `101010` |
+| `%o` | Octal | `52` |
+| `%x` | Hex lowercase | `2a` |
+| `%X` | Hex uppercase | `2A` |
+
+### Floats
+
+| Verb | Format | `3.14159` → |
+|:---|:---|:---|
+| `%f` | Decimal point | `3.141590` |
+| `%.2f` | Decimal, 2 places | `3.14` |
+| `%e` | Scientific (e) | `3.141593e+00` |
+| `%g` | Compact (e or f) | `3.14159` |
+
+### Strings & Runes
+
+| Verb | Format | Example output |
+|:---|:---|:---|
+| `%s` | Plain string | `hello` |
+| `%q` | Quoted string | `"hello"` |
+| `%c` ⭐ | Unicode character | `A` (from `65`) |
+| `%U` | Unicode code point | `U+0041` |
+| `%p` | Pointer address | `0xc000010050` |
+
+```go
 n := 42
-fmt.Printf("%d %b %o %x %X", n, n, n, n, n)
-// Output: 42 101010 52 2a 2A
+fmt.Printf("%d %b %o %x %X\n", n, n, n, n, n)
+// 42 101010 52 2a 2A
 
-// Float Formatting
 pi := math.Pi
-fmt.Printf("%f %.2f %e %E %g %G", pi, pi, pi, pi, pi, pi)
-// Output: 3.141593 3.14 3.141593e+00 3.141593E+00 3.141592653589793 3.141592653589793
+fmt.Printf("%f %.2f %e %g\n", pi, pi, pi, pi)
+// 3.141593 3.14 3.141593e+00 3.141592653589793
 
-// String and Rune Formatting
-s := "hello"
-r := 'A'
-fmt.Printf("%s %q %c %U", s, s, r, r)
-// Output: hello "hello" A U+0041
+s, r := "hello", 'A'
+fmt.Printf("%s %q %c %U\n", s, s, r, r)
+// hello "hello" A U+0041
 
-// Special Cases
-fmt.Printf("%%")  // Prints literal %
-fmt.Printf("%t", true)  // Prints boolean
+type Person struct{ Name string; Age int }
+p := Person{"John", 25}
+fmt.Printf("%v\n%+v\n%#v\n", p, p, p)
+// {John 25}
+// {Name:John Age:25}
+// main.Person{Name:"John", Age:25}
 ```
+
+---
+
+## 8. Common Mistakes ⚠️
+
+| Mistake | Problem | Fix |
+|:---|:---|:---|
+| `string(65)` expecting `"65"` | produces `"A"` (rune conversion) | use `strconv.Itoa(65)` |
+| `int` size assumption | `int` is 32-bit on 32-bit OS | use `int64` when size matters |
+| Implicit conversion | `float64(x) + int(y)` won't compile | always convert explicitly |
+| `float64` for money/finance | precision errors | use `int` cents or `decimal` library |
+| Comparing `float64` with `==` | precision issues | use `math.Abs(a-b) < epsilon` |
+| Forgetting zero values | assuming uninitialized = garbage | Go zeroes everything — use this intentionally |
+
+---
+
+## 9. Interview Cheat Sheet
+
+**Q: What is Go's default integer type?**
+> `int` — its size is platform-dependent (32 or 64 bits). For most code, use `int`. Use `int64` when you need guaranteed 64-bit width.
+
+**Q: What is the zero value of each type?**
+> Numerics → `0`, `bool` → `false`, `string` → `""`, pointers/slices/maps/channels → `nil`. Go always initialises — no garbage values.
+
+**Q: What is the difference between `byte` and `rune`?**
+> `byte` = `uint8` (raw byte, 0–255). `rune` = `int32` (Unicode code point). Use `byte` for binary data, `rune` for characters.
+
+**Q: Does Go do implicit type conversion?**
+> No. All conversions must be explicit: `float64(i)`, `int(f)`. Mixing types without conversion is a compile error.
+
+**Q: Why use `float64` over `float32`?**
+> `float64` is the default for all floating-point literals and math functions. `float32` has less precision and rarely saves meaningful memory in practice.

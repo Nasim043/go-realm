@@ -1,291 +1,202 @@
-# Looping in Go
+# Loops in Go
 
-Go has **one loop keyword** — `for` — which serves as the foundation for all looping constructs. It is powerful enough to implement traditional counting loops, while-style loops, infinite loops, and range-based iteration over various data structures like **slices**, **maps**, **strings**, and **channels**.
-
----
-
-## 1. Loop Forms in Go
-
-| Loop Type       | Syntax                              | Description                                                  |
-| --------------- | ----------------------------------- | ------------------------------------------------------------ |
-| **Traditional** | `for init; condition; post { ... }` | Classic C-style loop with initializer, condition, and update |
-| **While-style** | `for condition { ... }`             | Runs while condition is true                                 |
-| **Infinite**    | `for { ... }`                       | Runs indefinitely until a `break`                            |
-| **Range-based** | `for key, val := range collection`  | Iterate over slices, arrays, maps, strings, or channels      |
+Go has **one loop keyword** — `for`. It covers every loop pattern: traditional, while-style, infinite, and range-based.
 
 ---
 
-## 2. Standard Loop Examples
+## 1. All Loop Forms
 
-#### Traditional Loop
-
-```go
-for i := 0; i < 5; i++ {
-    fmt.Println(i)
-}
-```
-
-#### While-style Loop
+| Form | Syntax | Equivalent to |
+|:---|:---|:---|
+| Traditional | `for init; condition; post {}` | C-style `for` |
+| While-style | `for condition {}` | `while` |
+| Infinite | `for {}` | `while(true)` |
+| Range | `for k, v := range x {}` | `foreach` |
 
 ```go
+// Traditional
+for i := 0; i < 5; i++ { fmt.Println(i) }
+
+// While-style
 i := 0
-for i < 5 {
-    fmt.Println(i)
-    i++
-}
-```
+for i < 5 { fmt.Println(i); i++ }
 
-#### Infinite Loop
-
-```go
+// Infinite — must break manually
 for {
-    fmt.Println("Looping forever")
+    fmt.Println("running")
     break
 }
 ```
 
 ---
 
-## 3. Range-based Loop Examples
+## 2. `range` — Iteration Cheat Sheet
 
-#### Slice Iteration
-
-```go
-items := []string{"apple", "banana", "cherry"}
-for i, item := range items {
-    fmt.Printf("%d: %s\n", i, item)
-}
-```
-
-#### Map Iteration
+| Target | First value | Second value | Skip with |
+|:---|:---|:---|:---|
+| `[]T` slice / array | index `int` | element `T` | `_` |
+| `map[K]V` | key `K` | value `V` | `_` |
+| `string` | byte index `int` | rune `rune` | `_` |
+| `chan T` | value `T` | — | n/a |
+| `int` *(Go 1.22+)* | `0..n-1` | — | n/a |
 
 ```go
-grades := map[string]int{"Alice": 90, "Bob": 85, "Eve": 92}
-for name, score := range grades {
-    fmt.Printf("%s scored %d\n", name, score)
+// Slice
+for i, v := range []string{"a", "b", "c"} {
+    fmt.Println(i, v)
 }
-```
 
-_Note: Map iteration order is **not guaranteed**._
-
-
-#### String Iteration (by rune)
-
-```go
-text := "Go语!"
-for i, r := range text {
-    fmt.Printf("Index: %d, Rune: %c\n", i, r)
+// Map — order is NOT guaranteed
+for k, v := range map[string]int{"x": 1, "y": 2} {
+    fmt.Println(k, v)
 }
-```
 
-_Iterates over Unicode code points (runes), not bytes._
+// String — yields runes, not bytes
+for i, r := range "Go语!" {
+    fmt.Printf("[%d] %c\n", i, r) // index jumps for multi-byte chars
+}
+
+// Channel — blocks until value or close
+for val := range ch { fmt.Println(val) }
+
+// Integer range (Go 1.22+)
+for i := range 5 { fmt.Println(i) } // 0 1 2 3 4
+```
 
 ---
 
-### Channel Iteration
+## 3. Loop Control
 
 ```go
-ch := make(chan int)
+// break — exit loop immediately
+for i := 0; i < 10; i++ {
+    if i == 5 { break }
+    fmt.Println(i)
+}
 
-go func() {
-    for i := 1; i <= 3; i++ {
-        ch <- i
+// continue — skip rest of current iteration
+for i := 0; i < 5; i++ {
+    if i%2 == 0 { continue }
+    fmt.Println(i) // 1 3
+}
+
+// Labeled break — break out of outer loop
+outer:
+for i := 0; i < 3; i++ {
+    for j := 0; j < 3; j++ {
+        if j == 1 { break outer }
+        fmt.Println(i, j)
     }
-    close(ch)
-}()
-
-for val := range ch {
-    fmt.Println("Received:", val)
-}
-```
-
-_Useful for reading from channels until they're closed._
-
----
-
-## 4. Advanced Patterns & Loop Styles
-
-### Loop with Multiple Variables
-
-```go
-for i, j := 0, 10; i < j; i, j = i+1, j-1 {
-    fmt.Printf("i = %d, j = %d\n", i, j)
 }
 ```
 
 ---
 
-### Loop with Manual Condition
+## 4. Useful Patterns
 
+### Reverse iteration
 ```go
-sum := 0
-i := 1
-for {
-    sum += i
-    if sum > 20 {
-        break
+s := []int{1, 2, 3, 4, 5}
+for i := len(s) - 1; i >= 0; i-- {
+    fmt.Println(s[i])
+}
+```
+
+### Two-pointer loop
+```go
+for l, r := 0, len(s)-1; l < r; l, r = l+1, r-1 {
+    s[l], s[r] = s[r], s[l]
+}
+```
+
+### Nested loop (2D matrix)
+```go
+matrix := [][]int{{1, 2}, {3, 4}}
+for i, row := range matrix {
+    for j, val := range row {
+        fmt.Printf("[%d][%d]=%d\n", i, j, val)
     }
-    i++
-}
-fmt.Println("Stopped at sum:", sum)
-```
-
----
-
-### Filtering Inside Loop
-
-```go
-nums := []int{1, 2, 3, 4, 5}
-for _, n := range nums {
-    if n%2 == 0 {
-        continue
-    }
-    fmt.Println("Odd number:", n)
 }
 ```
 
 ---
 
-### Loop with `goto` (rare use case)
+## 5. Loop Variable Scoping — Go 1.22 Fix ⭐
 
-```go
-i := 0
-Loop:
-    if i >= 3 {
-        return
-    }
-    fmt.Println("goto loop:", i)
-    i++
-    goto Loop
-```
-
----
-
-## ⚠️ 5. Loop Variable Scoping in Go 1.22+
-
-### ❌ The Pre-1.22 Problem
-
-Loop variables in closures used to be **shared**, often causing all goroutines to capture the same final value.
-
+### Pre-1.22 Problem
 ```go
 vals := []int{10, 20, 30}
 for _, v := range vals {
     go func() {
-        fmt.Println(v) // Might print: 30, 30, 30
+        fmt.Println(v) // ❌ prints 30, 30, 30 — all share same v
     }()
+}
+
+// Pre-1.22 fix: capture explicitly
+for _, v := range vals {
+    v := v // shadow with new variable
+    go func() { fmt.Println(v) }()
 }
 ```
 
----
-
-### ✅ Go 1.22 Fix
-
-Each iteration now has its own scoped copy of the loop variable.
-
+### Go 1.22+ — fixed automatically
 ```go
 for _, v := range vals {
     go func() {
-        fmt.Println(v) // Prints: 10, 20, 30
+        fmt.Println(v) // ✅ prints 10, 20, 30 — each iteration gets own v
     }()
 }
 ```
 
-> Applies only if the module specifies `go 1.22` or higher.
+> Requires `go 1.22` or higher in `go.mod`.
 
 ---
 
-## 6. Safe Parallel Loop (Goroutines)
+## 6. `defer` Inside a Loop — The Trap ⚠️
 
 ```go
-func compute(n int) int {
-    return n * n
-}
-
-func processItems(items []int) {
-    results := make(chan int, len(items))
-    for _, item := range items {
-        go func(val int) {
-            results <- compute(val)
-        }(item)
-    }
-
-    for i := 0; i < len(items); i++ {
-        fmt.Println(<-results)
-    }
-}
-```
-
----
-
-## 7. Additional Looping Techniques
-
-### Loop with External Iterators
-
-```go
-i := 0
-for i < len(items) {
-    fmt.Println(items[i])
-    i++
-}
-```
-
----
-
-### Reverse Iteration
-
-```go
-for i := len(items) - 1; i >= 0; i-- {
-    fmt.Println(items[i])
-}
-```
-
----
-
-### Nested Loops
-
-```go
-matrix := [][]int{
-    {1, 2},
-    {3, 4},
-}
-for i, row := range matrix {
-    for j, val := range row {
-        fmt.Printf("matrix[%d][%d] = %d\n", i, j, val)
-    }
-}
-```
-
----
-
-🧩 8. Summary
-
-| Feature                                    | Support in Go            |
-| ------------------------------------------ | ------------------------ |
-| Traditional, while, infinite               | ✅ Supported via `for`   |
-| Range over collections                     | ✅ idiomatic             |
-| Loop control (`break`, `continue`, `goto`) | ✅ available             |
-| Loop variable scoping (Go 1.22)            | ✅ safer for concurrency |
-| Nested/multi-var/custom iteration          | ✅ fully supported       |
-
----
-
-## 🧠 Quick Quiz
-
-1. What is the difference between iterating a string using `range` vs indexing?
-2. Why was the loop variable fix in Go 1.22 important for concurrency?
-3. What is the output of this loop?
-
-```go
+// ❌ defer runs AFTER the loop ends (LIFO), not per iteration
 for i := 0; i < 3; i++ {
-    defer fmt.Println(i)
+    defer fmt.Println(i) // prints 2, 1, 0 — after main returns!
+}
+
+// ✅ Wrap in a function to defer per iteration
+for i := 0; i < 3; i++ {
+    func(n int) {
+        defer fmt.Println(n)
+    }(i)
 }
 ```
 
-> - (Answer: 2, 1, 0 due to LIFO order of defer)
+> **Interview question:** *"What does this print?"* — `defer` in a loop is LIFO and deferred until the surrounding function returns, not the loop iteration.
 
-## ✅ Final Thoughts
+---
 
-- Go’s `for` is simple but remarkably flexible.
-- Use `range` wherever possible for idiomatic and concise code.
-- Be aware of scoping rules, especially in concurrent loops.
-- The Go 1.22 update simplifies concurrent goroutine patterns dramatically.
+## 7. Common Mistakes ⚠️
+
+| Mistake | Problem | Fix |
+|:---|:---|:---|
+| Modifying slice while ranging | index/value drift | range over a copy or use index-based loop |
+| `defer` inside loop | defers pile up, run at func return | wrap in anonymous func |
+| Goroutine capturing loop var (pre-1.22) | all goroutines see same final value | use `go 1.22+` or shadow the variable |
+| Map iteration order dependency | random — not guaranteed | sort keys explicitly |
+| Forgetting `close(ch)` on channel range | range blocks forever | always close the sending side |
+
+---
+
+## 8. Interview Cheat Sheet
+
+**Q: Does Go have `while` or `do-while`?**
+> No. `for condition {}` replaces `while`. There is no `do-while` — simulate with `for { ...; if !cond { break } }`.
+
+**Q: What does `range` return for a string?**
+> The byte index and a `rune` (Unicode code point). Index may skip values for multi-byte characters — `'é'` is 2 bytes, so the next index jumps by 2.
+
+**Q: What was the Go 1.22 loop variable change?**
+> Before 1.22, all iterations of a `for` loop shared the same loop variable — closures and goroutines would capture the final value. From 1.22, each iteration has its own variable.
+
+**Q: What is the output of `defer` inside a `for` loop?**
+> Defers accumulate and all run in LIFO order when the surrounding **function** returns — not per iteration. `for i:=0;i<3;i++ { defer fmt.Println(i) }` prints `2 1 0` after `main` returns.
+
+**Q: How do you range over an integer in Go 1.22+?**
+> `for i := range n {}` — iterates `0` through `n-1`. Removes the need for `for i := 0; i < n; i++` in many cases.
