@@ -11,11 +11,11 @@ export default {
   "interface-polymorphism": "Interface Polymorphism",
   loop: "Loop",
   map: "Map",
-  pointer: "Pointer",
-  "receiver-function": "Receiver Function",
   slice: "Slice",
   string: "String",
+  pointer: "Pointer 📌",
   struct: "Struct 📌",
+  "receiver-function": "Receiver Function",
   "variadic-function": "Variadic Function",
   "###": {
     type: "separator",

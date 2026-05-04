@@ -1,250 +1,251 @@
 # Maps in Go
 
-Maps are Go's built-in **key-value** data structure, similar to dictionaries in Python or objects in JavaScript. A map is an unordered and changeable collection that does not allow duplicates. The default value of a map is `nil`.
+A map is Go's built-in **key-value** data structure — like a dictionary (Python) or object (JavaScript). Keys are unique; values can repeat.
 
-## Declaration & Initialization
+> 📖 **Analogy:** Think of a map like a phone book — you look up a **name (key)** to get a **number (value)**. No two people share the same name entry.
 
-### Empty Map
+---
+
+## 1. Declaration & Initialization
 
 ```go
-// Using make function
+// ✅ Using make — preferred for empty maps
 m := make(map[string]int)
 
-// Zero value (nil map - must initialize before use)
-var nilMap map[string]int
-```
-
-### Map with Initial Values
-
-```go
-// Using literal syntax
-colors := map[string]string{
-    "red":   "#FF0000",
-    "green": "#00FF00",
-    "blue":  "#0000FF",
-}
-```
-
-## Basic Operations
-
-### Insert/Update
-
-```go
-m["key"] = 42      // Insert
-m["key"] = 100     // Update
-```
-
-### Read
-
-```go
-value := m["key"]   // Returns zero-value if key doesn't exist
-```
-
-### Check Existence⭐
-
-```go
-value, exists := m["key"]
-if exists {
-    fmt.Println("Key exists:", value)
-}
-```
-
-### Delete⭐
-
-```go
-delete(m, "key")   // Removes key-value pair
-```
-
-## Iterating Over Maps
-
-### Basic Iteration
-
-```go
-for key, value := range m {
-    fmt.Printf("Key: %s, Value: %v\n", key, value)
-}
-```
-
-### Keys Only
-
-```go
-for key := range m {
-    fmt.Println("Key:", key)
-}
-```
-
-### Values Only
-
-```go
-for _, value := range m {
-    fmt.Println("Value:", value)
-}
-```
-
-## Map Characteristics
-
-- **Unordered**: Iteration order is random
-- **Dynamic**: Grows automatically as needed
-- **Reference Type**: Passed by reference (modifications affect original)
-- **Zero Value**: `nil` (must initialize with `make` before use)
-- **Key Types**: Must be comparable (strings, numbers, etc.)
-
-
-### Nested Maps
-
-```go
-users := map[string]map[string]bool{
-    "john": {
-        "admin": true,
-        "active": false,
-    },
-    "jane": {
-        "admin": false,
-        "active": true,
-    },
+// ✅ Using literal — preferred when you have initial values
+scores := map[string]int{
+    "Alice": 95,
+    "Bob":   87,
 }
 
-if users["john"]["admin"] {
-    fmt.Println("John is an admin")
-}
-```
-
-## Common Pitfalls
-
-### Nil Map Panic
-
-```go
+// ⚠️ Nil map — reading is safe, writing will PANIC
 var m map[string]int
-m["key"] = 1 // PANIC: assignment to nil map
+fmt.Println(m["key"]) // 0 — safe read
+m["key"] = 1          // 💥 panic: assignment to nil map
 ```
 
-**Fix:** Always initialize with `make`
+> **Rule:** Always use `make` or a literal before writing to a map.
 
-### Floating-Point Keys
+---
 
-Avoid `float64` keys due to precision issues:
+## 2. Core Operations
 
-```go
-// Not recommended
-m := make(map[float64]string)
-m[1.0000000000000001] = "value1"
-m[1.0000000000000002] = "value2" // Might collide!
-```
-
-## FAQ
-
-### 1. How to create a map in Go?⭐
-
-By using the `make function` or by using a `map literal`.
+| Operation | Syntax | Notes |
+|:---|:---|:---|
+| Insert / Update | `m[key] = value` | Creates if new, updates if exists |
+| Read | `val := m[key]` | Returns **zero value** if key absent |
+| Safe Read | `val, ok := m[key]` | `ok` is `true` only if key exists |
+| Delete | `delete(m, key)` | No error if key doesn't exist |
+| Length | `len(m)` | Number of key-value pairs |
 
 ```go
-// Using make function
-userInfo := make(map[string]int)
-userInfo["alice"] = 17
-userInfo["bob"] = 18
-fmt.Println(userInfo)
+m := make(map[string]int)
 
-// Using map literal
-userInfo := map[string]int{
-    "alice": 17,
-    "bob": 18,
+m["Alice"] = 95          // insert
+m["Alice"] = 97          // update
+
+fmt.Println(m["Alice"])  // 97
+fmt.Println(m["Bob"])    // 0 — key absent, returns zero value
+
+val, ok := m["Bob"]      // ⭐ always use this form to check existence
+if !ok {
+    fmt.Println("Bob not found")
 }
-fmt.Println(userInfo)
+
+delete(m, "Alice")
+fmt.Println(len(m))      // 0
 ```
 
-### 2. How to check if a key exists?
+---
+
+## 3. Iteration
 
 ```go
-value, exists := m["key"]
-if exists {
-    // Key exists
+scores := map[string]int{"Alice": 95, "Bob": 87, "Carol": 91}
+
+// Key + Value
+for name, score := range scores {
+    fmt.Printf("%s: %d\n", name, score)
+}
+
+// Keys only
+for name := range scores {
+    fmt.Println(name)
 }
 ```
 
-### 3. How to copy a map?
+> ⚠️ **Iteration order is random** every time. Never rely on order. If you need sorted output, extract keys into a slice and sort it.
 
+```go
+// Sorted iteration
+keys := make([]string, 0, len(scores))
+for k := range scores {
+    keys = append(keys, k)
+}
+sort.Strings(keys)
+for _, k := range keys {
+    fmt.Printf("%s: %d\n", k, scores[k])
+}
+```
+
+---
+
+## 4. Key Rules
+
+| | Allowed as Key? | Reason |
+|:---|:---:|:---|
+| `string`, `int`, `bool` | ✅ | Comparable |
+| `struct` (no slice/map fields) | ✅ | Comparable |
+| `slice` | ❌ | Not comparable |
+| `map` | ❌ | Not comparable |
+| `float64` | ⚠️ Avoid | Precision issues can cause unexpected collisions |
+
+---
+
+## 5. Useful Patterns
+
+### Map of Slices — Grouping
+```go
+groups := make(map[string][]string)
+groups["fruits"] = append(groups["fruits"], "apple", "banana")
+groups["vegs"] = append(groups["vegs"], "carrot")
+```
+
+### Set Simulation
+```go
+// map[T]struct{} is more memory-efficient than map[T]bool
+seen := make(map[string]struct{})
+seen["alice"] = struct{}{}
+
+if _, ok := seen["alice"]; ok {
+    fmt.Println("already visited")
+}
+```
+
+### Copy a Map
 ```go
 original := map[string]int{"a": 1, "b": 2}
-copy := make(map[string]int)
-
+clone := make(map[string]int, len(original))
 for k, v := range original {
-    copy[k] = v
+    clone[k] = v
 }
 ```
 
-### 4. How to compare two maps?
+---
 
-```go showLineNumbers {10,13,19}
-package main
+## 6. Competitive Programming Tips 🏆
 
-import "fmt"
+### Frequency Counter — most common pattern
+```go
+// Count occurrences of each character/number
+freq := make(map[int]int)
+nums := []int{1, 2, 2, 3, 3, 3}
+for _, n := range nums {
+    freq[n]++   // zero-value of int is 0, so this always works safely
+}
+// freq = {1:1, 2:2, 3:3}
+```
 
-func main() {
-    // Maps with keys "alice" and "bob"
-    map1 := map[string]int{"alice": 25, "bob": 30}
-    map2 := map[string]int{"alice": 25, "bob": 28}
-
-    // Direct comparison is not allowed
-    // fmt.Println(map1 == map2) // This will throw an error
-
-    // Length comparison
-    if len(map1) != len(map2) {
-        fmt.Println("Maps are not equal: Different lengths")
-        return
-    }
-
-    // Manual comparison of key-value pairs
-    areEqual := true
-    for key, value := range map1 {
-        if map2[key] != value {
-            areEqual = false
-            break
+### Two Sum Pattern
+```go
+// Find two numbers that add up to target — O(n)
+func twoSum(nums []int, target int) (int, int) {
+    seen := make(map[int]int) // value → index
+    for i, n := range nums {
+        if j, ok := seen[target-n]; ok {
+            return j, i
         }
+        seen[n] = i
     }
-    
-    fmt.Println("Maps are equal:", areEqual) // Will print false since 'bob' value differs
+    return -1, -1
 }
 ```
 
-### 5. How to get map length?
-
+### Anagram / Grouping by Sorted Key
 ```go
-length := len(m)
-```
-
-### 6. Can a map key be of any type?
-
- No, map keys must be of a type that is comparable (e.g., strings, integers, etc.).
-
-Code Example:
-```go
-// Valid keys
-userInfo := map[string]int{
-    "huxn": 17,
-    "alex": 18,
+// Group words that are anagrams of each other
+func groupAnagrams(words []string) map[string][]string {
+    groups := make(map[string][]string)
+    for _, w := range words {
+        key := sortString(w) // "eat" → "aet"
+        groups[key] = append(groups[key], w)
+    }
+    return groups
 }
-
-// Invalid keys (e.g., slices)
-// userInfo := map[[]int]int{} // This will throw an error
 ```
 
-### 7. What is the zero value of a map?
-
-The zero value of a map is `nil`
-
+### Memoization (Top-down DP)
 ```go
-var userInfo map[string]int
-fmt.Println(userInfo == nil) // true
+memo := make(map[int]int)
+
+func fib(n int) int {
+    if n <= 1 { return n }
+    if v, ok := memo[n]; ok {
+        return v
+    }
+    memo[n] = fib(n-1) + fib(n-2)
+    return memo[n]
+}
 ```
 
-## Summary Table
+### Visited Tracking (BFS / DFS)
+```go
+visited := make(map[string]bool)
 
-| Operation       | Syntax                      |
-| --------------- | --------------------------- |
-| Create          | `m := make(map[K]V)`        |
-| Insert/Update   | `m[key] = value`            |
-| Read            | `val := m[key]`             |
-| Check Existence | `val, ok := m[key]`         |
-| Delete          | `delete(m, key)`            |
-| Iterate         | `for k, v := range m {...}` |
-| Length          | `len(m)`                    |
+func dfs(node string) {
+    if visited[node] { return } // map returns false for missing keys — safe!
+    visited[node] = true
+    // ... explore neighbors
+}
+```
+
+> 💡 **CP Tip:** `m[key]++` is always safe even if the key doesn't exist yet — Go returns the zero value (`0` for int, `false` for bool), so you never need to pre-initialize.
+
+---
+
+## 7. Common Mistakes ⚠️
+
+| Mistake | Problem | Fix |
+|:---|:---|:---|
+| Write to nil map | runtime panic | Use `make` or literal |
+| `val := m[key]` without `ok` check | silently gets zero value | Use `val, ok := m[key]` |
+| Assume sorted iteration | non-deterministic output | Sort keys manually |
+| `==` to compare two maps | compile error | Loop and compare manually |
+| `float64` as key | precision collision | Use `string` or `int` keys |
+
+---
+
+## 8. Interview Cheat Sheet
+
+**Q: What is the zero value of a map?**
+> `nil`. A nil map can be read from safely (returns zero value) but writing to it causes a runtime panic.
+
+**Q: How do you check if a key exists?**
+> `val, ok := m[key]` — use the two-value form. `ok` is `true` only if the key is present.
+
+**Q: Is map a reference type?**
+> Yes. Passing a map to a function does not copy the data — the function works on the original map.
+
+**Q: Why is iteration order random?**
+> Go intentionally randomizes map iteration to prevent code from accidentally depending on order, since hash maps have no guaranteed order.
+
+**Q: What types can be used as map keys?**
+> Any **comparable** type: `string`, `int`, `bool`, structs with comparable fields. Slices and maps cannot be keys.
+
+**Q: What's the difference between `make(map[K]V)` and `map[K]V{}`?**
+> Both create an initialized, ready-to-use map. `make` is preferred for empty maps; literal `{}` syntax is preferred when you have initial values.
+
+---
+
+## Quick Reference
+
+| Operation | Syntax |
+|:---|:---|
+| Create (empty) | `m := make(map[K]V)` |
+| Create (with values) | `m := map[K]V{k: v}` |
+| Insert / Update | `m[key] = value` |
+| Safe Read | `val, ok := m[key]` |
+| Delete | `delete(m, key)` |
+| Length | `len(m)` |
+| Iterate | `for k, v := range m {}` |
+| Increment counter | `m[key]++` |
