@@ -1,0 +1,111 @@
+# Nginx: Deploy শেখার ৪ ঘণ্টার Visual রোডম্যাপ
+
+এই কোর্স একজন backend developer-এর জন্য, যে Laravel, Go, React, এবং Next.js বোঝে এবং **Nginx-কে production deployment tool হিসেবে master করতে চায়**।
+
+> এখানে theory মুখস্থ হবে না। প্রতিটি concept **diagram + table** দিয়ে শেখানো হবে, যাতে এক নজরে mental model তৈরি হয়।
+
+---
+
+## এক নজরে: Nginx কোথায় বসে?
+
+```text
+        ┌─────────┐      ┌─────────┐      ┌──────────────────┐
+        │ Browser │ ───▶ │  Nginx  │ ───▶ │  Application      │
+        │ /Client │ ◀─── │  :80    │ ◀─── │  (Laravel/Go/Next)│
+        └─────────┘      │  :443   │      └──────────────────┘
+                         └─────────┘
+                          ▲      ▲
+                       SSL    Domain routing
+                    (HTTPS)   (server_name)
+```
+
+Nginx হলো **front door** — সব public traffic এখানে আসে, তারপর সঠিক app-এ যায়।
+
+---
+
+## কোর্স শেষে তুমি কী পারবে?
+
+| Skill | মানে কী |
+| --- | --- |
+| Request flow ব্যাখ্যা | `client → Nginx → upstream app` পুরো path বোঝা |
+| Core directives পড়া | `server`, `location`, `root`, `proxy_pass`, `try_files` confidently পড়া |
+| Stack-wise deploy | Laravel, Go, Next.js — প্রতিটির আলাদা pattern চেনা |
+| Domain + SSL | subdomain, HTTPS, redirect rule apply করা |
+| Debugging | `502`, wrong root, static file issue, redirect loop fix করা |
+
+---
+
+## Course Curriculum
+
+| মডিউল | সময় | ফোকাস | Outcome |
+| --- | --- | --- | --- |
+| [মডিউল ১](/devops/nginx/module-1-foundation) | ৩০ মিনিট | Nginx কী, কোথায় বসে | mental model পরিষ্কার |
+| [মডিউল ২](/devops/nginx/module-2-core-config) | ৪৫ মিনিট | config structure, directives, matching | config দেখে ভয় কাটবে |
+| [মডিউল ৩](/devops/nginx/module-3-reverse-proxy) | ৬০ মিনিট | Laravel, Go, Next.js proxy pattern | real app serve করা |
+| [মডিউল ৪](/devops/nginx/module-4-vhost-ssl) | ৬০ মিনিট | domain, server block, SSL, redirect | internet-ready setup |
+| [মডিউল ৫](/devops/nginx/module-5-ops-security) | ৪৫ মিনিট | logging, debugging, reload, security | troubleshooting confidence |
+| [Config Review](/devops/nginx/production-config-review) | ৩০ মিনিট | real config পড়া ও বোঝা | যেকোনো config decode করা |
+
+**মোট সময়:** ২৪০ মিনিট
+
+---
+
+## প্রতিটি মডিউলের গঠন
+
+```text
+শেখার লক্ষ্য  →  Diagram  →  Table  →  Config example  →  Common mistake  →  Check
+```
+
+প্রতিটি মডিউল একই rhythm-এ চলবে, তাই predictably শেখা যাবে।
+
+---
+
+## Recommended Learning Flow
+
+```text
+[১] Foundation ──▶ [২] Core Config ──▶ [৩] Reverse Proxy
+                                              │
+                                              ▼
+        [Config Review] ◀── [৫] Ops/Security ◀── [৪] Domain + SSL
+```
+
+| ধাপ | কেন আগে |
+| --- | --- |
+| ১ → ২ | কোথায় বসে না বুঝলে config মুখস্থ হয়ে যায় |
+| ২ → ৩ | directive না জানলে proxy pattern অর্থহীন |
+| ৩ → ৪ | app serve করতে পারলে তবেই domain/SSL দরকার |
+| ৪ → ৫ | live হওয়ার পরই operational skill কাজে লাগে |
+
+---
+
+## এই কোর্সের Positioning
+
+তুমি যেহেতু already clean code, architecture, এবং DB design বোঝো — তাই beginner Linux lecture নেই। Focus:
+
+| Skip করা হয়েছে | Focus করা হয়েছে |
+| --- | --- |
+| Linux 101 | deployment architecture |
+| basic networking theory | config reasoning |
+| generic sysadmin | practical VPS patterns |
+| — | production failure diagnosis |
+
+---
+
+## একটি সাধারণ Multi-App VPS Map
+
+```text
+                              ┌──────────────────────────┐
+   api.example.com   ───────▶ │ Nginx                    │ ──▶ Go API      (:8080)
+   app.example.com   ───────▶ │ (one VPS, many domains)  │ ──▶ Next.js     (:3000)
+   admin.example.com ───────▶ │ server_name দিয়ে route   │ ──▶ Laravel + PHP-FPM
+   /assets/, uploads ───────▶ │                          │ ──▶ static file (নিজেই serve)
+                              └──────────────────────────┘
+```
+
+কোর্স শেষে এই architecture তুমি নিজে map করতে পারবে।
+
+---
+
+## শুরু করো
+
+➡️ [মডিউল ১: Nginx Foundation](/devops/nginx/module-1-foundation) দিয়ে শুরু করো।

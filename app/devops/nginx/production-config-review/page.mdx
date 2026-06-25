@@ -1,0 +1,344 @@
+# Production Config Review: Real Config পড়া ও বোঝা
+
+এই section-এ ৫টি common production config pattern explain করা হয়েছে। লক্ষ্য config **মুখস্থ করা নয়**, বরং পড়ে বোঝা:
+
+| প্রশ্ন | কী খুঁজব |
+| --- | --- |
+| কোন app? | static / Laravel / proxy — কোন ধরন |
+| কোন directive কী করে? | `root`, `proxy_pass`, `fastcgi_pass`, `try_files` |
+| risk কোথায়? | security / operational ঝুঁকি |
+| কী mask করব? | share করার আগে কোন তথ্য লুকাব |
+
+---
+
+## কোন তথ্য Mask করতে হবে?
+
+Config share করার সময় নিচের তথ্য raw form-এ রাখা উচিত না:
+
+| তথ্যের ধরন | কেন mask | Safe placeholder |
+| --- | --- | --- |
+| Public server IP | origin সরাসরি target হতে পারে | `<PRIVATE_SERVER_IP>` |
+| Linux username | user enumeration সহজ হয় | `/home/<linux-user>/...` |
+| Absolute app path | deploy structure leak | `/home/<linux-user>/apps/<project>/...` |
+| Internal app port | topology reveal | `127.0.0.1:<internal-port>` |
+| Certificate path | domain/cert structure leak | `/etc/letsencrypt/live/<domain>/...` |
+| Log file path | naming convention leak | `/var/log/nginx/<site>.log` |
+| Upstream name | internal service naming leak | `<upstream_name>` |
+| Domain (sometimes) | client-sensitive হলে | `<app-domain>` |
+
+---
+
+## ৫টি Config Pattern — Map
+
+```text
+ #1 HTTPS Reverse Proxy   :  Client ─HTTPS─▶ Nginx ─▶ 127.0.0.1:<port> (container/app)
+ #2 Laravel API (PHP-FPM) :  Client ─▶ Nginx ─▶ PHP-FPM socket ─▶ Laravel
+ #3 React/SPA Static      :  Client ─▶ Nginx ─▶ dist/index.html
+ #4 Laravel HTTPS (full)  :  HTTP :80 ─301─▶ HTTPS :443 ─▶ PHP-FPM ─▶ Laravel
+ #5 Upstream Reverse Proxy:  Client ─HTTPS─▶ Nginx ─▶ upstream{} ─▶ localhost:<port>
+```
+
+| # | ধরন | core directive | front |
+| --- | --- | --- | --- |
+| 1 | HTTPS proxy | `proxy_pass` | HTTPS |
+| 2 | Laravel API | `fastcgi_pass` | HTTP/internal |
+| 3 | SPA static | `try_files .../index.html` | HTTP/internal |
+| 4 | Laravel full | `fastcgi_pass` + redirect | HTTPS |
+| 5 | Upstream proxy | `upstream{}` + `proxy_pass` | HTTPS |
+
+---
+
+## Config #1: HTTPS Reverse Proxy
+
+```text
+ Client ─HTTPS :443─▶ Nginx ─▶ 127.0.0.1:<internal-port> ─▶ App/Container
+```
+
+```nginx
+server {
+    server_name <app-domain>;
+
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+
+    access_log /var/log/nginx/<site>.access.log;
+    error_log  /var/log/nginx/<site>.error.log;
+
+    location / {
+        proxy_pass http://127.0.0.1:<internal-port>;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+
+        proxy_set_header Upgrade    $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+
+    listen 443 ssl;
+    ssl_certificate     /etc/letsencrypt/live/<app-domain>/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/<app-domain>/privkey.pem;
+}
+```
+
+| অংশ | কাজ |
+| --- | --- |
+| `server_name` | নির্দিষ্ট domain ধরে |
+| `add_header` security | clickjacking/MIME-sniff রোধ |
+| `proxy_pass` | internal app/container-এ পাঠায় |
+| `X-Forwarded-*` | backend-কে original client/proto দেয় |
+| `Upgrade`/`Connection` | websocket support |
+
+**Mask:** domain, internal port, cert path, log filename।
+
+---
+
+## Config #2: Laravel API (PHP-FPM)
+
+```text
+ Client/proxy ─▶ Nginx ─▶ PHP-FPM socket ─▶ Laravel
+```
+
+```nginx
+server {
+    listen <internal-or-public-port>;
+    server_name <private-ip-or-domain>;
+    root /home/<linux-user>/apps/<laravel-api>/public;
+
+    index index.php index.html index.htm;
+    charset utf-8;
+
+    add_header X-Frame-Options "SAMEORIGIN";
+    add_header X-Content-Type-Options "nosniff";
+
+    client_max_body_size 50M;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        fastcgi_pass unix:/var/run/php/php8.2-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+        fastcgi_hide_header X-Powered-By;
+    }
+
+    location ~ /\.(?!well-known).* {
+        deny all;
+    }
+}
+```
+
+| অংশ | কাজ |
+| --- | --- |
+| `root .../public` | Laravel-এর web root |
+| `try_files` | route fallback → `index.php` |
+| `fastcgi_pass` | PHP execution PHP-FPM-এ |
+| `client_max_body_size 50M` | upload-heavy API |
+| `location ~ /\.` | `.env`/`.git` dotfile block |
+
+> ⚠️ public IP + non-standard port-এ direct exposed হলে firewall বা outer proxy দিয়ে control করো। Laravel API public হলে HTTPS domain-ই safer।
+
+**Mask:** IP, username, full path, port, FPM socket/version।
+
+---
+
+## Config #3: React / SPA Static Build
+
+```text
+ Client/proxy ─▶ Nginx ─▶ dist/index.html
+```
+
+```nginx
+server {
+    listen <internal-or-public-port>;
+    server_name <private-ip-or-domain>;
+
+    root /home/<linux-user>/apps/<react-app>/dist;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
+```
+
+| অংশ | কাজ |
+| --- | --- |
+| `root .../dist` | build output serve |
+| `try_files .../index.html` | SPA routing (client-side router) |
+
+```text
+ /patients/123  ──▶ file নেই  ──▶ try_files  ──▶ index.html  ──▶ React Router handle করে
+```
+
+> ⚠️ সরাসরি app port-এ expose না করে domain + HTTPS block দিয়ে serve করা ভালো। internal-only হলে outer proxy কোথায় তা document করো।
+
+**Mask:** IP, listen port, build path, username।
+
+---
+
+## Config #4: Laravel HTTPS (Full Production)
+
+```text
+ HTTP :80 ─301─▶ HTTPS :443 ─▶ Nginx ─▶ PHP-FPM ─▶ Laravel
+```
+
+```nginx
+server {
+    listen 80;
+    listen [::]:80;
+    server_name <app-domain>;
+    return 301 https://$host$request_uri;     # redirect block
+}
+
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name <app-domain>;
+
+    root /home/<linux-user>/apps/<laravel-project>/public;
+    index index.php;
+
+    ssl_certificate     /etc/letsencrypt/live/<app-domain>/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/<app-domain>/privkey.pem;
+
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+
+    location ^~ /fonts/ {
+        try_files $uri =404;
+        expires 30d;
+        add_header Cache-Control "public, max-age=2592000, immutable" always;
+        add_header Access-Control-Allow-Origin "*" always;
+    }
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/run/php/php8.2-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+    location ~ /\.(?!well-known).* {
+        deny all;
+    }
+}
+```
+
+| অংশ | কাজ |
+| --- | --- |
+| block #1 | শুধু HTTP→HTTPS redirect |
+| block #2 | আসল Laravel app serve |
+| `location ^~ /fonts/` | font MIME/decode issue fix |
+| `expires 30d` + immutable | font caching, performance |
+| dotfile block | sensitive file রোধ |
+
+**Mask:** domain, project folder, app path, cert path।
+
+---
+
+## Config #5: Upstream Reverse Proxy
+
+```text
+ Client ─HTTPS :443─▶ Nginx ─▶ upstream{} ─▶ localhost:<internal-port>
+```
+
+```nginx
+upstream <app_upstream> {
+    server localhost:<internal-port>;
+}
+
+server {
+    server_name <app-domain> www.<app-domain>;
+
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+
+    access_log /var/log/nginx/<site>.access.log;
+    error_log  /var/log/nginx/<site>.error.log;
+
+    client_max_body_size 100M;
+
+    location / {
+        proxy_pass http://<app_upstream>;
+        proxy_http_version 1.1;
+
+        proxy_set_header Upgrade           $http_upgrade;
+        proxy_set_header Connection        "upgrade";
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        proxy_cache_bypass $http_upgrade;
+
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+    }
+
+    location /api/health {
+        proxy_pass http://<app_upstream>;
+        access_log off;
+    }
+
+    listen 443 ssl;
+    ssl_certificate     /etc/letsencrypt/live/<app-domain>/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/<app-domain>/privkey.pem;
+}
+```
+
+| অংশ | কাজ |
+| --- | --- |
+| `upstream {}` | backend-এর named target |
+| `proxy_pass http://<upstream>` | location থেকে সেটি ব্যবহার |
+| `client_max_body_size 100M` | বড় upload support |
+| `/api/health` + `access_log off` | monitoring endpoint, log noise কমায় |
+| `www` + non-www একসাথে | দুটোই এক block-এ |
+
+> ⚠️ Certbot অনেক সময় শুধু primary host redirect করে — `www` request properly HTTPS-এ যাচ্ছে কিনা আলাদা করে test করো।
+
+**Mask:** upstream name, internal port, domain, log path, cert path।
+
+---
+
+## Safe Review Checklist
+
+| ✅ | চেক |
+| --- | --- |
+| ☐ | `server_name` intended domain-এর সাথে match করে? |
+| ☐ | HTTP→HTTPS redirect আছে? |
+| ☐ | Laravel হলে `root` কি `public`? |
+| ☐ | SPA হলে `try_files $uri $uri/ /index.html` আছে? |
+| ☐ | proxy হলে `X-Forwarded-*` headers আছে? |
+| ☐ | upload থাকলে `client_max_body_size` intentional? |
+| ☐ | hidden file block আছে? |
+| ☐ | SSL cert path correct + renewal managed? |
+| ☐ | backend port/socket running? |
+| ☐ | share করার আগে IP/path/user/port/cert mask হয়েছে? |
+
+---
+
+## Understanding Check
+
+1. Laravel আর React static config-এর `try_files` fallback আলাদা কেন?
+2. `proxy_pass` আর `fastcgi_pass` কোন দুই ধরনের backend-এর জন্য?
+3. server IP আর `/home/<user>/apps/...` path কেন hide করা উচিত?
+4. `X-Forwarded-Proto` missing হলে HTTPS app-এ কী issue হয়?
+5. `location ~ /\.(?!well-known).* { deny all; }` কোন risk কমায়?
+6. `upstream` block config readability কীভাবে improve করে?
+7. Health check endpoint-এর access log off করা কখন reasonable?

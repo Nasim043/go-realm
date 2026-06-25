@@ -1,0 +1,168 @@
+# মডিউল ২: Core Configuration
+
+**সময়:** ৪৫ মিনিট
+
+## শেখার লক্ষ্য
+
+| বুঝবে | এক লাইনে |
+| --- | --- |
+| Config hierarchy | `http → server → location` nesting |
+| Block scope | কোন rule কোথায় apply হয় |
+| Key directives | `listen`, `server_name`, `root`, `index`, `try_files` |
+| Matching logic | request কোন `location`-এ যায় |
+
+---
+
+## Configuration Hierarchy
+
+```text
+ events { }                  ◀── connection-level settings
+
+ http {                      ◀── সব web traffic-এর shared config
+   │
+   server {                  ◀── এক domain / virtual host
+     listen 80;
+     server_name example.com;
+     │
+     location / {            ◀── URL path অনুযায়ী rule
+       ...
+     }
+   }
+ }
+```
+
+| Block | Scope | দায়িত্ব |
+| --- | --- | --- |
+| `http` | global | সব site-এর shared setting |
+| `server` | per-domain | একটি virtual host |
+| `location` | per-path | নির্দিষ্ট URL path-এর rule |
+
+> নিয়ম: ভেতরের block বাইরের block-এর setting **inherit** করে, দরকারে **override** করে।
+
+---
+
+## ৫টি Must-Know Directive
+
+| Directive | কাজ | উদাহরণ |
+| --- | --- | --- |
+| `listen` | কোন port-এ শুনবে | `listen 443 ssl;` |
+| `server_name` | কোন domain | `server_name api.example.com;` |
+| `root` | কোন folder থেকে file | `root /var/www/app/public;` |
+| `index` | folder hit করলে default file | `index index.php index.html;` |
+| `try_files` | file আছে কিনা দেখে fallback | `try_files $uri $uri/ /index.php?$query_string;` |
+
+---
+
+## `try_files` ভাঙা — line by line
+
+```nginx
+try_files  $uri   $uri/   /index.php?$query_string;
+           │      │       │
+           │      │       └─ কিছুই না পেলে: index.php-তে পাঠাও (query সহ)
+           │      └───────── ওই নামে folder আছে? serve করো
+           └──────────────── ওই নামে file আছে? serve করো
+```
+
+এটি **Laravel routing**-এর প্রাণ। কারণ Laravel-এর route file system-এ থাকে না:
+
+```text
+ /users/12/edit   ──▶  file নেই  ──▶  try_files fallback  ──▶  index.php  ──▶  Laravel router
+```
+
+---
+
+## `location` Matching — ৪ ধরন
+
+| Syntax | ধরন | কখন match |
+| --- | --- | --- |
+| `location /` | prefix (catch-all) | সব path-এর last resort |
+| `location /api/` | prefix | `/api/...` দিয়ে শুরু হলে |
+| `location = /health` | exact | ঠিক `/health` হলেই |
+| `location ~ \.php$` | regex | `.php` দিয়ে শেষ হলে |
+
+### Priority (কে আগে জেতে)
+
+```text
+ 1. =  exact match            (সবচেয়ে strong)
+ 2. ^~ prefix (regex থামায়)
+ 3. ~  / ~* regex match
+ 4.    plain prefix           (সবচেয়ে weak)
+```
+
+---
+
+## Request Matching — Flow
+
+একটি request: `GET https://example.com/assets/logo.png`
+
+```text
+ [1] server_name দিয়ে সঠিক server block বাছো
+        │
+ [2] path /assets/logo.png-এর best location বাছো
+        │
+ [3] file আছে? ──── হ্যাঁ ──▶ সরাসরি serve
+        │ না
+ [4] fallback rule (try_files / proxy) চালাও
+```
+
+---
+
+## Static বনাম Dynamic — Decision Table
+
+| Request | Nginx কী করে |
+| --- | --- |
+| `/css/app.css` | file থাকলে নিজে serve |
+| `/images/logo.png` | file থাকলে নিজে serve |
+| `/login` | app-এ forward |
+| `/api/users` | proxy / PHP-FPM-এ পাঠায় |
+
+---
+
+## Minimum Server Block (মুখস্থ-যোগ্য skeleton)
+
+```nginx
+server {
+    listen 80;
+    server_name demo.example.com;
+    root /var/www/demo/public;
+    index index.html index.php;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+}
+```
+
+---
+
+## Common Mistakes
+
+| ভুল | ফলাফল |
+| --- | --- |
+| `root` path ভুল | `404` / wrong file |
+| `server_name` mismatch | default block hit করে |
+| `try_files` বাদ | Laravel route ভাঙে |
+| `location /`-এ heavy rule | static serve interfere করে |
+
+---
+
+## Understanding Check
+
+1. `http`, `server`, `location`-এর responsibility আলাদা করে বলো।
+2. `root` আর `server_name` এক জিনিস না কেন?
+3. `try_files $uri $uri/ /index.php?$query_string;`-এর প্রতিটি অংশ কী করে?
+4. `location = /health` আর `location /`-এর use case কীভাবে আলাদা?
+5. Laravel route কেন সরাসরি file path হিসেবে match হয় না?
+
+---
+
+## Mini Task
+
+`hr.example.com`-এর জন্য skeleton `server` block লেখো:
+
+- `listen 80`
+- `server_name hr.example.com`
+- `root /var/www/hr/public`
+- Laravel `index.php` fallback
+
+➡️ পরের ধাপ: [মডিউল ৩: Reverse Proxy](/devops/nginx/module-3-reverse-proxy)

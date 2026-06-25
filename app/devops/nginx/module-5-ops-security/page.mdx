@@ -1,0 +1,149 @@
+# মডিউল ৫: Operations, Security, Debugging
+
+**সময়:** ৪৫ মিনিট
+
+## শেখার লক্ষ্য
+
+| বুঝবে | এক লাইনে |
+| --- | --- |
+| Safe change | `test → reload`, blind restart নয় |
+| Error diagnose | `502`, `404`, `403`, redirect loop |
+| Logs | কোথায় access/error log |
+| Hardening | basic security checklist |
+
+---
+
+## Safe Change Workflow
+
+```text
+ config edit
+     │
+     ▼
+ nginx -t            ◀── syntax ও validity check (live নয়)
+     │  ok?
+     ├─ না ──▶ error message পড়ো, fix করো
+     │  হ্যাঁ
+     ▼
+ systemctl reload nginx   ◀── downtime ছাড়া new config apply
+```
+
+> ❗ Edit করে সরাসরি `restart` দিও না — আগে `nginx -t`।
+
+---
+
+## `reload` বনাম `restart` বনাম `test`
+
+| Command | কী করে | Downtime |
+| --- | --- | --- |
+| `nginx -t` | config validate করে | নেই (apply-ই করে না) |
+| `systemctl reload nginx` | new config apply, worker গ্রেসফুলি বদলায় | নেই |
+| `systemctl restart nginx` | পুরো process restart | brief interruption সম্ভব |
+
+---
+
+## Essential Logs
+
+```text
+ /var/log/nginx/access.log   ◀── কে, কখন, কোন path, কোন status
+ /var/log/nginx/error.log    ◀── কেন fail করল (debug-এর প্রথম জায়গা)
+```
+
+| Log | কখন দেখবে |
+| --- | --- |
+| access.log | কোন request এলো, status code কী |
+| error.log | `502/403/upstream` কেন হলো |
+
+---
+
+## Common Errors — Diagnosis Table
+
+| Error | মানে | সম্ভাব্য কারণ |
+| --- | --- | --- |
+| `502 Bad Gateway` | backend reachable না | app down / wrong port / FPM socket mismatch / permission |
+| `404 Not Found` | resource নেই | wrong `root` / wrong `location` / `try_files` missing |
+| `403 Forbidden` | access denied | directory permission / listing off / root mismatch |
+| Redirect loop | ঘুরতেই থাকে | Nginx HTTPS redirect + app-level force + `X-Forwarded-Proto` missing |
+
+---
+
+## `502` Debug — Flow
+
+```text
+ 502 দেখলে:
+   [1] backend app চলছে?     ──▶ ps / systemctl status
+   [2] সঠিক port/socket?     ──▶ config বনাম app
+   [3] error.log কী বলছে?    ──▶ tail -f error.log
+   [4] permission ঠিক?       ──▶ socket/file access
+```
+
+---
+
+## Universal Debugging Sequence
+
+```text
+ 1. nginx -t                      (config valid?)
+ 2. error.log দেখো               (Nginx কী বলছে)
+ 3. app process চলছে?            (backend alive?)
+ 4. port/socket verify           (config = reality?)
+ 5. DNS/domain mismatch?         (ঠিক block hit হচ্ছে?)
+ 6. browser request path note    (আসলে কোন URL?)
+```
+
+---
+
+## Basic Hardening Checklist
+
+| ✅ | কাজ | কেন |
+| --- | --- | --- |
+| ☐ | default site disable | unwanted exposure বন্ধ |
+| ☐ | শুধু required port open | attack surface কমে |
+| ☐ | `client_max_body_size` set | upload abuse control |
+| ☐ | sensitive file block | `.env`/`.git` leak রোধ |
+| ☐ | শুধু `public/` web root | source expose রোধ |
+| ☐ | SSL renew automate | cert expire রোধ |
+
+---
+
+## Stack-specific Caution
+
+| Stack | সাবধান | উপসর্গ |
+| --- | --- | --- |
+| Laravel | `public/`-ই web root; `.env` কখনো serve নয় | secret leak |
+| Go | systemd service stable কিনা | backend crash → `502` |
+| Next.js | build version + process manager দিয়ে চালানো | manual start fragile → proxy broken |
+
+---
+
+## Understanding Check
+
+1. `nginx -t` production workflow-তে mandatory কেন?
+2. `reload` আর `restart` কবে use করবে?
+3. `502` দেখলে প্রথম ৩টি জিনিস কী check করবে?
+4. Laravel-এ `.env` exposure কেন বড় risk?
+5. Nginx issue আর upstream issue আলাদা করতে কী evidence খুঁজবে?
+
+---
+
+## Final Practice Scenario
+
+`api.example.com` হঠাৎ `502 Bad Gateway` দিচ্ছে। step-by-step লেখো:
+
+1. কোন command দেবে
+2. কোন log দেখবে
+3. config-এর কোন line check করবে
+4. Go app-এর কোন port/process verify করবে
+5. fix-এর পরে কীভাবে safe reload করবে
+
+---
+
+## কোর্স-পরবর্তী Practice Plan
+
+```text
+ [1] Laravel app  ──▶ PHP-FPM + Nginx
+ [2] Go API       ──▶ systemd + Nginx reverse proxy
+ [3] Next.js app  ──▶ Nginx reverse proxy + HTTPS
+```
+
+এই ৩টি নিজে deploy করলে তোমার Nginx confidence practical level-এ চলে যাবে।
+
+➡️ পরের ধাপ: [Production Config Review](/devops/nginx/production-config-review)

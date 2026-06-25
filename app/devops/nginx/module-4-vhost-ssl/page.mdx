@@ -1,0 +1,196 @@
+# মডিউল ৪: Server Block, Domain, SSL
+
+**সময়:** ৬০ মিনিট
+
+## শেখার লক্ষ্য
+
+| বুঝবে | এক লাইনে |
+| --- | --- |
+| Server block | এক VPS-এ multiple domain serve |
+| HTTP→HTTPS redirect | সব traffic HTTPS-এ পাঠানো |
+| SSL termination | TLS Nginx edge-এ handle করা |
+| Let's Encrypt flow | certificate issue + renew-এর ধাপ |
+
+---
+
+## Server Block = Virtual Host
+
+```text
+            ┌──────────────── Nginx ────────────────┐
+ :80/:443 ──┤ server_name api.example.com → :8080   │──▶ Go API
+            │ server_name app.example.com → :3000   │──▶ Next.js
+            └───────────────────────────────────────┘
+```
+
+একই port, কিন্তু `server_name` দিয়ে Nginx আলাদা করে কোন request কোন block-এ যাবে।
+
+```nginx
+server {
+    listen 80;
+    server_name api.example.com;
+    location / { proxy_pass http://127.0.0.1:8080; }
+}
+
+server {
+    listen 80;
+    server_name app.example.com;
+    location / { proxy_pass http://127.0.0.1:3000; }
+}
+```
+
+---
+
+## Production-এ একটি Domain = দুটি Server Block
+
+```text
+ ┌─────────────────────────┐        ┌──────────────────────────────┐
+ │ server block #1 (:80)   │        │ server block #2 (:443 ssl)   │
+ │ কাজ: HTTPS-এ redirect   │ ─301─▶ │ কাজ: আসল app serve করা       │
+ └─────────────────────────┘        └──────────────────────────────┘
+```
+
+| Block | `listen` | কাজ |
+| --- | --- | --- |
+| #1 | `80` | শুধু `return 301` → HTTPS |
+| #2 | `443 ssl` | certificate + আসল proxy/serve |
+
+---
+
+## HTTP → HTTPS Redirect
+
+```nginx
+server {
+    listen 80;
+    server_name app.example.com;
+    return 301 https://$host$request_uri;   # সব HTTP → HTTPS
+}
+```
+
+```text
+ http://app.example.com/login
+        │  301 Moved Permanently
+        ▼
+ https://app.example.com/login
+```
+
+---
+
+## SSL Termination কী?
+
+```text
+ Browser ══(encrypted HTTPS)══▶ Nginx ──(plain HTTP)──▶ backend app
+          🔒 TLS এখানে শেষ          🔓 internal network
+```
+
+| বিষয় | কে handle করে |
+| --- | --- |
+| Certificate / TLS | Nginx (edge) |
+| Encryption decode | Nginx |
+| Backend-এর সাথে কথা | সাধারণত plain HTTP (internal) |
+
+> সুবিধা: backend app-কে SSL নিয়ে ভাবতে হয় না; এক জায়গায় certificate manage হয়।
+
+---
+
+## HTTPS Server Block
+
+```nginx
+server {
+    listen 443 ssl http2;
+    server_name api.example.com;
+
+    ssl_certificate     /etc/letsencrypt/live/api.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/api.example.com/privkey.pem;
+
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+    }
+}
+```
+
+| Directive | কাজ |
+| --- | --- |
+| `listen 443 ssl http2` | HTTPS + HTTP/2 চালু |
+| `ssl_certificate` | public cert chain |
+| `ssl_certificate_key` | private key |
+| `X-Forwarded-Proto` | backend-কে জানায় request HTTPS ছিল |
+
+---
+
+## Let's Encrypt — Conceptual Flow
+
+```text
+ [1] DNS: domain ──▶ VPS IP
+       │
+ [2] Nginx: server_name domain listen করছে
+       │
+ [3] Certbot: certificate issue (domain ownership verify)
+       │
+ [4] Nginx config-এ cert path বসে
+       │
+ [5] Renewal automate (cron/timer)
+```
+
+| ধাপ | না করলে |
+| --- | --- |
+| DNS point | cert issue fail |
+| domain listen | verify fail |
+| cert path সঠিক | Nginx reload fail |
+| renewal | ৯০ দিনে cert expire |
+
+---
+
+## Stack-wise SSL — Backend শুধু পাল্টায়
+
+```text
+ Browser ══HTTPS══▶ Nginx ──┬─▶ Laravel  (PHP-FPM)
+                            ├─▶ Go app
+                            └─▶ Next.js
+```
+
+সব ক্ষেত্রে browser HTTPS-এ Nginx-এর সাথে কথা বলে; শুধু পেছনের layer আলাদা। SSL concern backend-এর হাতে ছাড়া হয় না।
+
+---
+
+## Redirect Cases
+
+| Case | Config |
+| --- | --- |
+| Force HTTPS | `return 301 https://example.com$request_uri;` |
+| `www` → non-www | `server_name www.example.com;` block → `return 301 https://example.com$request_uri;` |
+
+---
+
+## SSL Gotchas
+
+| সমস্যা | কারণ |
+| --- | --- |
+| Nginx reload fail | certificate path ভুল |
+| Cert issue হয় না | DNS ঠিকভাবে point করেনি |
+| Redirect loop | app-level forced HTTPS + `X-Forwarded-Proto` mismatch |
+
+---
+
+## Understanding Check
+
+1. `server` block virtual host হিসেবে কী করে?
+2. HTTP redirect block আর HTTPS serving block-এর role আলাদা কীভাবে?
+3. SSL termination Nginx-এ করলে backend-এর কী সুবিধা?
+4. DNS ঠিক না থাকলে SSL process কোথায় আটকায়?
+5. `X-Forwarded-Proto` Laravel/Next.js-এর জন্য কেন important?
+
+---
+
+## Mini Task
+
+`portal.example.com`-এর জন্য design করো:
+
+- HTTP block যা HTTPS-এ redirect করে
+- HTTPS block যা `127.0.0.1:3000`-এ proxy করে
+
+আর লেখো: certificate file path কোথায় বসবে, কোন header proxy-তে পাঠাবে।
+
+➡️ পরের ধাপ: [মডিউল ৫: Operations, Security, Debugging](/devops/nginx/module-5-ops-security)

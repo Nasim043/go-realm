@@ -1,0 +1,205 @@
+# মডিউল ৩: Reverse Proxy for Laravel, Go, Next.js
+
+**সময়:** ৬০ মিনিট
+
+## শেখার লক্ষ্য
+
+| বুঝবে | এক লাইনে |
+| --- | --- |
+| Reverse proxy | client সরাসরি backend-এ কথা বলে না, Nginx মাঝে |
+| `proxy_pass` vs `fastcgi_pass` | কোন backend-এ কোনটা |
+| ৩টি pattern | Laravel, Go, Next.js আলাদা করা |
+| Starter config | প্রতিটির জন্য production-ready skeleton |
+
+---
+
+## Reverse Proxy কী?
+
+```text
+        ┌────────┐        ┌────────┐         ┌──────────────┐
+Client ─┤ request├──────▶ │ Nginx  │ ──────▶ │ backend app  │
+        └────────┘        │ (proxy)│ ◀────── │ (:8080 etc.) │
+            ▲             └────────┘         └──────────────┘
+            └──── response ───┘
+```
+
+Client শুধু Nginx-কে চেনে; backend লুকানো থাকে।
+
+```nginx
+proxy_pass http://127.0.0.1:8080;
+```
+
+---
+
+## ৩টি Pattern এক নজরে
+
+```text
+ Laravel :  Client ──▶ Nginx ──▶ PHP-FPM socket ──▶ Laravel
+ Go API  :  Client ──▶ Nginx ──▶ Go app (:8080)
+ Next.js :  Client ──▶ Nginx ──▶ Next.js (:3000)
+```
+
+| Stack | Nginx-এর পরে | Core directive | `root` লাগে? |
+| --- | --- | --- | --- |
+| Laravel | PHP-FPM | `fastcgi_pass` | ✅ হ্যাঁ (`public/`) |
+| Go API | Go binary | `proxy_pass` | ❌ না (pure API) |
+| Next.js | Node process | `proxy_pass` | ❌ না |
+
+---
+
+## Pattern ১: Laravel + PHP-FPM
+
+```text
+ Client ──▶ Nginx ──┬─ static file? ──▶ public/ থেকে serve
+                    └─ .php / route ──▶ PHP-FPM ──▶ Laravel
+```
+
+```nginx
+server {
+    listen 80;
+    server_name admin.example.com;
+    root /var/www/admin/public;
+    index index.php index.html;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;   # route → index.php
+    }
+
+    location ~ \.php$ {
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_pass unix:/run/php/php8.2-fpm.sock;       # PHP execute
+    }
+}
+```
+
+| লাইন | কাজ |
+| --- | --- |
+| `root .../public` | Laravel-এর `public/` web root |
+| `try_files` | friendly URL → `index.php` |
+| `location ~ \.php$` | `.php` request PHP-FPM-এ পাঠায় |
+
+---
+
+## Pattern ২: Go API
+
+```text
+ Client ──▶ Nginx ──▶ proxy_pass ──▶ Go app (127.0.0.1:8080)
+```
+
+```nginx
+server {
+    listen 80;
+    server_name api.example.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+### এই header-গুলো কেন? (মুখস্থ রাখো)
+
+| Header | backend-কে কী জানায় |
+| --- | --- |
+| `Host` | original domain (Nginx নয়) |
+| `X-Real-IP` | আসল client IP |
+| `X-Forwarded-For` | proxy chain-এর IP trail |
+| `X-Forwarded-Proto` | request HTTP না HTTPS ছিল |
+
+> ❗ Header pass না করলে backend ভাববে সব request `127.0.0.1` থেকে HTTP-তে এসেছে।
+
+---
+
+## Pattern ৩: Next.js
+
+```text
+ Client ──▶ Nginx ──▶ proxy_pass ──▶ Next.js (127.0.0.1:3000)
+                       + Upgrade header (websocket/HMR)
+```
+
+```nginx
+server {
+    listen 80;
+    server_name app.example.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade           $http_upgrade;     # websocket
+        proxy_set_header Connection        "upgrade";
+    }
+}
+```
+
+Go config-এর সাথে পার্থক্য: শুধু শেষের `Upgrade` + `Connection` — websocket / live connection-এর জন্য।
+
+---
+
+## কখন `root`, কখন `proxy_pass`? — Decision Table
+
+| Stack | `root` | `try_files` | `fastcgi_pass` | `proxy_pass` |
+| --- | --- | --- | --- | --- |
+| Laravel | ✅ | ✅ | ✅ | ❌ |
+| Go API | ❌ | ❌ | ❌ | ✅ |
+| Next.js | ❌ | ❌ | ❌ | ✅ |
+
+```text
+ file system থেকে serve করতে হবে?  ──▶ root + try_files
+ PHP execute করতে হবে?            ──▶ fastcgi_pass
+ already-running app-এ পাঠাতে হবে? ──▶ proxy_pass
+```
+
+---
+
+## Multi-app VPS — একই VPS, ৩ Domain
+
+```text
+ admin.example.com ──▶ Nginx ──▶ Laravel  (PHP-FPM)
+ api.example.com   ──▶ Nginx ──▶ Go API   (:8080)
+ app.example.com   ──▶ Nginx ──▶ Next.js  (:3000)
+```
+
+প্রতিটির জন্য আলাদা `server` block — `server_name` দিয়ে আলাদা হয়।
+
+---
+
+## Common Mistakes
+
+| ভুল | লক্ষণ |
+| --- | --- |
+| Laravel-এ `proxy_pass` use | app চলে না / wrong pattern |
+| Go-তে header pass না করা | wrong IP, broken HTTPS detect |
+| Next.js-এ wrong port | `502` |
+| app process down, Nginx-কে blame | `502`, আসলে backend crash |
+
+---
+
+## Understanding Check
+
+1. Laravel-এ `fastcgi_pass`, কিন্তু Go-তে `proxy_pass` কেন?
+2. `proxy_set_header Host $host;` backend-এর জন্য কেন useful?
+3. Go আর Next.js config একইরকম দেখালেও পার্থক্য কোথায়?
+4. Nginx কখন নিজে static serve করে, কখন backend-এ দেয়?
+5. এক VPS-এ ৩টি app host করতে config কীভাবে ভাগ করবে?
+
+---
+
+## Mini Task
+
+৩টি domain map করো এবং প্রতিটির directive family লেখো (`root` / `try_files` / `fastcgi_pass` / `proxy_pass`):
+
+- `admin.example.com` → Laravel
+- `api.example.com` → Go `127.0.0.1:9000`
+- `portal.example.com` → Next.js `127.0.0.1:3000`
+
+➡️ পরের ধাপ: [মডিউল ৪: Server Block, Domain, SSL](/devops/nginx/module-4-vhost-ssl)

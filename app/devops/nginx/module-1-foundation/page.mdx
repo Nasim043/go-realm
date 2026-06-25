@@ -1,0 +1,147 @@
+# মডিউল ১: Nginx Foundation
+
+**সময়:** ৩০ মিনিট
+
+## শেখার লক্ষ্য
+
+| বুঝবে | এক লাইনে |
+| --- | --- |
+| Nginx কী | web server + reverse proxy (app server নয়) |
+| কোথায় বসে | browser আর backend app-এর মাঝখানে |
+| কেন দরকার | domain, SSL, routing, static — সব এক জায়গায় |
+| Stack-এ role | Laravel/Go/Next.js — প্রতিটিতে front layer |
+
+---
+
+## Nginx আসলে কী?
+
+Nginx-এর ৪টি hat:
+
+```text
+            ┌──────────────────────────────┐
+            │            NGINX             │
+            ├──────────────────────────────┤
+            │ 1. Web server   (static file)│
+            │ 2. Reverse proxy (→ backend) │
+            │ 3. Load balancer (→ many app)│
+            │ 4. SSL/TLS edge  (HTTPS)     │
+            └──────────────────────────────┘
+```
+
+> এক বাক্যে: **Nginx public internet traffic receive করে সঠিক app-এর কাছে পাঠায়।**
+
+---
+
+## Mental Model: একটি Request-এর জীবন
+
+```text
+ Browser
+   │  https://api.example.com/users
+   ▼
+ DNS  ──────────────▶  VPS IP (যেমন 203.0.113.10)
+   │
+   ▼
+ NGINX  (:80 / :443)
+   │   ├─ domain দেখে: কোন app?
+   │   ├─ static file? ──▶ নিজেই serve করে ──┐
+   │   └─ dynamic? ──▶ backend app-এ forward │
+   ▼                                          │
+ Application ──▶ response ──▶ NGINX ──────────┴──▶ Browser
+```
+
+| Nginx-এর কাজ | কীভাবে |
+| --- | --- |
+| port listen | `80` (HTTP) / `443` (HTTPS) |
+| কোন app? | `server_name` (domain) দেখে |
+| static থাকলে | নিজেই serve করে (fast) |
+| dynamic হলে | app server-এ forward করে |
+
+---
+
+## Nginx বনাম Application Server
+
+| বিষয় | Nginx | Application Server |
+| --- | --- | --- |
+| মূল কাজ | request receive ও route | business logic চালানো |
+| public-facing? | ✅ হ্যাঁ | ❌ সাধারণত না |
+| static file | 🚀 খুব efficient | 🐢 ভালো choice না |
+| domain / SSL | ✅ handle করে | ❌ Nginx-এর পেছনে থাকে |
+| উদাহরণ | nginx | PHP-FPM, Go binary, Node |
+
+---
+
+## তোমার Stack-এ Nginx কীভাবে Fit করে?
+
+```text
+ Laravel :  Client ──▶ Nginx ──▶ PHP-FPM ──▶ Laravel
+ Go API  :  Client ──▶ Nginx ──▶ Go app (:8080)
+ Next.js :  Client ──▶ Nginx ──▶ Next.js (:3000)
+```
+
+| Stack | Nginx-এর পরে কী | কেন Nginx সামনে |
+| --- | --- | --- |
+| Laravel | PHP-FPM | `public/` serve + `.php` execute |
+| Go API | Go HTTP server | SSL, domain, header, rate-limit |
+| Next.js | Node process | SSL, domain, static edge caching |
+
+> Laravel ছাড়া — Go আর Next.js নিজেরাই HTTP server চালায়। তবু Nginx সামনে রাখা হয় edge concern (SSL/domain/header) সামলানোর জন্য।
+
+---
+
+## App তো নিজেই port-এ চলে — তাহলে Nginx কেন?
+
+কারণ production শুধু "app চালানো" না। নিচের সব এক জায়গায় লাগে:
+
+| Concern | Nginx ছাড়া | Nginx দিয়ে |
+| --- | --- | --- |
+| Domain mapping | raw IP\:port expose | `server_name` দিয়ে clean |
+| SSL/HTTPS | প্রতি app-এ আলাদা | এক জায়গায় terminate |
+| Multiple app / VPS | port conflict | এক port, many domain |
+| HTTP→HTTPS redirect | app-এ hack | `return 301` এক লাইন |
+| Body limit / buffering | app-এর দায়িত্ব | Nginx সামলায় |
+| Logging | scattered | central access/error log |
+
+---
+
+## Basic Terms (Cheat Sheet)
+
+| Term | মানে |
+| --- | --- |
+| `client` | browser, mobile app, frontend |
+| `upstream` | যে backend-এ request পাঠানো হয় |
+| `reverse proxy` | client-এর হয়ে backend-এর সাথে কথা বলা |
+| `static file` | CSS, JS, image, PDF — code চালানো লাগে না |
+| `dynamic request` | backend code execute করতে হবে |
+
+---
+
+## Common Mistake
+
+> ❌ "Nginx install করলেই app deploy হয়ে গেছে।"
+
+আসলে Nginx শুধু **entry gate**। এগুলো আলাদা concern:
+
+```text
+Nginx  ≠  App process  ≠  PHP-FPM  ≠  systemd  ≠  .env  ≠  build  ≠  database
+```
+
+---
+
+## Understanding Check
+
+1. Nginx আর app server-এর কাজের মূল পার্থক্য কী?
+2. Laravel flow-তে PHP-FPM কোথায় বসে?
+3. Go app `:8080`-এ চললেও Nginx সামনে রাখার production reason কী?
+4. Static file serve-এ Nginx কেন efficient?
+5. একই VPS-এ multiple domain app চালাতে Nginx কীভাবে help করে?
+
+---
+
+## Mini Task
+
+নিজের ভাষায় ৫ লাইনে লিখো:
+
+- `Client → Nginx → App` flow টা কী
+- Laravel, Go, Next.js-এর মধ্যে কোনটায় PHP-FPM layer আছে, আর কোনটায় Nginx directly app-এ proxy করে
+
+➡️ পরের ধাপ: [মডিউল ২: Core Configuration](/devops/nginx/module-2-core-config)
