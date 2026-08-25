@@ -46,3 +46,8 @@ next-env.d.ts
 
 # local test file
 test.go
+
+# print build artifacts
+print/out/
+print/*.pdf
+print/page-*.png

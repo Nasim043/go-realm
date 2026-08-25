@@ -14,4 +14,5 @@ export default {
   api: "API",
   devops: "DevOps",
   "system-design": "System Design",
+  accounting: "Accounting",
 };
