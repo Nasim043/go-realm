@@ -2,99 +2,103 @@
 
 ## Recommended 6-Month Study Plan
 
+মাসগুলো বইয়ের Part অনুসারে সাজানো। ক্রমানুসারে পড়ুন — Part এড়িয়ে সামনে যাবেন না।
+
 ### Month 1 — Foundations
 
-Study:
-
-- Phase 1–5
+পড়ুন: **অধ্যায় ১–১০** (Volume 1 · Part 1)
 
 Target:
 
 - Debit/Credit mastery
 - COA
 - Journal
+- Posting ও Validation
 - Ledger
 - Trial Balance
-- Financial Statements
+
+শেষে: [Part 1-এর Project ও Exit Criteria](/accounting/projects)
 
 ### Month 2 — Core Transactions
 
-Study:
-
-- Phase 6–9
+পড়ুন: **অধ্যায় ১১–১৯** (Volume 1 · Part 2)
 
 Target:
 
+- Cash/Bank
+- Bank Reconciliation
 - AR
 - AP
-- Cash/Bank
 - Revenue
 - Expense
 - Accrual
 - Prepaid
 
-### Month 3 — Business Modules
+শেষে: [Part 2-এর Project ও Exit Criteria](/accounting/projects)
 
-Study:
+### Month 3 — Financial Statements ও প্রথম Modules
 
-- Phase 10–16
+পড়ুন: **অধ্যায় ২০–৩০** (Volume 1 · Part 3 + Volume 2-এর শুরু)
 
 Target:
 
+- Income Statement
+- Balance Sheet
+- Cash Flow
+- Adjusting ও Closing Entry
 - Inventory
-- Purchase
+- Purchase ও GRNI
 - Payroll
-- Asset
+- Fixed Asset
+
+### Month 4 — Domain Modules ও Dimensions
+
+পড়ুন: **অধ্যায় ৩১–৩৫** (Volume 2 · Part 4-এর বাকি অংশ)
+
+Target:
+
 - Hospital
 - School
 - Budget
+- Cost Center, Department, Branch
+- Project Accounting
 
-### Month 4 — Accounting Architecture
+শেষে: [Part 4-এর Project-গুলো](/accounting/projects) — এই Part-এ Project সবচেয়ে বেশি, সময় রাখুন
 
-Study:
+### Month 5 — Accounting Architecture
 
-- Phase 17–22
+পড়ুন: **অধ্যায় ৩৬–৪৪** (Volume 3 · Part 5-এর প্রথমার্ধ)
 
 Target:
 
-- Dimensions
-- Subledgers
+- Subledger Architecture
 - Accounting Events
-- Posting Rules
-- Voucher
-- Period Closing
+- Posting Rule Engine
+- Account Mapping
+- Voucher ও Approval
+- Period Lock ও Closing
+- Reversal ও Correction
+- Reconciliation
 
-### Month 5 — Reliability & Control
+### Month 6 — Reliability, Engineering ও Capstone
 
-Study:
-
-- Phase 23–30
+পড়ুন: **অধ্যায় ৪৫–৫৩** (Volume 3 · Part 5-এর বাকি অংশ)
 
 Target:
 
-- Reversal
-- Reconciliation
-- Audit
+- Audit Trail
 - Idempotency
 - Concurrency
-- Security
-- Tax
-- Multi-currency
-
-### Month 6 — Engineering & Capstone
-
-Study:
-
-- Phase 31–36
-
-Target:
-
-- Migration
+- Security ও Permissions
 - Financial Report Engine
-- APIs
-- Testing
-- Common Bugs
-- Generic Accounting Engine
+- Accounting API Design
+- Testing Strategy
+- Common Accounting Bugs
+- [Capstone — Generic Accounting Engine](/accounting/book/v3-ch53-capstone-engine)
+
+### ৬ মাসের পরে — Advanced ERP
+
+**অধ্যায় ৫৪–৬২** (Volume 3 · Part 6) এই ৬ মাসের plan-এ নেই। Multi-currency, Tax, Cost Accounting, Manufacturing, Consolidation, Migration — এগুলো foundation দাঁড়িয়ে যাওয়ার পরে, প্রয়োজন অনুযায়ী একটি একটি করে পড়ার জিনিস।
 
 ---
 

@@ -10,4 +10,5 @@ export default {
   "v1-ch08-posting-validation": "অধ্যায় ৮: Posting ও Validation",
   "v1-ch09-general-ledger": "অধ্যায় ৯: General Ledger",
   "v1-ch10-trial-balance": "অধ্যায় ১০: Trial Balance",
+  "v3-ch53-capstone-engine": "অধ্যায় ৫৩: Capstone (খসড়া)",
 };

@@ -1,6 +1,8 @@
 # The Book — Print Edition
 
-Roadmap বলে **কী পড়তে হবে**। এই বই হলো **আসল পড়ার জিনিস** — যেটা print করে binding করবেন।
+এটাই মূল পড়ার জিনিস — যেটা print করে binding করবেন। কী পড়বেন, কোন ক্রমে, আর কী পারলে পরের ধাপে যাবেন — সবই এই বইয়ের কাঠামোতেই আছে।
+
+প্রতিটি Part শেষে যা নিজে বানাবেন, তা আছে [Projects ও Exit Criteria](/accounting/projects) পাতায়।
 
 তিনটি Volume, ছয়টি Part। প্রতিটি Volume আলাদা binding হবে।
 
@@ -20,7 +22,8 @@ Roadmap বলে **কী পড়তে হবে**। এই বই হল�
 | ✅ | [অধ্যায় ৮ — Posting ও Validation](/accounting/book/v1-ch08-posting-validation) | **সম্পূর্ণ** |
 | ✅ | [অধ্যায় ৯ — General Ledger](/accounting/book/v1-ch09-general-ledger) | **সম্পূর্ণ** |
 | ✅ | [অধ্যায় ১০ — Trial Balance](/accounting/book/v1-ch10-trial-balance) | **সম্পূর্ণ** |
-| | অধ্যায় ১১–৬২ | পরিকল্পিত |
+| 📝 | [অধ্যায় ৫৩ — Capstone: Generic Accounting Engine](/accounting/book/v3-ch53-capstone-engine) | **খসড়া** — spec লেখা আছে |
+| | বাকি অধ্যায় (১১–৫২, ৫৪–৬২) | পরিকল্পিত |
 
 > **🎉 Part 1 সম্পূর্ণ।** দশটি অধ্যায়, প্রায় ১৪৫ পাতা। Accounting কী থেকে Trial Balance পর্যন্ত পুরো ভিত্তি — এটাই প্রথম binding-এ যাবে।
 
@@ -32,44 +35,44 @@ Roadmap বলে **কী পড়তে হবে**। এই বই হল�
 
 ### Part 1 — Fundamentals (৮০–১০০ পাতা)
 
-| ক্রম | Chapter | Roadmap |
-| --- | --- | --- |
-| ১ | **Accounting কী** ✅ | Phase 1 |
-| ২ | **Accounting Equation** ✅ | Phase 1 |
-| ৩ | **পাঁচ প্রকার Account** ✅ | Phase 1 |
-| ৪ | **Debit ও Credit** ✅ | Phase 1 |
-| ৫ | **Chart of Accounts** ✅ | Phase 2 |
-| ৬ | **COA Hierarchy ও Database Design** ✅ | Phase 2 |
-| ৭ | **Journal Entry** ✅ | Phase 3 |
-| ৮ | **Posting ও Validation** ✅ | Phase 3 |
-| ৯ | **General Ledger** ✅ | Phase 4 |
-| ১০ | **Trial Balance** ✅ | Phase 4 |
+| ক্রম | Chapter |
+| --- | --- |
+| ১ | **Accounting কী** ✅ |
+| ২ | **Accounting Equation** ✅ |
+| ৩ | **পাঁচ প্রকার Account** ✅ |
+| ৪ | **Debit ও Credit** ✅ |
+| ৫ | **Chart of Accounts** ✅ |
+| ৬ | **COA Hierarchy ও Database Design** ✅ |
+| ৭ | **Journal Entry** ✅ |
+| ৮ | **Posting ও Validation** ✅ |
+| ৯ | **General Ledger** ✅ |
+| ১০ | **Trial Balance** ✅ |
 
 ### Part 2 — Core Business Accounting (১০০–১৩০ পাতা)
 
-| ক্রম | Chapter | Roadmap |
-| --- | --- | --- |
-| ১১ | Cash ও Bank | Phase 8 |
-| ১২ | Bank Reconciliation | Phase 8 |
-| ১৩ | Sales ও Revenue | Phase 6, 10 |
-| ১৪ | Accounts Receivable | Phase 6 |
-| ১৫ | Purchase | Phase 11 |
-| ১৬ | Accounts Payable | Phase 7 |
-| ১৭ | Revenue ও Expense Recognition | Phase 9 |
-| ১৮ | Accrual ও Prepaid | Phase 9 |
-| ১৯ | Advance, Credit Note ও Debit Note | Phase 6, 7 |
+| ক্রম | Chapter |
+| --- | --- |
+| ১১ | Cash ও Bank |
+| ১২ | Bank Reconciliation |
+| ১৩ | Sales ও Revenue |
+| ১৪ | Accounts Receivable |
+| ১৫ | Purchase |
+| ১৬ | Accounts Payable |
+| ১৭ | Revenue ও Expense Recognition |
+| ১৮ | Accrual ও Prepaid |
+| ১৯ | Advance, Credit Note ও Debit Note |
 
 ### Part 3 — Financial Statements (৬০–৮০ পাতা)
 
-| ক্রম | Chapter | Roadmap |
-| --- | --- | --- |
-| ২০ | Income Statement | Phase 5 |
-| ২১ | Balance Sheet | Phase 5 |
-| ২২ | Cash Flow Statement | Phase 5 |
-| ২৩ | Statement of Changes in Equity | Phase 5 |
-| ২৪ | Trial Balance থেকে Statement | Phase 5 |
-| ২৫ | Adjusting Entry | Phase 9 |
-| ২৬ | Opening, Closing ও Period Closing | Phase 22 |
+| ক্রম | Chapter |
+| --- | --- |
+| ২০ | Income Statement |
+| ২১ | Balance Sheet |
+| ২২ | Cash Flow Statement |
+| ২৩ | Statement of Changes in Equity |
+| ২৪ | Trial Balance থেকে Statement |
+| ২৫ | Adjusting Entry |
+| ২৬ | Opening, Closing ও Period Closing |
 
 ---
 
@@ -79,17 +82,17 @@ Roadmap বলে **কী পড়তে হবে**। এই বই হল�
 
 ### Part 4 — Application-specific Accounting
 
-| ক্রম | Chapter | Roadmap |
-| --- | --- | --- |
-| ২৭ | Inventory Accounting | Phase 10 |
-| ২৮ | Purchase ও GRNI | Phase 11 |
-| ২৯ | HRM ও Payroll Accounting | Phase 12 |
-| ৩০ | Fixed Asset Accounting | Phase 13 |
-| ৩১ | Hospital Accounting | Phase 14 |
-| ৩২ | School Accounting | Phase 15 |
-| ৩৩ | Budget Accounting ও Control | Phase 16 |
-| ৩৪ | Cost Center, Department ও Branch | Phase 17 |
-| ৩৫ | Project Accounting | Phase 17 |
+| ক্রম | Chapter |
+| --- | --- |
+| ২৭ | Inventory Accounting |
+| ২৮ | Purchase ও GRNI |
+| ২৯ | HRM ও Payroll Accounting |
+| ৩০ | Fixed Asset Accounting |
+| ৩১ | Hospital Accounting |
+| ৩২ | School Accounting |
+| ৩৩ | Budget Accounting ও Control |
+| ৩৪ | Cost Center, Department ও Branch |
+| ৩৫ | Project Accounting |
 
 প্রতিটি module একই কাঠামোয় লেখা হবে — এতে accounting আর development আলাদা মনে হবে না:
 
@@ -121,42 +124,42 @@ API / Service Design
 
 ### Part 5 — Accounting Software Architecture (১০০–১২০ পাতা)
 
-| ক্রম | Chapter | Roadmap |
-| --- | --- | --- |
-| ৩৬ | Subledger Architecture | Phase 18 |
-| ৩৭ | Accounting Event Architecture | Phase 19 |
-| ৩৮ | Posting Rule Engine | Phase 20 |
-| ৩৯ | Account Mapping | Phase 2, 20 |
-| ৪০ | Voucher System | Phase 21 |
-| ৪১ | Approval বনাম Posting | Phase 21 |
-| ৪২ | Period Lock ও Closing | Phase 22 |
-| ৪৩ | Reversal ও Correction | Phase 23 |
-| ৪৪ | Reconciliation Architecture | Phase 24 |
-| ৪৫ | Audit Trail | Phase 25 |
-| ৪৬ | Idempotency ও Duplicate Prevention | Phase 26 |
-| ৪৭ | Database Transaction ও Concurrency | Phase 27 |
-| ৪৮ | Permissions ও Security | Phase 28 |
-| ৪৯ | Financial Report Engine | Phase 32 |
-| ৫০ | Accounting API Design | Phase 33 |
-| ৫১ | Testing Strategy | Phase 34 |
-| ৫২ | Common Accounting Bugs | Phase 35 |
-| ৫৩ | Capstone — Generic Accounting Engine | Phase 36 |
+| ক্রম | Chapter |
+| --- | --- |
+| ৩৬ | Subledger Architecture |
+| ৩৭ | Accounting Event Architecture |
+| ৩৮ | Posting Rule Engine |
+| ৩৯ | Account Mapping |
+| ৪০ | Voucher System |
+| ৪১ | Approval বনাম Posting |
+| ৪২ | Period Lock ও Closing |
+| ৪৩ | Reversal ও Correction |
+| ৪৪ | Reconciliation Architecture |
+| ৪৫ | Audit Trail |
+| ৪৬ | Idempotency ও Duplicate Prevention |
+| ৪৭ | Database Transaction ও Concurrency |
+| ৪৮ | Permissions ও Security |
+| ৪৯ | Financial Report Engine |
+| ৫০ | Accounting API Design |
+| ৫১ | Testing Strategy |
+| ৫২ | Common Accounting Bugs |
+| ৫৩ | [**Capstone — Generic Accounting Engine**](/accounting/book/v3-ch53-capstone-engine) 📝 |
 
 ### Part 6 — Advanced ERP Accounting
 
 Foundation শেষ হওয়ার পরে। এই Part-এর বেশ কিছু বিষয় মূল roadmap-এ ছিল না।
 
-| ক্রম | Chapter | Roadmap |
-| --- | --- | --- |
-| ৫৪ | Multi-Currency | Phase 30 |
-| ৫৫ | Tax ও VAT | Phase 29 |
-| ৫৬ | Withholding Tax | নতুন |
-| ৫৭ | Cost Accounting | নতুন |
-| ৫৮ | Manufacturing Accounting | নতুন |
-| ৫৯ | Provision, Bad Debt ও Impairment | নতুন |
-| ৬০ | Inter-branch ও Intercompany | নতুন |
-| ৬১ | Consolidation | নতুন |
-| ৬২ | Opening Balance ও Migration | Phase 31 |
+| ক্রম | Chapter |
+| --- | --- |
+| ৫৪ | Multi-Currency |
+| ৫৫ | Tax ও VAT |
+| ৫৬ | Withholding Tax |
+| ৫৭ | Cost Accounting |
+| ৫৮ | Manufacturing Accounting |
+| ৫৯ | Provision, Bad Debt ও Impairment |
+| ৬০ | Inter-branch ও Intercompany |
+| ৬১ | Consolidation |
+| ৬২ | Opening Balance ও Migration |
 
 ---
 

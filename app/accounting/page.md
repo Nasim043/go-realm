@@ -1,8 +1,14 @@
-# Accounting for Software Development — Complete Learning Roadmap
+# Accounting for Software Development
 
 > লক্ষ্য: এমনভাবে Accounting শেখা যাতে HRM, Payroll, Inventory, Asset Management, Hospital, School, ERP, Billing, Procurement, Finance বা অন্য যেকোনো business application-এ accounting features confidently design, implement, test এবং review করা যায়।
 
-এই roadmap-টি traditional accountant হওয়ার জন্য নয়। এটি **Software Developer / Software Architect**-এর perspective থেকে তৈরি।
+এটি traditional accountant হওয়ার জন্য নয়। এটি **Software Developer / Software Architect**-এর perspective থেকে তৈরি।
+
+পুরো বিষয়টি একটি বই হিসেবে লেখা হচ্ছে — ৩ Volume, ৬ Part, ৬২ অধ্যায়। শুরু করুন এখান থেকে:
+
+- [**📖 The Book — Print Edition**](/accounting/book) — অধ্যায়ের তালিকা, লেখার অগ্রগতি ও print format
+- [**Projects ও Exit Criteria**](/accounting/projects) — পড়ার পাশাপাশি যা বানাবেন, আর নিজেকে যাচাই করার মাপকাঠি
+- [৬ মাসের Study Plan ও Routine](/accounting/study-plan) — month-by-month plan, daily/weekly routine, study method
 
 ---
 
@@ -34,6 +40,21 @@ Financial Report
 
 ---
 
+## বইয়ের কাঠামো
+
+| Volume | Part | অধ্যায় | Focus |
+| --- | --- | --- | --- |
+| **Volume 1**<br/>Fundamentals & Core | Part 1 — Fundamentals | ১–১০ | Debit/Credit, COA, Journal, GL, Trial Balance |
+| | Part 2 — Core Business Accounting | ১১–১৯ | Cash, Bank, AR, AP, Revenue, Accrual, Prepaid |
+| | Part 3 — Financial Statements | ২০–২৬ | P&L, Balance Sheet, Cash Flow, Adjusting, Closing |
+| **Volume 2**<br/>Accounting in Business Applications | Part 4 — Application-specific | ২৭–৩৫ | Inventory, Purchase, Payroll, Asset, Hospital, School, Budget, Cost Center |
+| **Volume 3**<br/>Accounting Software Engineering | Part 5 — Architecture | ৩৬–৫৩ | Subledger, Event, Posting Rule Engine, Voucher, Period, Reversal, Reconciliation, Audit, Idempotency, Report, API, Testing, Capstone |
+| | Part 6 — Advanced ERP | ৫৪–৬২ | Multi-currency, Tax, Cost Accounting, Manufacturing, Consolidation, Migration |
+
+পূর্ণ অধ্যায়-তালিকা ও অগ্রগতি [বইয়ের পাতায়](/accounting/book)।
+
+---
+
 ## Recommended Study Time
 
 | বিষয় | পরিমাণ |
@@ -42,32 +63,6 @@ Financial Report
 | মোট সময় | ৫–৭ মাস |
 | সপ্তাহে | ৬ দিন study + ১ দিন revision |
 | পদ্ধতি | Theory + Exercise + Architecture + Implementation — parallel-ভাবে |
-
----
-
-## Roadmap Structure
-
-পুরো roadmap ৩৬টি phase-এ ভাগ করা, আর সেগুলো ৭টি পর্ব + capstone হিসেবে সাজানো:
-
-| পর্ব | Phase | Focus |
-| --- | --- | --- |
-| [পর্ব ১ — Accounting Foundation](/accounting/part-1-foundation) | 1–5 | Debit/Credit, COA, Journal, GL, Trial Balance, Financial Statements |
-| [পর্ব ২ — Core Transaction Cycles](/accounting/part-2-core-transactions) | 6–9 | AR, AP, Cash & Bank, Revenue, Accrual, Prepaid |
-| [পর্ব ৩ — Business Module Accounting](/accounting/part-3-business-modules) | 10–15 | Inventory, Purchase, Payroll, Fixed Asset, Hospital, School |
-| [পর্ব ৪ — Budget, Cost Center ও Subledger](/accounting/part-4-control-dimensions) | 16–18 | Budget control, Cost center/branch/project, Subledger architecture |
-| [পর্ব ৫ — Accounting Engine Architecture](/accounting/part-5-architecture) | 19–24 | Event, Posting rule engine, Voucher, Period closing, Reversal, Reconciliation |
-| [পর্ব ৬ — Reliability, Control ও Compliance](/accounting/part-6-reliability) | 25–31 | Audit trail, Idempotency, Concurrency, Security, Tax, Multi-currency, Migration |
-| [পর্ব ৭ — Reporting, API ও Testing](/accounting/part-7-engineering) | 32–35 | Report engine, API design, Testing strategy, Common bugs |
-| [Capstone — Generic Accounting Engine](/accounting/capstone) | 36 | পুরো engine একসাথে design + build |
-
-### 📖 Print Edition
-
-- [**The Book — Print Edition**](/accounting/book) — এই roadmap-এর content থেকে তৈরি ৩ Volume-এর ছাপার উপযোগী বই, workbook ও quick reference। Roadmap বলে *কী পড়বেন*; বই-টাই *পড়ার জিনিস*।
-
-Supporting pages:
-
-- [৬ মাসের Study Plan ও Routine](/accounting/study-plan) — month-by-month plan, daily/weekly routine, study method, competency checklist
-- [Career Value ও Positioning](/accounting/career-value) — এই knowledge-এর career impact এবং positioning strategy
 
 ---
 
@@ -94,9 +89,11 @@ Month 6     Advanced Accounting Architecture + Full Capstone Accounting System
 
 ## কীভাবে পড়বেন
 
-প্রতিটি phase-এ থাকে **Goal → Topics → Project → Exit Criteria**। পরের phase-এ যাবেন কেবল তখনই, যখন আগের phase-এর Exit Criteria আপনি নিজে verify করতে পেরেছেন।
+প্রতিটি অধ্যায় একই ১০-section কাঠামোয় লেখা — Learning Objective থেকে Summary Card পর্যন্ত। ক্রমানুসারে পড়ুন; অধ্যায়ের Exercises আর Developer Challenge বাদ দেবেন না।
 
-প্রতিটি topic-এর জন্য mandatory method এবং daily routine আছে [Study Plan](/accounting/study-plan) পেজে — শুরু করার আগে সেটা একবার পড়ে নিন।
+একটি Part শেষ হলে [Projects ও Exit Criteria](/accounting/projects) পাতায় গিয়ে সেই Part-এর Project ধরুন। Exit Criteria নিজে verify করতে না পারলে পরের Part-এ যাবেন না।
+
+শুরু করার আগে [Study Plan](/accounting/study-plan) একবার পড়ে নিন।
 
 ---
 
