@@ -1,4 +1,8 @@
-# Docker Volume: প্রোডাকশন গাইড
+# মডিউল ৫: Docker Volume (ডেটা persistence)
+
+**সময়:** ~৬০ মিনিট | **আগে দরকার:** [মডিউল ৪](/devops/docker/module-4-dockerfile)
+
+> **এক লাইনে সমস্যা:** container remove করলে তার ভেতরের সব ডেটা মুছে যায়। ডাটাবেস, আপলোড ফাইল, লগ — কিছুই টিকবে না। Volume সেই সমস্যার সমাধান।
 
 > **কনসেপ্ট:** Container = ভাড়াটিয়া, Volume = নিজের ব্যাংক লকার। ভাড়াটিয়া চলে গেলেও লকারের জিনিস থাকে।
 
@@ -1162,3 +1166,7 @@ docker volume prune -f
 ---
 
 **🚀 মনে রাখো:** Volume হলো container এর permanent storage। সঠিক volume strategy = data safe, backup easy, production ready!
+
+---
+
+**পরের মডিউল:** [মডিউল ৬: Docker Network](/devops/docker/module-6-network)

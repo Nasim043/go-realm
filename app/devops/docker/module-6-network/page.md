@@ -1,4 +1,8 @@
-# Docker Network: প্রোডাকশন গাইড
+# মডিউল ৬: Docker Network (container-এ container যোগাযোগ)
+
+**সময়:** ~৬০ মিনিট | **আগে দরকার:** [মডিউল ৫](/devops/docker/module-5-volume)
+
+> **এক লাইনে সমস্যা:** app container থেকে `localhost:5432` দিলে DB পাওয়া যায় না — কারণ প্রতিটি container-এর নিজের localhost। Network আর DNS নাম দিয়ে এই সমস্যার সমাধান।
 
 > **কনসেপ্ট:** Container = বাড়ি, Network = রাস্তা। রাস্তা ছাড়া বাড়িগুলো একে অপরের সাথে যোগাযোগ করতে পারে না।
 
@@ -739,3 +743,7 @@ docker inspect container | grep Networks -A 10
 ---
 
 **🚀 মনে রাখো:** Network হলো containers এর যোগাযোগ system। সঠিক network design = secure, scalable, maintainable application!
+
+---
+
+**পরের মডিউল:** [মডিউল ৭: Docker Compose](/devops/docker/module-7-compose)
